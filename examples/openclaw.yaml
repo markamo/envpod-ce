@@ -1,0 +1,105 @@
+# OpenClaw pod — personal AI assistant via messaging platforms
+#
+# OpenClaw is a TypeScript/Node.js personal AI assistant that connects to
+# messaging platforms (WhatsApp, Telegram, Discord, Slack, Signal) and uses
+# multiple LLM providers. Requires Node.js 22+ runtime.
+#
+# Needs: LLM provider APIs (Anthropic, OpenAI, Google, OpenRouter),
+# messaging platform APIs. Uses system_access: advanced for nvm.
+#
+# Usage:
+#   sudo envpod init openclaw -c examples/openclaw.yaml
+#   sudo envpod setup openclaw
+#   sudo envpod run openclaw -- openclaw
+
+name: openclaw
+type: standard
+backend: native
+
+network:
+  mode: Monitored
+  dns:
+    mode: Whitelist
+    allow:
+      # LLM providers
+      - api.anthropic.com
+      - "*.anthropic.com"
+      - api.openai.com
+      - "*.openai.com"
+      - generativelanguage.googleapis.com
+      - "*.googleapis.com"
+      - openrouter.ai
+      - "*.openrouter.ai"
+      # WhatsApp (via whatsapp-web.js / Baileys)
+      - web.whatsapp.com
+      - "*.whatsapp.com"
+      - "*.whatsapp.net"
+      # Telegram Bot API
+      - api.telegram.org
+      - "*.telegram.org"
+      # Discord Bot API
+      - discord.com
+      - "*.discord.com"
+      - "*.discord.gg"
+      - gateway.discord.gg
+      # Slack API
+      - slack.com
+      - "*.slack.com"
+      - "*.slack-msgs.com"
+      # Signal (signal-cli)
+      - textsecure-service.whispersystems.org
+      - "*.signal.org"
+      # GitHub (nvm git clone)
+      - github.com
+      - "*.github.com"
+      # npm registry
+      - registry.npmjs.org
+      - "*.npmjs.org"
+      # nvm + Node.js downloads
+      - "*.githubusercontent.com"
+      - nodejs.org
+      - "*.nodejs.org"
+
+filesystem:
+  system_access: advanced
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+      - /opt/nvm             # nvm install dir
+      - /root/.npm
+
+processor:
+  cores: 2.0
+  memory: "1GB"
+
+security:
+  seccomp_profile: default
+  shm_size: "64MB"
+
+budget:
+  max_duration: "24h"
+
+audit:
+  action_log: true
+
+setup:
+  # Install nvm to /opt/nvm — world-accessible (not /root/.nvm which is mode 700)
+  - "export NVM_DIR=/opt/nvm && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash"
+  - "export NVM_DIR=/opt/nvm && . \"$NVM_DIR/nvm.sh\" && nvm install 22"
+  # Symlink to /usr/local/bin — always in PATH for root and non-root users
+  - |
+    export NVM_DIR=/opt/nvm
+    . "$NVM_DIR/nvm.sh"
+    ln -sf "$(which node)" /usr/local/bin/node
+    ln -sf "$(which npm)" /usr/local/bin/npm
+    ln -sf "$(which npx)" /usr/local/bin/npx
+  - "npm install -g openclaw"

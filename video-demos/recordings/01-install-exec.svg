@@ -1,0 +1,964 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 956 702" width="956" height="702">
+<defs><style>
+.t{font-family:JetBrains Mono, Fira Code, Cascadia Code, monospace;font-size:14px;white-space:pre}
+.f{opacity:0}
+@keyframes f0{0%{opacity:0}0.00%{opacity:1}0.47%{opacity:0}100%{opacity:0}}
+#f0{animation:f0 63.98s step-end infinite}
+@keyframes f1{0%{opacity:0}0.47%{opacity:1}3.59%{opacity:0}100%{opacity:0}}
+#f1{animation:f1 63.98s step-end infinite}
+@keyframes f2{0%{opacity:0}3.59%{opacity:1}4.85%{opacity:0}100%{opacity:0}}
+#f2{animation:f2 63.98s step-end infinite}
+@keyframes f3{0%{opacity:0}4.85%{opacity:1}7.97%{opacity:0}100%{opacity:0}}
+#f3{animation:f3 63.98s step-end infinite}
+@keyframes f4{0%{opacity:0}7.97%{opacity:1}8.16%{opacity:0}100%{opacity:0}}
+#f4{animation:f4 63.98s step-end infinite}
+@keyframes f5{0%{opacity:0}8.16%{opacity:1}8.35%{opacity:0}100%{opacity:0}}
+#f5{animation:f5 63.98s step-end infinite}
+@keyframes f6{0%{opacity:0}8.35%{opacity:1}8.53%{opacity:0}100%{opacity:0}}
+#f6{animation:f6 63.98s step-end infinite}
+@keyframes f7{0%{opacity:0}8.53%{opacity:1}8.72%{opacity:0}100%{opacity:0}}
+#f7{animation:f7 63.98s step-end infinite}
+@keyframes f8{0%{opacity:0}8.72%{opacity:1}8.91%{opacity:0}100%{opacity:0}}
+#f8{animation:f8 63.98s step-end infinite}
+@keyframes f9{0%{opacity:0}8.91%{opacity:1}9.10%{opacity:0}100%{opacity:0}}
+#f9{animation:f9 63.98s step-end infinite}
+@keyframes f10{0%{opacity:0}9.10%{opacity:1}9.28%{opacity:0}100%{opacity:0}}
+#f10{animation:f10 63.98s step-end infinite}
+@keyframes f11{0%{opacity:0}9.28%{opacity:1}9.47%{opacity:0}100%{opacity:0}}
+#f11{animation:f11 63.98s step-end infinite}
+@keyframes f12{0%{opacity:0}9.47%{opacity:1}9.66%{opacity:0}100%{opacity:0}}
+#f12{animation:f12 63.98s step-end infinite}
+@keyframes f13{0%{opacity:0}9.66%{opacity:1}9.85%{opacity:0}100%{opacity:0}}
+#f13{animation:f13 63.98s step-end infinite}
+@keyframes f14{0%{opacity:0}9.85%{opacity:1}10.03%{opacity:0}100%{opacity:0}}
+#f14{animation:f14 63.98s step-end infinite}
+@keyframes f15{0%{opacity:0}10.03%{opacity:1}11.33%{opacity:0}100%{opacity:0}}
+#f15{animation:f15 63.98s step-end infinite}
+@keyframes f16{0%{opacity:0}11.33%{opacity:1}13.68%{opacity:0}100%{opacity:0}}
+#f16{animation:f16 63.98s step-end infinite}
+@keyframes f17{0%{opacity:0}13.68%{opacity:1}16.02%{opacity:0}100%{opacity:0}}
+#f17{animation:f17 63.98s step-end infinite}
+@keyframes f18{0%{opacity:0}16.02%{opacity:1}16.49%{opacity:0}100%{opacity:0}}
+#f18{animation:f18 63.98s step-end infinite}
+@keyframes f19{0%{opacity:0}16.49%{opacity:1}19.62%{opacity:0}100%{opacity:0}}
+#f19{animation:f19 63.98s step-end infinite}
+@keyframes f20{0%{opacity:0}19.62%{opacity:1}19.80%{opacity:0}100%{opacity:0}}
+#f20{animation:f20 63.98s step-end infinite}
+@keyframes f21{0%{opacity:0}19.80%{opacity:1}19.99%{opacity:0}100%{opacity:0}}
+#f21{animation:f21 63.98s step-end infinite}
+@keyframes f22{0%{opacity:0}19.99%{opacity:1}20.18%{opacity:0}100%{opacity:0}}
+#f22{animation:f22 63.98s step-end infinite}
+@keyframes f23{0%{opacity:0}20.18%{opacity:1}21.52%{opacity:0}100%{opacity:0}}
+#f23{animation:f23 63.98s step-end infinite}
+@keyframes f24{0%{opacity:0}21.52%{opacity:1}23.87%{opacity:0}100%{opacity:0}}
+#f24{animation:f24 63.98s step-end infinite}
+@keyframes f25{0%{opacity:0}23.87%{opacity:1}25.12%{opacity:0}100%{opacity:0}}
+#f25{animation:f25 63.98s step-end infinite}
+@keyframes f26{0%{opacity:0}25.12%{opacity:1}28.24%{opacity:0}100%{opacity:0}}
+#f26{animation:f26 63.98s step-end infinite}
+@keyframes f27{0%{opacity:0}28.24%{opacity:1}28.43%{opacity:0}100%{opacity:0}}
+#f27{animation:f27 63.98s step-end infinite}
+@keyframes f28{0%{opacity:0}28.43%{opacity:1}28.62%{opacity:0}100%{opacity:0}}
+#f28{animation:f28 63.98s step-end infinite}
+@keyframes f29{0%{opacity:0}28.62%{opacity:1}28.81%{opacity:0}100%{opacity:0}}
+#f29{animation:f29 63.98s step-end infinite}
+@keyframes f30{0%{opacity:0}28.81%{opacity:1}28.99%{opacity:0}100%{opacity:0}}
+#f30{animation:f30 63.98s step-end infinite}
+@keyframes f31{0%{opacity:0}28.99%{opacity:1}29.18%{opacity:0}100%{opacity:0}}
+#f31{animation:f31 63.98s step-end infinite}
+@keyframes f32{0%{opacity:0}29.18%{opacity:1}29.37%{opacity:0}100%{opacity:0}}
+#f32{animation:f32 63.98s step-end infinite}
+@keyframes f33{0%{opacity:0}29.37%{opacity:1}29.56%{opacity:0}100%{opacity:0}}
+#f33{animation:f33 63.98s step-end infinite}
+@keyframes f34{0%{opacity:0}29.56%{opacity:1}29.74%{opacity:0}100%{opacity:0}}
+#f34{animation:f34 63.98s step-end infinite}
+@keyframes f35{0%{opacity:0}29.74%{opacity:1}29.93%{opacity:0}100%{opacity:0}}
+#f35{animation:f35 63.98s step-end infinite}
+@keyframes f36{0%{opacity:0}29.93%{opacity:1}31.28%{opacity:0}100%{opacity:0}}
+#f36{animation:f36 63.98s step-end infinite}
+@keyframes f37{0%{opacity:0}31.28%{opacity:1}33.62%{opacity:0}100%{opacity:0}}
+#f37{animation:f37 63.98s step-end infinite}
+@keyframes f38{0%{opacity:0}33.62%{opacity:1}34.09%{opacity:0}100%{opacity:0}}
+#f38{animation:f38 63.98s step-end infinite}
+@keyframes f39{0%{opacity:0}34.09%{opacity:1}37.21%{opacity:0}100%{opacity:0}}
+#f39{animation:f39 63.98s step-end infinite}
+@keyframes f40{0%{opacity:0}37.21%{opacity:1}38.93%{opacity:0}100%{opacity:0}}
+#f40{animation:f40 63.98s step-end infinite}
+@keyframes f41{0%{opacity:0}38.93%{opacity:1}39.12%{opacity:0}100%{opacity:0}}
+#f41{animation:f41 63.98s step-end infinite}
+@keyframes f42{0%{opacity:0}39.12%{opacity:1}39.31%{opacity:0}100%{opacity:0}}
+#f42{animation:f42 63.98s step-end infinite}
+@keyframes f43{0%{opacity:0}39.31%{opacity:1}39.50%{opacity:0}100%{opacity:0}}
+#f43{animation:f43 63.98s step-end infinite}
+@keyframes f44{0%{opacity:0}39.50%{opacity:1}39.68%{opacity:0}100%{opacity:0}}
+#f44{animation:f44 63.98s step-end infinite}
+@keyframes f45{0%{opacity:0}39.68%{opacity:1}39.87%{opacity:0}100%{opacity:0}}
+#f45{animation:f45 63.98s step-end infinite}
+@keyframes f46{0%{opacity:0}39.87%{opacity:1}40.06%{opacity:0}100%{opacity:0}}
+#f46{animation:f46 63.98s step-end infinite}
+@keyframes f47{0%{opacity:0}40.06%{opacity:1}40.25%{opacity:0}100%{opacity:0}}
+#f47{animation:f47 63.98s step-end infinite}
+@keyframes f48{0%{opacity:0}40.25%{opacity:1}40.43%{opacity:0}100%{opacity:0}}
+#f48{animation:f48 63.98s step-end infinite}
+@keyframes f49{0%{opacity:0}40.43%{opacity:1}40.62%{opacity:0}100%{opacity:0}}
+#f49{animation:f49 63.98s step-end infinite}
+@keyframes f50{0%{opacity:0}40.62%{opacity:1}40.81%{opacity:0}100%{opacity:0}}
+#f50{animation:f50 63.98s step-end infinite}
+@keyframes f51{0%{opacity:0}40.81%{opacity:1}41.00%{opacity:0}100%{opacity:0}}
+#f51{animation:f51 63.98s step-end infinite}
+@keyframes f52{0%{opacity:0}41.00%{opacity:1}41.18%{opacity:0}100%{opacity:0}}
+#f52{animation:f52 63.98s step-end infinite}
+@keyframes f53{0%{opacity:0}41.18%{opacity:1}41.37%{opacity:0}100%{opacity:0}}
+#f53{animation:f53 63.98s step-end infinite}
+@keyframes f54{0%{opacity:0}41.37%{opacity:1}41.56%{opacity:0}100%{opacity:0}}
+#f54{animation:f54 63.98s step-end infinite}
+@keyframes f55{0%{opacity:0}41.56%{opacity:1}41.75%{opacity:0}100%{opacity:0}}
+#f55{animation:f55 63.98s step-end infinite}
+@keyframes f56{0%{opacity:0}41.75%{opacity:1}41.93%{opacity:0}100%{opacity:0}}
+#f56{animation:f56 63.98s step-end infinite}
+@keyframes f57{0%{opacity:0}41.93%{opacity:1}42.12%{opacity:0}100%{opacity:0}}
+#f57{animation:f57 63.98s step-end infinite}
+@keyframes f58{0%{opacity:0}42.12%{opacity:1}42.31%{opacity:0}100%{opacity:0}}
+#f58{animation:f58 63.98s step-end infinite}
+@keyframes f59{0%{opacity:0}42.31%{opacity:1}42.50%{opacity:0}100%{opacity:0}}
+#f59{animation:f59 63.98s step-end infinite}
+@keyframes f60{0%{opacity:0}42.50%{opacity:1}42.69%{opacity:0}100%{opacity:0}}
+#f60{animation:f60 63.98s step-end infinite}
+@keyframes f61{0%{opacity:0}42.69%{opacity:1}42.87%{opacity:0}100%{opacity:0}}
+#f61{animation:f61 63.98s step-end infinite}
+@keyframes f62{0%{opacity:0}42.87%{opacity:1}43.06%{opacity:0}100%{opacity:0}}
+#f62{animation:f62 63.98s step-end infinite}
+@keyframes f63{0%{opacity:0}43.06%{opacity:1}43.25%{opacity:0}100%{opacity:0}}
+#f63{animation:f63 63.98s step-end infinite}
+@keyframes f64{0%{opacity:0}43.25%{opacity:1}43.44%{opacity:0}100%{opacity:0}}
+#f64{animation:f64 63.98s step-end infinite}
+@keyframes f65{0%{opacity:0}43.44%{opacity:1}43.62%{opacity:0}100%{opacity:0}}
+#f65{animation:f65 63.98s step-end infinite}
+@keyframes f66{0%{opacity:0}43.62%{opacity:1}43.81%{opacity:0}100%{opacity:0}}
+#f66{animation:f66 63.98s step-end infinite}
+@keyframes f67{0%{opacity:0}43.81%{opacity:1}44.00%{opacity:0}100%{opacity:0}}
+#f67{animation:f67 63.98s step-end infinite}
+@keyframes f68{0%{opacity:0}44.00%{opacity:1}44.19%{opacity:0}100%{opacity:0}}
+#f68{animation:f68 63.98s step-end infinite}
+@keyframes f69{0%{opacity:0}44.19%{opacity:1}44.37%{opacity:0}100%{opacity:0}}
+#f69{animation:f69 63.98s step-end infinite}
+@keyframes f70{0%{opacity:0}44.37%{opacity:1}44.56%{opacity:0}100%{opacity:0}}
+#f70{animation:f70 63.98s step-end infinite}
+@keyframes f71{0%{opacity:0}44.56%{opacity:1}44.75%{opacity:0}100%{opacity:0}}
+#f71{animation:f71 63.98s step-end infinite}
+@keyframes f72{0%{opacity:0}44.75%{opacity:1}44.94%{opacity:0}100%{opacity:0}}
+#f72{animation:f72 63.98s step-end infinite}
+@keyframes f73{0%{opacity:0}44.94%{opacity:1}45.12%{opacity:0}100%{opacity:0}}
+#f73{animation:f73 63.98s step-end infinite}
+@keyframes f74{0%{opacity:0}45.12%{opacity:1}46.51%{opacity:0}100%{opacity:0}}
+#f74{animation:f74 63.98s step-end infinite}
+@keyframes f75{0%{opacity:0}46.51%{opacity:1}48.86%{opacity:0}100%{opacity:0}}
+#f75{animation:f75 63.98s step-end infinite}
+@keyframes f76{0%{opacity:0}48.86%{opacity:1}50.11%{opacity:0}100%{opacity:0}}
+#f76{animation:f76 63.98s step-end infinite}
+@keyframes f77{0%{opacity:0}50.11%{opacity:1}53.24%{opacity:0}100%{opacity:0}}
+#f77{animation:f77 63.98s step-end infinite}
+@keyframes f78{0%{opacity:0}53.24%{opacity:1}54.95%{opacity:0}100%{opacity:0}}
+#f78{animation:f78 63.98s step-end infinite}
+@keyframes f79{0%{opacity:0}54.95%{opacity:1}55.14%{opacity:0}100%{opacity:0}}
+#f79{animation:f79 63.98s step-end infinite}
+@keyframes f80{0%{opacity:0}55.14%{opacity:1}55.33%{opacity:0}100%{opacity:0}}
+#f80{animation:f80 63.98s step-end infinite}
+@keyframes f81{0%{opacity:0}55.33%{opacity:1}55.52%{opacity:0}100%{opacity:0}}
+#f81{animation:f81 63.98s step-end infinite}
+@keyframes f82{0%{opacity:0}55.52%{opacity:1}55.70%{opacity:0}100%{opacity:0}}
+#f82{animation:f82 63.98s step-end infinite}
+@keyframes f83{0%{opacity:0}55.70%{opacity:1}55.89%{opacity:0}100%{opacity:0}}
+#f83{animation:f83 63.98s step-end infinite}
+@keyframes f84{0%{opacity:0}55.89%{opacity:1}57.24%{opacity:0}100%{opacity:0}}
+#f84{animation:f84 63.98s step-end infinite}
+@keyframes f85{0%{opacity:0}57.24%{opacity:1}62.71%{opacity:0}100%{opacity:0}}
+#f85{animation:f85 63.98s step-end infinite}
+@keyframes f86{0%{opacity:0}62.71%{opacity:1}63.18%{opacity:0}100%{opacity:0}}
+#f86{animation:f86 63.98s step-end infinite}
+@keyframes f87{0%{opacity:0}63.18%{opacity:1}66.30%{opacity:0}100%{opacity:0}}
+#f87{animation:f87 63.98s step-end infinite}
+@keyframes f88{0%{opacity:0}66.30%{opacity:1}68.02%{opacity:0}100%{opacity:0}}
+#f88{animation:f88 63.98s step-end infinite}
+@keyframes f89{0%{opacity:0}68.02%{opacity:1}68.21%{opacity:0}100%{opacity:0}}
+#f89{animation:f89 63.98s step-end infinite}
+@keyframes f90{0%{opacity:0}68.21%{opacity:1}68.40%{opacity:0}100%{opacity:0}}
+#f90{animation:f90 63.98s step-end infinite}
+@keyframes f91{0%{opacity:0}68.40%{opacity:1}68.58%{opacity:0}100%{opacity:0}}
+#f91{animation:f91 63.98s step-end infinite}
+@keyframes f92{0%{opacity:0}68.58%{opacity:1}68.77%{opacity:0}100%{opacity:0}}
+#f92{animation:f92 63.98s step-end infinite}
+@keyframes f93{0%{opacity:0}68.77%{opacity:1}68.96%{opacity:0}100%{opacity:0}}
+#f93{animation:f93 63.98s step-end infinite}
+@keyframes f94{0%{opacity:0}68.96%{opacity:1}69.15%{opacity:0}100%{opacity:0}}
+#f94{animation:f94 63.98s step-end infinite}
+@keyframes f95{0%{opacity:0}69.15%{opacity:1}70.40%{opacity:0}100%{opacity:0}}
+#f95{animation:f95 63.98s step-end infinite}
+@keyframes f96{0%{opacity:0}70.40%{opacity:1}72.74%{opacity:0}100%{opacity:0}}
+#f96{animation:f96 63.98s step-end infinite}
+@keyframes f97{0%{opacity:0}72.74%{opacity:1}73.99%{opacity:0}100%{opacity:0}}
+#f97{animation:f97 63.98s step-end infinite}
+@keyframes f98{0%{opacity:0}73.99%{opacity:1}77.12%{opacity:0}100%{opacity:0}}
+#f98{animation:f98 63.98s step-end infinite}
+@keyframes f99{0%{opacity:0}77.12%{opacity:1}78.84%{opacity:0}100%{opacity:0}}
+#f99{animation:f99 63.98s step-end infinite}
+@keyframes f100{0%{opacity:0}78.84%{opacity:1}79.02%{opacity:0}100%{opacity:0}}
+#f100{animation:f100 63.98s step-end infinite}
+@keyframes f101{0%{opacity:0}79.02%{opacity:1}79.21%{opacity:0}100%{opacity:0}}
+#f101{animation:f101 63.98s step-end infinite}
+@keyframes f102{0%{opacity:0}79.21%{opacity:1}79.40%{opacity:0}100%{opacity:0}}
+#f102{animation:f102 63.98s step-end infinite}
+@keyframes f103{0%{opacity:0}79.40%{opacity:1}79.59%{opacity:0}100%{opacity:0}}
+#f103{animation:f103 63.98s step-end infinite}
+@keyframes f104{0%{opacity:0}79.59%{opacity:1}79.77%{opacity:0}100%{opacity:0}}
+#f104{animation:f104 63.98s step-end infinite}
+@keyframes f105{0%{opacity:0}79.77%{opacity:1}81.17%{opacity:0}100%{opacity:0}}
+#f105{animation:f105 63.98s step-end infinite}
+@keyframes f106{0%{opacity:0}81.17%{opacity:1}86.64%{opacity:0}100%{opacity:0}}
+#f106{animation:f106 63.98s step-end infinite}
+@keyframes f107{0%{opacity:0}86.64%{opacity:1}87.11%{opacity:0}100%{opacity:0}}
+#f107{animation:f107 63.98s step-end infinite}
+@keyframes f108{0%{opacity:0}87.11%{opacity:1}90.23%{opacity:0}100%{opacity:0}}
+#f108{animation:f108 63.98s step-end infinite}
+@keyframes f109{0%{opacity:0}90.23%{opacity:1}90.42%{opacity:0}100%{opacity:0}}
+#f109{animation:f109 63.98s step-end infinite}
+@keyframes f110{0%{opacity:0}90.42%{opacity:1}90.61%{opacity:0}100%{opacity:0}}
+#f110{animation:f110 63.98s step-end infinite}
+@keyframes f111{0%{opacity:0}90.61%{opacity:1}90.79%{opacity:0}100%{opacity:0}}
+#f111{animation:f111 63.98s step-end infinite}
+@keyframes f112{0%{opacity:0}90.79%{opacity:1}90.98%{opacity:0}100%{opacity:0}}
+#f112{animation:f112 63.98s step-end infinite}
+@keyframes f113{0%{opacity:0}90.98%{opacity:1}91.17%{opacity:0}100%{opacity:0}}
+#f113{animation:f113 63.98s step-end infinite}
+@keyframes f114{0%{opacity:0}91.17%{opacity:1}91.36%{opacity:0}100%{opacity:0}}
+#f114{animation:f114 63.98s step-end infinite}
+@keyframes f115{0%{opacity:0}91.36%{opacity:1}92.65%{opacity:0}100%{opacity:0}}
+#f115{animation:f115 63.98s step-end infinite}
+@keyframes f116{0%{opacity:0}92.65%{opacity:1}95.00%{opacity:0}100%{opacity:0}}
+#f116{animation:f116 63.98s step-end infinite}
+@keyframes f117{0%{opacity:0}95.00%{opacity:1}96.87%{opacity:0}100%{opacity:0}}
+#f117{animation:f117 63.98s step-end infinite}
+@keyframes f118{0%{opacity:0}96.87%{opacity:1}100.00%{opacity:0}100%{opacity:0}}
+#f118{animation:f118 63.98s step-end infinite}
+.p{cursor:pointer}
+</style></defs>
+<rect width="100%" height="100%" fill="#1a1b26" rx="8" class="p"/>
+<script type="text/ecmascript"><![CDATA[var s=document.documentElement;s.addEventListener("click",function(){var c=getComputedStyle(s).animationPlayState||"running";var gs=s.querySelectorAll("[id^=f]");var st=gs[0]?getComputedStyle(gs[0]).animationPlayState:"running";var nv=st==="running"?"paused":"running";for(var i=0;i<gs.length;i++)gs[i].style.animationPlayState=nv;});]]></script>
+<circle cx="20" cy="20.0" r="6" fill="#ff5f56"/>
+<circle cx="40" cy="20.0" r="6" fill="#ffbd2e"/>
+<circle cx="60" cy="20.0" r="6" fill="#27c93f"/>
+<text x="478" y="24" text-anchor="middle" fill="#565f89" font-family="JetBrains Mono, Fira Code, Cascadia Code, monospace" font-size="12">Install to First Pod in 60 Seconds</text>
+<g id="f0" class="f t">
+</g>
+<g id="f1" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">╔════════════════════════════════════════════════════════════╗</tspan></text>
+</g>
+<g id="f2" class="f t">
+</g>
+<g id="f3" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+</g>
+<g id="f4" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Install  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f5" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Install  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl</tspan></text>
+</g>
+<g id="f6" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Install  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsS</tspan></text>
+</g>
+<g id="f7" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Install  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL ht</tspan></text>
+</g>
+<g id="f8" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Install  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https:</tspan></text>
+</g>
+<g id="f9" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Install  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://en</tspan></text>
+</g>
+<g id="f10" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Install  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod</tspan></text>
+</g>
+<g id="f11" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Install  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod.dev</tspan></text>
+</g>
+<g id="f12" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Install  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod.dev/ins</tspan></text>
+</g>
+<g id="f13" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Install  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod.dev/install</tspan></text>
+</g>
+<g id="f14" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Install  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod.dev/install.sh</tspan></text>
+</g>
+<g id="f15" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Install  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod.dev/install.sh | sh</tspan></text>
+</g>
+<g id="f16" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Install  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod.dev/install.sh | sh</tspan></text>
+</g>
+<g id="f17" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Install  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod.dev/install.sh | sh</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">envpod v0.1.0 installed to /usr/local/bin/envpod</tspan></text>
+</g>
+<g id="f18" class="f t">
+</g>
+<g id="f19" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+</g>
+<g id="f20" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Show Presets  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f21" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Show Presets  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpo</tspan></text>
+</g>
+<g id="f22" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Show Presets  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod pr</tspan></text>
+</g>
+<g id="f23" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Show Presets  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod preset</tspan></text>
+</g>
+<g id="f24" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Show Presets  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+</g>
+<g id="f25" class="f t">
+</g>
+<g id="f26" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+</g>
+<g id="f27" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Create a Pod  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f28" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Create a Pod  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo</tspan></text>
+</g>
+<g id="f29" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Create a Pod  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envp</tspan></text>
+</g>
+<g id="f30" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Create a Pod  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod i</tspan></text>
+</g>
+<g id="f31" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Create a Pod  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init</tspan></text>
+</g>
+<g id="f32" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Create a Pod  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init hell</tspan></text>
+</g>
+<g id="f33" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Create a Pod  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init hello --</tspan></text>
+</g>
+<g id="f34" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Create a Pod  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init hello --pres</tspan></text>
+</g>
+<g id="f35" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Create a Pod  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init hello --preset d</tspan></text>
+</g>
+<g id="f36" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Create a Pod  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init hello --preset devbo</tspan></text>
+</g>
+<g id="f37" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Create a Pod  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init hello --preset devbox</tspan></text>
+</g>
+<g id="f38" class="f t">
+</g>
+<g id="f39" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+</g>
+<g id="f40" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+</g>
+<g id="f41" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+</g>
+<g id="f42" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo</tspan></text>
+</g>
+<g id="f43" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envp</tspan></text>
+</g>
+<g id="f44" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod r</tspan></text>
+</g>
+<g id="f45" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run h</tspan></text>
+</g>
+<g id="f46" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello</tspan></text>
+</g>
+<g id="f47" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello --</tspan></text>
+</g>
+<g id="f48" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash</tspan></text>
+</g>
+<g id="f49" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c</tspan></text>
+</g>
+<g id="f50" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;ech</tspan></text>
+</g>
+<g id="f51" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 't</tspan></text>
+</g>
+<g id="f52" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the a</tspan></text>
+</g>
+<g id="f53" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent</tspan></text>
+</g>
+<g id="f54" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wro</tspan></text>
+</g>
+<g id="f55" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote t</tspan></text>
+</g>
+<g id="f56" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this'</tspan></text>
+</g>
+<g id="f57" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /</tspan></text>
+</g>
+<g id="f58" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home</tspan></text>
+</g>
+<g id="f59" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/age</tspan></text>
+</g>
+<g id="f60" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/h</tspan></text>
+</g>
+<g id="f61" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello</tspan></text>
+</g>
+<g id="f62" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt</tspan></text>
+</g>
+<g id="f63" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp;</tspan></text>
+</g>
+<g id="f64" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo</tspan></text>
+</g>
+<g id="f65" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wr</tspan></text>
+</g>
+<g id="f66" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote</tspan></text>
+</g>
+<g id="f67" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /hom</tspan></text>
+</g>
+<g id="f68" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="16" y="232.0"><tspan fill="#c0caf5">g</tspan></text>
+</g>
+<g id="f69" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="16" y="232.0"><tspan fill="#c0caf5">gent/</tspan></text>
+</g>
+<g id="f70" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="16" y="232.0"><tspan fill="#c0caf5">gent/hell</tspan></text>
+</g>
+<g id="f71" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="16" y="232.0"><tspan fill="#c0caf5">gent/hello.tx</tspan></text>
+</g>
+<g id="f72" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="16" y="232.0"><tspan fill="#c0caf5">gent/hello.txt in</tspan></text>
+</g>
+<g id="f73" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="16" y="232.0"><tspan fill="#c0caf5">gent/hello.txt inside</tspan></text>
+</g>
+<g id="f74" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="16" y="232.0"><tspan fill="#c0caf5">gent/hello.txt inside pod</tspan></text>
+</g>
+<g id="f75" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌────────────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Run a Command Inside  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└────────────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># The agent thinks it wrote to your filesystem. It didn't.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c </tspan><tspan fill="#cccc66">&quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="16" y="250.0"><tspan fill="#cccc66">gent/hello.txt inside pod'&quot;</tspan></text>
+</g>
+<g id="f76" class="f t">
+</g>
+<g id="f77" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────────────┐</tspan></text>
+</g>
+<g id="f78" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Review Changes  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────────────┘</tspan></text>
+</g>
+<g id="f79" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Review Changes  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Every change goes to a copy-on-write overlay. You review before anything touches the host.</tspan></text>
+</g>
+<g id="f80" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Review Changes  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Every change goes to a copy-on-write overlay. You review before anything touches the host.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo</tspan></text>
+</g>
+<g id="f81" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Review Changes  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Every change goes to a copy-on-write overlay. You review before anything touches the host.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envp</tspan></text>
+</g>
+<g id="f82" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Review Changes  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Every change goes to a copy-on-write overlay. You review before anything touches the host.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod d</tspan></text>
+</g>
+<g id="f83" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Review Changes  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Every change goes to a copy-on-write overlay. You review before anything touches the host.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff</tspan></text>
+</g>
+<g id="f84" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Review Changes  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Every change goes to a copy-on-write overlay. You review before anything touches the host.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff hell</tspan></text>
+</g>
+<g id="f85" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Review Changes  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Every change goes to a copy-on-write overlay. You review before anything touches the host.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff hello</tspan></text>
+</g>
+<g id="f86" class="f t">
+</g>
+<g id="f87" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────┐</tspan></text>
+</g>
+<g id="f88" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Commit  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────┘</tspan></text>
+</g>
+<g id="f89" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Commit  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Commit what you want. Roll back the rest. That's governance.</tspan></text>
+</g>
+<g id="f90" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Commit  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Commit what you want. Roll back the rest. That's governance.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo</tspan></text>
+</g>
+<g id="f91" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Commit  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Commit what you want. Roll back the rest. That's governance.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envp</tspan></text>
+</g>
+<g id="f92" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Commit  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Commit what you want. Roll back the rest. That's governance.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod c</tspan></text>
+</g>
+<g id="f93" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Commit  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Commit what you want. Roll back the rest. That's governance.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commi</tspan></text>
+</g>
+<g id="f94" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Commit  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Commit what you want. Roll back the rest. That's governance.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit he</tspan></text>
+</g>
+<g id="f95" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Commit  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Commit what you want. Roll back the rest. That's governance.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit hello</tspan></text>
+</g>
+<g id="f96" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌──────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Commit  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└──────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Commit what you want. Roll back the rest. That's governance.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit hello</tspan></text>
+</g>
+<g id="f97" class="f t">
+</g>
+<g id="f98" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────────┐</tspan></text>
+</g>
+<g id="f99" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Audit Trail  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────────┘</tspan></text>
+</g>
+<g id="f100" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Audit Trail  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Every action logged. Append-only. Free and open source.</tspan></text>
+</g>
+<g id="f101" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Audit Trail  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Every action logged. Append-only. Free and open source.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo</tspan></text>
+</g>
+<g id="f102" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Audit Trail  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Every action logged. Append-only. Free and open source.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envp</tspan></text>
+</g>
+<g id="f103" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Audit Trail  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Every action logged. Append-only. Free and open source.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod a</tspan></text>
+</g>
+<g id="f104" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Audit Trail  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Every action logged. Append-only. Free and open source.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit</tspan></text>
+</g>
+<g id="f105" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Audit Trail  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Every action logged. Append-only. Free and open source.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit hel</tspan></text>
+</g>
+<g id="f106" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Audit Trail  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────────┘</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Every action logged. Append-only. Free and open source.</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit hello</tspan></text>
+</g>
+<g id="f107" class="f t">
+</g>
+<g id="f108" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+</g>
+<g id="f109" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Cleanup  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f110" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Cleanup  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo</tspan></text>
+</g>
+<g id="f111" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Cleanup  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envp</tspan></text>
+</g>
+<g id="f112" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Cleanup  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod d</tspan></text>
+</g>
+<g id="f113" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Cleanup  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod destr</tspan></text>
+</g>
+<g id="f114" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Cleanup  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod destroy h</tspan></text>
+</g>
+<g id="f115" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Cleanup  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod destroy hello</tspan></text>
+</g>
+<g id="f116" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Cleanup  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod destroy hello</tspan></text>
+</g>
+<g id="f117" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Cleanup  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod destroy hello</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">Destroyed pod 'hello'</tspan></text>
+</g>
+<g id="f118" class="f t">
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">┌───────────┐</tspan></text>
+<text x="16" y="106.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">│</tspan><tspan fill="#c0caf5" font-weight="bold">  Cleanup  </tspan><tspan fill="#7dcfff">│</tspan></text>
+<text x="16" y="124.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#7dcfff">└───────────┘</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod destroy hello</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">Destroyed pod 'hello'</tspan></text>
+<text x="16" y="214.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#e0af68" font-weight="bold">│ github.com/markamo/envpod-ce</tspan></text>
+</g>
+</svg>

@@ -1,0 +1,43 @@
+# Web Display — noVNC (CE)
+#
+# Browser-based desktop access via Xvfb + x11vnc + websockify.
+# Open http://localhost:6080 after `envpod run` to view the pod desktop.
+#
+# Setup installs ~60MB of packages (Xvfb, x11vnc, noVNC, websockify).
+# The supervisor script starts all services automatically on `envpod run`.
+#
+# Chrome is mounted read-only from the host (/opt/google must exist).
+# Run with: sudo envpod run web-display-demo -- google-chrome --no-sandbox
+
+name: web-display-demo
+type: standard
+user: root
+
+web_display:
+  type: novnc
+  port: 6080
+  resolution: "1280x720"
+
+filesystem:
+  system_access: advanced
+  mounts:
+    - path: /opt/google
+      permissions: ReadOnly
+
+network:
+  mode: Monitored
+  dns:
+    mode: Blacklist
+    deny:
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+
+processor:
+  cores: 4.0
+  memory: "4GB"
+  max_pids: 1024
+
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"

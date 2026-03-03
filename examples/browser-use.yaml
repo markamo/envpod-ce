@@ -1,0 +1,65 @@
+# browser-use pod — AI agent that controls a browser to complete tasks
+#
+# browser-use is a Python agent that launches headless Chromium via Playwright
+# to browse the web autonomously. Needs browser seccomp profile and large /dev/shm
+# for Chrome stability. Browses arbitrary websites by design.
+#
+# Needs: LLM provider APIs, Playwright/Chromium, open web browsing.
+# Python 3.11+. Memory-hungry due to Chrome.
+#
+# Usage:
+#   sudo envpod init browser-use -c examples/browser-use.yaml
+#   sudo envpod setup browser-use
+#   sudo envpod run browser-use -- python run_agent.py
+
+name: browser-use
+type: standard
+backend: native
+
+network:
+  mode: Monitored
+  dns:
+    mode: Blacklist
+    deny:
+      # Block internal/private networks only — agent needs open web access
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+      - "*.lan"
+
+filesystem:
+  system_access: advanced
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"
+
+devices:
+  gpu: true
+
+budget:
+  max_duration: "30m"
+
+audit:
+  action_log: true
+
+setup:
+  - "command -v pip >/dev/null || { apt-get update && apt-get install -y python3-pip; }"
+  - "pip install browser-use"
+  - "playwright install --with-deps chromium"

@@ -1,0 +1,82 @@
+# Browser pod (Wayland + PipeWire) — secure display and audio for web agents
+#
+# Same as browser.yaml but uses Wayland for display (eliminates X11 keylogging)
+# and PipeWire for audio (finer-grained permissions vs PulseAudio).
+#
+# Security improvements over browser.yaml:
+#   I-04: CRITICAL → LOW  (Wayland compositor isolates clients)
+#   I-05: HIGH → MEDIUM   (PipeWire has per-stream permissions)
+#
+# Requires: Wayland compositor on host (GNOME/KDE on Wayland, sway, etc.)
+#           PipeWire running on host (default on Ubuntu 22.10+, Fedora 34+)
+#
+# Display: use --enable-display (-d) for Wayland forwarding.
+#          Socket mounted to /tmp/wayland-0 inside pod.
+# Audio:   use --enable-audio (-a) for PipeWire forwarding.
+#          Socket mounted to /tmp/pipewire-0 inside pod.
+#
+# Note: Firefox is a snap on Ubuntu 24.04 and does not work inside namespace
+#       pods. Use Google Chrome (deb package) instead.
+#
+# Chrome flags:
+#   --ozone-platform=wayland  Required for Chrome to use Wayland (defaults to X11)
+#   --no-sandbox              Safe here — the pod already provides isolation
+#
+# Usage:
+#   sudo envpod init browser-wayland -c examples/browser-wayland.yaml
+#   sudo envpod run browser-wayland -d -a -- google-chrome --no-sandbox --ozone-platform=wayland https://example.com
+#   sudo envpod audit browser-wayland --security
+
+name: browser-wayland
+type: standard
+backend: native
+
+network:
+  mode: Monitored
+  dns:
+    mode: Blacklist
+    deny:
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+
+filesystem:
+  mounts:
+    - path: /opt/google
+      permissions: ReadOnly
+    - path: /etc/alternatives
+      permissions: ReadOnly
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+  max_pids: 1024
+
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"
+
+devices:
+  gpu: true
+  display: true
+  audio: true
+  display_protocol: wayland
+  audio_protocol: pipewire
+
+budget:
+  max_duration: "30m"
+
+audit:
+  action_log: true

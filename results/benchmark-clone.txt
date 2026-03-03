@@ -1,0 +1,70 @@
+
+envpod clone vs init benchmark
+  binary:     /home/mymark/apps/envpod-oss/target/release/envpod
+  iterations: 10
+  state dir:  /tmp/envpod-bench-clone-nPtQa6
+
+Creating source pod...
+
+Benchmarking 'envpod init' (10 iterations)...
+  [1/10] 1080ms
+  [2/10] 1067ms
+  [3/10] 1078ms
+  [4/10] 1094ms
+  [5/10] 1055ms
+  [6/10] 1056ms
+  [7/10] 1110ms
+  [8/10] 1065ms
+  [9/10] 1096ms
+  [10/10] 1069ms
+
+Benchmarking 'envpod clone' (10 iterations)...
+  [1/10] 12ms
+  [2/10] 11ms
+  [3/10] 11ms
+  [4/10] 12ms
+  [5/10] 11ms
+  [6/10] 11ms
+  [7/10] 11ms
+  [8/10] 11ms
+  [9/10] 11ms
+  [10/10] 11ms
+
+Benchmarking 'envpod clone --current' (10 iterations)...
+  [1/10] 14ms
+  [2/10] 13ms
+  [3/10] 12ms
+  [4/10] 12ms
+  [5/10] 13ms
+  [6/10] 15ms
+  [7/10] 13ms
+  [8/10] 14ms
+  [9/10] 13ms
+  [10/10] 13ms
+
+Benchmarking clone+run vs init+run (10 iterations)...
+  [1/10] init+run=1.514s  clone+run=189ms
+  [2/10] init+run=1.484s  clone+run=173ms
+  [3/10] init+run=1.465s  clone+run=182ms
+  [4/10] init+run=1.493s  clone+run=179ms
+  [5/10] init+run=1.469s  clone+run=177ms
+  [6/10] init+run=1.486s  clone+run=193ms
+  [7/10] init+run=1.473s  clone+run=182ms
+  [8/10] init+run=1.481s  clone+run=178ms
+  [9/10] init+run=1.494s  clone+run=191ms
+  [10/10] init+run=1.508s  clone+run=159ms
+
+Results (10 iterations)
+
+  COMMAND                   AVG   MEDIAN      MIN      MAX      P95
+  ──────────────────── ──────── ──────── ──────── ──────── ────────
+  envpod init            1.077s   1.073s   1.055s   1.110s   1.110s
+  envpod clone             11ms     11ms     11ms     12ms     12ms
+  envpod clone --curr.     13ms     13ms     12ms     15ms     15ms
+  init + run             1.486s   1.485s   1.465s   1.514s   1.514s
+  clone + run             180ms    180ms    159ms    193ms    193ms
+
+  Speedup: clone is 97.54x faster than init (median)
+
+  Saved 1.062s per pod creation
+

@@ -1,0 +1,33 @@
+# Hardened sandbox — maximum isolation for untrusted code
+#
+# No GPU, no network, no extra devices, tight resource limits,
+# low PID cap. Good for: running untrusted code, CTF challenges,
+# security analysis.
+#
+# Usage:
+#   sudo envpod init sandbox -c examples/hardened-sandbox.yaml
+#   sudo envpod run sandbox -- /bin/sh
+
+name: hardened-sandbox
+type: hardened
+backend: native
+
+network:
+  mode: Isolated
+  dns:
+    mode: Whitelist
+    allow: []
+
+processor:
+  cores: 1.0
+  memory: "256MB"
+  max_pids: 64
+
+devices:
+  gpu: false
+
+budget:
+  max_duration: "5m"
+
+audit:
+  action_log: true

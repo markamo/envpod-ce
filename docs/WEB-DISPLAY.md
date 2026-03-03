@@ -1,0 +1,286 @@
+# Web Display — Browser-Based Pod Desktop
+
+> Access a pod's graphical desktop from any browser. No X11 or Wayland needed.
+
+---
+
+## Overview
+
+Web display runs a virtual display stack **inside** the pod and exposes it
+via a browser-accessible WebSocket. Open `http://localhost:6080/vnc.html`
+to see and interact with the pod desktop.
+
+**Stack:** Xvfb (virtual display) → x11vnc (VNC server) → websockify (WebSocket bridge) → browser
+
+This is different from [display passthrough](TUTORIALS.md#tutorial-1-browser-pod-with-display--audio),
+which forwards the host's Wayland/X11 display socket into the pod. Web display
+works on headless servers, SSH sessions, and remote machines — no host display
+required.
+
+---
+
+## Quick Start
+
+### 1. Create the pod
+
+```yaml
+# web-display.yaml
+name: my-desktop
+type: standard
+user: root
+
+web_display:
+  type: novnc
+  port: 6080
+  resolution: "1280x720"
+
+filesystem:
+  system_access: advanced
+  mounts:
+    - path: /opt/google
+      permissions: ReadOnly
+
+network:
+  mode: Monitored
+  dns:
+    mode: Blacklist
+    deny:
+      - "*.internal"
+      - "*.local"
+
+processor:
+  cores: 4.0
+  memory: "4GB"
+  max_pids: 1024
+
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"
+```
+
+### 2. Init and run
+
+```bash
+sudo envpod init my-desktop -c web-display.yaml
+sudo envpod run my-desktop -- google-chrome --no-sandbox --start-maximized
+```
+
+### 3. Open in browser
+
+```
+http://localhost:6080/vnc.html
+```
+
+Click **Connect** in the noVNC interface. You'll see Chrome running inside
+the governed pod.
+
+---
+
+## How It Works
+
+```
+Browser ──WebSocket──→ websockify:6080 ──VNC──→ x11vnc:5900 ──X11──→ Xvfb:99
+                           │                                           │
+                     pod network ns                              virtual display
+                           │                                     (1280x720x24)
+              host:6080 ─DNAT─→ pod:6080
+```
+
+### At `envpod init`
+
+1. Third-party apt sources are cleaned (prevents GPG failures from host repos)
+2. `apt-get install xvfb x11vnc novnc websockify` runs inside the pod
+3. A supervisor script is written to `/usr/local/bin/envpod-display-start`
+4. Your `setup:` commands run after
+
+### At `envpod run`
+
+1. Supervisor script starts Xvfb → x11vnc → websockify as background processes
+2. `DISPLAY=:99` is exported
+3. Port forward `localhost:{port}` → `pod_ip:6080` is set up via iptables
+4. Your command launches on the virtual display
+5. On exit, all display services are cleaned up
+
+---
+
+## Configuration
+
+```yaml
+web_display:
+  type: novnc              # none (default) | novnc
+  port: 6080               # host port for browser access
+  resolution: "1280x720"   # virtual display resolution
+```
+
+### type
+
+| Value | Description |
+|-------|-------------|
+| `none` | No web display (default) |
+| `novnc` | Xvfb + x11vnc + websockify — browser desktop via VNC-over-WebSocket |
+
+### port
+
+Host port for browser access. Default `6080`. A localhost-only port forward
+is automatically created.
+
+### resolution
+
+Virtual display resolution. Common values:
+
+| Resolution | Use Case |
+|-----------|----------|
+| `1024x768` | Default, small footprint |
+| `1280x720` | Good balance (720p) |
+| `1920x1080` | Full HD (higher CPU) |
+
+---
+
+## Use Cases
+
+### Browser Agent (Chrome from host)
+
+Mount Chrome from the host — no need to install it inside the pod:
+
+```yaml
+filesystem:
+  system_access: advanced
+  mounts:
+    - path: /opt/google
+      permissions: ReadOnly
+
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"
+```
+
+```bash
+sudo envpod run my-agent -- google-chrome --no-sandbox --start-maximized
+```
+
+> The `--no-sandbox` warning is expected — envpod's namespace isolation
+> replaces Chrome's internal sandbox.
+
+### GUI Desktop
+
+Install a window manager for a full desktop experience:
+
+```yaml
+setup:
+  - "DEBIAN_FRONTEND=noninteractive apt-get install -y openbox xterm"
+```
+
+```bash
+sudo envpod run my-desktop -- openbox-session
+```
+
+### Quick Visual Test
+
+Just verify the display pipeline works:
+
+```yaml
+setup:
+  - "DEBIAN_FRONTEND=noninteractive apt-get install -y x11-apps"
+```
+
+```bash
+sudo envpod run my-pod -- xeyes
+```
+
+### Headless Agent with Visual Debugging
+
+Run an agent normally, peek at the display when needed:
+
+```bash
+sudo envpod run my-agent -- python3 agent.py &
+open http://localhost:6080/vnc.html   # watch what the agent sees
+```
+
+---
+
+## Requirements
+
+| Requirement | Why |
+|-------------|-----|
+| `system_access: advanced` | noVNC packages install to `/usr/bin`, `/usr/lib` — needs writable COW overlays |
+| `seccomp_profile: browser` | Required for Chrome (7 extra syscalls for Chromium zygote) |
+| `shm_size: "256MB"` | Chrome uses `/dev/shm` for renderer IPC |
+| Google Chrome on host | If bind-mounting `/opt/google` (alternative: install inside pod) |
+
+---
+
+## Web Display vs Display Passthrough
+
+| | Web Display (noVNC) | Display Passthrough |
+|---|---|---|
+| **Host display needed?** | No | Yes (Wayland or X11) |
+| **Works over SSH?** | Yes | No (unless X forwarding) |
+| **Works on headless servers?** | Yes | No |
+| **Latency** | Medium (~100ms) | Native |
+| **Audio** | No (CE) | Yes (PipeWire/PulseAudio) |
+| **Input** | VNC (keyboard + mouse) | Native |
+| **Security** | Localhost-only by default | I-04 finding (X11 keylogging risk) |
+| **Config** | `web_display.type: novnc` | `devices.display: true` + `-d` flag |
+
+**Use web display** when you don't have a host display, are on a remote server,
+or want browser-based access. **Use passthrough** for native performance on a
+local machine with a running desktop.
+
+---
+
+## Security
+
+### Audit Findings
+
+| ID | Severity | Condition | Description |
+|----|----------|-----------|-------------|
+| W-01 | MEDIUM | `type: novnc` | VNC traffic unencrypted. Mitigated by localhost-only port forwarding. |
+| W-02 | HIGH | Display port in `public_ports` | Display accessible from other machines. |
+
+### Best Practices
+
+- Keep the display port on **localhost only** (default behavior)
+- Do not add the display port to `public_ports` unless you understand the risk
+- The VNC stream is unencrypted — only safe on localhost or a trusted tunnel
+
+---
+
+## Troubleshooting
+
+### Black screen
+
+The display starts empty. Run a GUI application:
+```bash
+sudo envpod run my-pod -- xeyes              # quick test
+sudo envpod run my-pod -- google-chrome --no-sandbox  # browser
+sudo envpod run my-pod -- openbox-session    # window manager
+```
+
+### apt-get fails during setup
+
+Host apt sources (CUDA, Chrome, VirtualBox repos) leak into the pod overlay
+and cause GPG errors. envpod auto-removes third-party sources before
+`apt-get update`. If your custom `setup:` commands add repos, ensure they
+have valid GPG keys.
+
+### Xvfb crashes on NVIDIA hosts
+
+The supervisor script prevents this by setting `__EGL_VENDOR_LIBRARY_FILENAMES=""`
+to block NVIDIA EGL library loading. Xvfb runs with mesa software rendering.
+
+### x11vnc dies immediately
+
+Usually `shmget: Operation not permitted` — SysV shared memory is blocked by
+seccomp. The supervisor uses `-noshm` automatically. If running x11vnc
+manually, add the `-noshm` flag.
+
+### Port 6080 not accessible
+
+Check iptables rules: `sudo iptables -t nat -L OUTPUT -n | grep 6080`
+
+If connecting from another machine, use `public_ports` instead of `ports`
+(note: W-02 security finding).
+
+---
+
+*Copyright 2026 Xtellix Inc. Licensed under the Business Source License 1.1.*

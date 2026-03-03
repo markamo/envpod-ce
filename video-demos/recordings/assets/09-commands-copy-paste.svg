@@ -1,0 +1,736 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 956 396" width="956" height="396">
+<defs><style>
+.t{font-family:JetBrains Mono, Fira Code, Cascadia Code, monospace;font-size:14px;white-space:pre}
+.f{opacity:0;position:absolute}
+@keyframes s{0%,100%{opacity:1}}
+#f0{animation:s 0.100s step-end 0.300s none}
+#f1{animation:s 0.120s step-end 0.400s none}
+#f2{animation:s 0.120s step-end 0.520s none}
+#f3{animation:s 0.120s step-end 0.640s none}
+#f4{animation:s 0.840s step-end 0.760s none}
+#f5{animation:s 1.500s step-end 1.600s none}
+#f6{animation:s 0.300s step-end 3.100s none}
+#f7{animation:s 0.100s step-end 3.400s none}
+#f8{animation:s 0.100s step-end 3.500s none}
+#f9{animation:s 0.100s step-end 3.600s none}
+#f10{animation:s 0.120s step-end 3.700s none}
+#f11{animation:s 0.100s step-end 3.820s none}
+#f12{animation:s 0.120s step-end 3.920s none}
+#f13{animation:s 0.120s step-end 4.040s none}
+#f14{animation:s 0.120s step-end 4.160s none}
+#f15{animation:s 0.880s step-end 4.280s none}
+#f16{animation:s 1.500s step-end 5.160s none}
+#f17{animation:s 0.120s step-end 6.660s none}
+#f18{animation:s 0.120s step-end 6.780s none}
+#f19{animation:s 0.120s step-end 6.900s none}
+#f20{animation:s 0.100s step-end 7.020s none}
+#f21{animation:s 0.120s step-end 7.120s none}
+#f22{animation:s 0.120s step-end 7.240s none}
+#f23{animation:s 0.120s step-end 7.360s none}
+#f24{animation:s 0.880s step-end 7.480s none}
+#f25{animation:s 1.500s step-end 8.360s none}
+#f26{animation:s 0.100s step-end 9.860s none}
+#f27{animation:s 0.120s step-end 9.960s none}
+#f28{animation:s 0.120s step-end 10.080s none}
+#f29{animation:s 0.100s step-end 10.200s none}
+#f30{animation:s 0.120s step-end 10.300s none}
+#f31{animation:s 0.120s step-end 10.420s none}
+#f32{animation:s 0.840s step-end 10.540s none}
+#f33{animation:s 1.500s step-end 11.380s none}
+#f34{animation:s 0.120s step-end 12.880s none}
+#f35{animation:s 0.120s step-end 13.000s none}
+#f36{animation:s 0.100s step-end 13.120s none}
+#f37{animation:s 0.120s step-end 13.220s none}
+#f38{animation:s 0.860s step-end 13.340s none}
+#f39{animation:s 1.500s step-end 14.200s none}
+#f40{animation:s 0.100s step-end 15.700s none}
+#f41{animation:s 0.120s step-end 15.800s none}
+#f42{animation:s 0.120s step-end 15.920s none}
+#f43{animation:s 0.100s step-end 16.040s none}
+#f44{animation:s 0.860s step-end 16.140s none}
+#f45{animation:s 1.500s step-end 17.000s none}
+#f46{animation:s 0.100s step-end 18.500s none}
+#f47{animation:s 0.120s step-end 18.600s none}
+#f48{animation:s 0.100s step-end 18.720s none}
+#f49{animation:s 0.100s step-end 18.820s none}
+#f50{animation:s 0.120s step-end 18.920s none}
+#f51{animation:s 0.100s step-end 19.040s none}
+#f52{animation:s 0.120s step-end 19.140s none}
+#f53{animation:s 0.120s step-end 19.260s none}
+#f54{animation:s 0.100s step-end 19.380s none}
+#f55{animation:s 0.880s step-end 19.480s none}
+#f56{animation:s 1.500s step-end 20.360s none}
+#f57{animation:s 0.100s step-end 21.860s none}
+#f58{animation:s 0.120s step-end 21.960s none}
+#f59{animation:s 0.100s step-end 22.080s none}
+#f60{animation:s 0.100s step-end 22.180s none}
+#f61{animation:s 0.120s step-end 22.280s none}
+#f62{animation:s 0.100s step-end 22.400s none}
+#f63{animation:s 0.800s step-end 22.500s none}
+#f64{animation:s 1.500s step-end 23.300s none}
+#f65{animation:s 0.120s step-end 24.800s none}
+#f66{animation:s 0.120s step-end 24.920s none}
+#f67{animation:s 0.100s step-end 25.040s none}
+#f68{animation:s 0.120s step-end 25.140s none}
+#f69{animation:s 0.880s step-end 25.260s none}
+#f70{animation:s 1.500s step-end 26.140s none}
+#f71{animation:s 0.120s step-end 27.640s none}
+#f72{animation:s 0.120s step-end 27.760s none}
+#f73{animation:s 0.100s step-end 27.880s none}
+#f74{animation:s 0.120s step-end 27.980s none}
+#f75{animation:s 0.880s step-end 28.100s none}
+#f76{animation:s 1.500s step-end 28.980s none}
+#f77{animation:s 2.000s step-end 30.480s forwards}
+</style></defs>
+<rect width="100%" height="100%" fill="#1a1b26" rx="8"/>
+<circle cx="20" cy="20.0" r="6" fill="#ff5f56"/>
+<circle cx="40" cy="20.0" r="6" fill="#ffbd2e"/>
+<circle cx="60" cy="20.0" r="6" fill="#27c93f"/>
+<text x="478" y="24" text-anchor="middle" fill="#565f89" font-family="JetBrains Mono, Fira Code, Cascadia Code, monospace" font-size="12">Commands (copy-paste)</text>
+<g id="f0" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f1" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo e</tspan></text>
+</g>
+<g id="f2" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f3" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init o</tspan></text>
+</g>
+<g id="f4" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init opencla</tspan></text>
+</g>
+<g id="f5" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+</g>
+<g id="f6" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+</g>
+<g id="f7" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f8" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo e</tspan></text>
+</g>
+<g id="f9" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f10" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vaul</tspan></text>
+</g>
+<g id="f11" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault open</tspan></text>
+</g>
+<g id="f12" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw</tspan></text>
+</g>
+<g id="f13" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set AN</tspan></text>
+</g>
+<g id="f14" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPI</tspan></text>
+</g>
+<g id="f15" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_</tspan></text>
+</g>
+<g id="f16" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+</g>
+<g id="f17" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f18" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f19" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod v</tspan></text>
+</g>
+<g id="f20" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault o</tspan></text>
+</g>
+<g id="f21" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault opencl</tspan></text>
+</g>
+<g id="f22" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set</tspan></text>
+</g>
+<g id="f23" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENA</tspan></text>
+</g>
+<g id="f24" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_</tspan></text>
+</g>
+<g id="f25" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+</g>
+<g id="f26" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f27" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo e</tspan></text>
+</g>
+<g id="f28" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f29" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run op</tspan></text>
+</g>
+<g id="f30" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run opencla</tspan></text>
+</g>
+<g id="f31" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- o</tspan></text>
+</g>
+<g id="f32" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- opencla</tspan></text>
+</g>
+<g id="f33" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+</g>
+<g id="f34" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f35" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f36" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod a</tspan></text>
+</g>
+<g id="f37" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit</tspan></text>
+</g>
+<g id="f38" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit opencl</tspan></text>
+</g>
+<g id="f39" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+</g>
+<g id="f40" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f41" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo e</tspan></text>
+</g>
+<g id="f42" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f43" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff o</tspan></text>
+</g>
+<g id="f44" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff opencl</tspan></text>
+</g>
+<g id="f45" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+</g>
+<g id="f46" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f47" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo e</tspan></text>
+</g>
+<g id="f48" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f49" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snaps</tspan></text>
+</g>
+<g id="f50" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot o</tspan></text>
+</g>
+<g id="f51" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot opencla</tspan></text>
+</g>
+<g id="f52" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw cre</tspan></text>
+</g>
+<g id="f53" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n</tspan></text>
+</g>
+<g id="f54" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n &quot;afte</tspan></text>
+</g>
+<g id="f55" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n &quot;after-set</tspan></text>
+</g>
+<g id="f56" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+</g>
+<g id="f57" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f58" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo e</tspan></text>
+</g>
+<g id="f59" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f60" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snaps</tspan></text>
+</g>
+<g id="f61" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot o</tspan></text>
+</g>
+<g id="f62" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot opencla</tspan></text>
+</g>
+<g id="f63" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+</g>
+<g id="f64" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+</g>
+<g id="f65" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f66" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f67" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod f</tspan></text>
+</g>
+<g id="f68" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod freeze</tspan></text>
+</g>
+<g id="f69" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod freeze openc</tspan></text>
+</g>
+<g id="f70" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod freeze openclaw</tspan></text>
+</g>
+<g id="f71" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod freeze openclaw</tspan></text>
+<text x="16" y="250.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f72" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod freeze openclaw</tspan></text>
+<text x="16" y="250.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f73" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod freeze openclaw</tspan></text>
+<text x="16" y="250.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod r</tspan></text>
+</g>
+<g id="f74" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod freeze openclaw</tspan></text>
+<text x="16" y="250.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod resume</tspan></text>
+</g>
+<g id="f75" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod freeze openclaw</tspan></text>
+<text x="16" y="250.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod resume openc</tspan></text>
+</g>
+<g id="f76" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod freeze openclaw</tspan></text>
+<text x="16" y="250.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod resume openclaw</tspan></text>
+</g>
+<g id="f77" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw</tspan></text>
+<text x="16" y="88.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># (select openclaw from wizard, customize resources)</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault openclaw set OPENAI_API_KEY</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run openclaw -- openclaw</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit openclaw</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff openclaw</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw create -n </tspan><tspan fill="#cccc66">&quot;after-setup&quot;</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod snapshot openclaw ls</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod freeze openclaw</tspan></text>
+<text x="16" y="250.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod resume openclaw</tspan></text>
+<text x="16" y="376.0"><tspan fill="#c0caf5" opacity="0.5">                                                                                                      md2cast</tspan></text>
+</g>
+</svg>

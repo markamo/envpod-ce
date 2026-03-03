@@ -1,0 +1,64 @@
+# Pod discovery example — CLIENT side
+#
+# This pod can resolve "api-service.pods.local" by name without knowing
+# the service pod's IP address. See discovery-service.yaml for the service.
+#
+# The envpod-dns daemon must be running before either pod starts:
+#   sudo envpod dns-daemon
+#
+# Usage:
+#   sudo envpod init api-client -c examples/discovery-client.yaml
+#   sudo envpod run api-client -- curl http://api-service.pods.local:8080/
+#
+# allow_pods controls which pod names this pod can discover.
+# Use ["*"] to allow resolution of any discoverable pod.
+
+name: api-client
+type: standard
+backend: native
+
+network:
+  mode: Isolated
+  subnet_base: "10.200.50"    # must match service pod to be routable
+  allow_pods:
+    - api-service             # can resolve api-service.pods.local
+    # - worker-pod            # add more names as needed, or use ["*"]
+  dns:
+    mode: Whitelist
+    allow:
+      - api.anthropic.com
+      - api.openai.com
+      - pypi.org
+      - files.pythonhosted.org
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+      # NOTE: *.pods.local is always handled by the envpod-dns daemon —
+      # it does NOT need to appear in the dns allow list.
+
+filesystem:
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+
+budget:
+  max_duration: "8h"
+
+audit:
+  action_log: true
+
+setup:
+  - "apt-get install -y python3 curl --quiet"
+  - "mkdir -p /workspace"

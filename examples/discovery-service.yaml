@@ -1,0 +1,62 @@
+# Pod discovery example — SERVICE side
+#
+# This pod advertises itself as "api-service.pods.local" so other pods
+# can reach it by name. See discovery-client.yaml for the client side.
+#
+# The envpod-dns daemon must be running before either pod starts:
+#   sudo envpod dns-daemon
+#
+# Usage:
+#   sudo envpod init api-service -c examples/discovery-service.yaml
+#   sudo envpod run api-service -- python3 -m http.server 8080
+#
+# From the client pod: curl http://api-service.pods.local:8080/
+
+name: api-service
+type: standard
+backend: native
+
+network:
+  mode: Isolated
+  subnet_base: "10.200.50"    # must match client pod to be routable
+  allow_discovery: true       # register as api-service.pods.local
+  internal_ports:
+    - "8080"                  # accept TCP from other pods on port 8080
+    - "8443"                  # HTTPS variant (add/remove as needed)
+  dns:
+    mode: Whitelist
+    allow:
+      - api.anthropic.com
+      - api.openai.com
+      - pypi.org
+      - files.pythonhosted.org
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+
+filesystem:
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+
+budget:
+  max_duration: "8h"
+
+audit:
+  action_log: true
+
+setup:
+  - "apt-get install -y python3 curl --quiet"
+  - "mkdir -p /workspace"

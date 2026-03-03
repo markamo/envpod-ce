@@ -1,0 +1,58 @@
+# ML training pod — GPU-accelerated sandbox for machine learning workloads
+#
+# Passes through NVIDIA GPU devices (/dev/nvidia*, /dev/dri/*) for
+# CUDA/PyTorch/TensorFlow training. Large memory allocation for model
+# weights and dataset loading. Network limited to model registries
+# and dataset sources.
+#
+# Usage:
+#   sudo envpod init ml-trainer -c examples/ml-training.yaml
+#   sudo envpod run ml-trainer -- python train.py
+#   sudo envpod diff ml-trainer
+
+name: ml-trainer
+type: standard
+backend: native
+
+network:
+  mode: Monitored
+  dns:
+    mode: Whitelist
+    allow:
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+      - huggingface.co
+      - "*.huggingface.co"
+      - download.pytorch.org
+      - "*.anaconda.org"
+
+filesystem:
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+processor:
+  cores: 4.0
+  memory: "16GB"
+
+devices:
+  gpu: true
+
+budget:
+  max_duration: "8h"
+
+audit:
+  action_log: true
+
+setup:
+  - "pip install torch torchvision numpy pandas matplotlib"

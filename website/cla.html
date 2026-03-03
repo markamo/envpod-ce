@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contributor License Agreement — envpod</title>
+<meta name="description" content="Xtellix Inc. Contributor License Agreement (CLA) for envpod contributions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0b;--surface:#111113;--surface2:#16161a;--border:#1e1e24;--border-hi:#2a2a32;--text:#e8e8ed;--muted:#8b8b98;--dim:#5a5a66;--green:#22c55e;--green-dim:#16a34a;--green-glow:rgba(34,197,94,0.08);--blue:#58a6ff;--mono:'JetBrains Mono','SF Mono','Cascadia Code',monospace;--sans:'DM Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+code{font-family:var(--mono);font-size:0.85em;background:rgba(88,166,255,0.08);color:var(--blue);padding:2px 7px;border-radius:4px}
+nav{position:fixed;top:0;width:100%;z-index:100;padding:14px 0;background:rgba(10,10,11,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1100px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--mono);font-weight:700;font-size:18px;color:var(--text);text-decoration:none;letter-spacing:-0.5px}
+.logo span{color:var(--green)}
+.logo-ce{font-size:10px;font-weight:700;color:var(--green);background:var(--green-glow);border:1px solid rgba(34,197,94,0.2);padding:2px 8px;border-radius:100px;letter-spacing:1.5px;margin-left:6px;vertical-align:2px}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-links a{font-size:14px;color:var(--muted);padding:6px 12px;border-radius:6px;transition:color .15s,background .15s}
+.nav-links a:hover{color:var(--text);background:var(--surface);text-decoration:none}
+.wrap{max-width:800px;margin:0 auto;padding:120px 32px 80px}
+h1{font-size:36px;font-weight:700;letter-spacing:-0.03em;margin-bottom:8px}
+.subtitle{color:var(--muted);font-size:16px;margin-bottom:48px}
+h2{font-size:20px;font-weight:600;letter-spacing:-0.02em;margin-top:40px;margin-bottom:12px;color:var(--text)}
+h3{font-size:16px;font-weight:600;margin-top:28px;margin-bottom:8px;color:var(--text)}
+p,li{color:var(--muted);line-height:1.75;margin-bottom:12px}
+ul,ol{padding-left:24px;margin-bottom:16px}
+li{margin-bottom:6px}
+.legal-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:36px 40px;margin-top:32px}
+.legal-box h2{margin-top:24px}
+.legal-box h2:first-child{margin-top:0}
+.effective{font-family:var(--mono);font-size:13px;color:var(--dim);margin-bottom:24px}
+.summary-box{background:var(--green-glow);border:1px solid rgba(34,197,94,0.15);border-radius:10px;padding:24px 28px;margin-bottom:32px}
+.summary-box p{color:var(--text);margin-bottom:8px}
+.summary-box p:last-child{margin-bottom:0}
+.summary-box strong{color:var(--green)}
+.summary-box ul{margin-top:12px;margin-bottom:0}
+.summary-box li{color:var(--text)}
+.why-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px 28px;margin-bottom:32px}
+.why-box h2{margin-top:0}
+.why-box p{margin-bottom:8px}
+.why-box p:last-child{margin-bottom:0}
+hr{border:none;border-top:1px solid var(--border);margin:32px 0}
+.based-on{font-size:13px;color:var(--dim);font-style:italic;margin-top:24px}
+footer{border-top:1px solid var(--border);padding:44px 0;margin-top:80px}
+.footer-inner{max-width:1100px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.footer-logo{font-family:var(--mono);font-weight:700;font-size:16px;letter-spacing:-0.02em}
+.footer-logo em{color:var(--green);font-style:normal}
+.footer-copy{color:var(--dim);font-size:12px;margin-top:4px}
+.footer-links{display:flex;gap:6px;flex-wrap:wrap}
+.footer-links a{color:var(--muted);font-size:13px;padding:4px 10px;border-radius:4px;transition:color .15s,background .15s}
+.footer-links a:hover{color:var(--text);background:var(--surface);text-decoration:none}
+@media(max-width:768px){.wrap{padding:100px 16px 48px}h1{font-size:28px}.legal-box{padding:24px 20px}.footer-inner{flex-direction:column;text-align:center}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="logo"><span>env</span>pod<span class="logo-ce">CE</span></a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="https://github.com/markamo/envpod-ce">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <h1>Contributor License Agreement</h1>
+  <p class="subtitle">Xtellix Inc. Individual CLA for envpod</p>
+
+  <div class="summary-box">
+    <p><strong>Quick Summary</strong> (not a substitute for the full text below)</p>
+    <ul>
+      <li><strong>You keep ownership</strong> of everything you contribute</li>
+      <li><strong>You grant Xtellix Inc.</strong> the right to use your contribution under BSL 1.1 and the commercial license</li>
+      <li><strong>You can still use</strong> your contribution however you want, including in other projects</li>
+      <li><strong>Your contribution must be</strong> your original work (or clearly marked otherwise)</li>
+      <li><strong>Submitting a PR</strong> = agreeing to these terms</li>
+    </ul>
+  </div>
+
+  <div class="why-box">
+    <h2>Why a CLA?</h2>
+    <p>envpod is dual-licensed:</p>
+    <ul>
+      <li><strong>BSL 1.1</strong> — free for everyone to use, study, modify, and distribute</li>
+      <li><strong>Commercial license</strong> — for companies that want to embed envpod in closed-source products or offer it as a managed service without BSL obligations</li>
+    </ul>
+    <p>To maintain the ability to offer commercial licenses, we need permission from all contributors to license their contributions under both the BSL 1.1 and the commercial license. Without this agreement, outside contributions could only be distributed under BSL 1.1, which would prevent us from offering the commercial license that funds development.</p>
+    <p>This is standard practice for dual-licensed open source projects. Qt, MongoDB, GitLab, and many others use the same model.</p>
+  </div>
+
+  <div class="legal-box">
+    <p class="effective">Last updated: March 2026 · Xtellix Inc.</p>
+
+    <p>Thank you for your interest in contributing to envpod, developed and maintained by Xtellix Inc. ("Company"). This Contributor License Agreement ("Agreement") documents the rights granted by contributors to the Company. This is a legally binding document, so please read it carefully before agreeing.</p>
+
+    <h2>1. Definitions</h2>
+    <p><strong>"You"</strong> means the individual or legal entity submitting the Contribution.</p>
+    <p><strong>"Contribution"</strong> means any original work of authorship, including any modifications or additions to existing work, that you intentionally submit to the envpod project for inclusion. This includes code, documentation, tests, configuration files, and any other material submitted via pull request, patch, email, issue, or any other method of communication with the project maintainers.</p>
+    <p><strong>"Submit"</strong> means any form of electronic or written communication sent to the project, including but not limited to pull requests, commits, issues, and discussions on GitHub or other project communication channels.</p>
+
+    <h2>2. Grant of Copyright License</h2>
+    <p>You hereby grant to Xtellix Inc. a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare derivative works of, publicly display, publicly perform, sublicense, and distribute your Contributions and any derivative works thereof.</p>
+    <p>This grant includes the right to relicense your Contributions under any license, including the BSL 1.1, the envpod commercial license, and any future license the Company may adopt.</p>
+
+    <h2>3. Grant of Patent License</h2>
+    <p>You hereby grant to Xtellix Inc. a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable patent license to make, have made, use, offer to sell, sell, import, and otherwise transfer your Contributions, where such license applies only to those patent claims licensable by you that are necessarily infringed by your Contributions alone or by combination of your Contributions with the project to which they were submitted.</p>
+    <p>If any entity institutes patent litigation against you or any other entity (including a cross-claim or counterclaim in a lawsuit) alleging that your Contribution, or the project to which you contributed, constitutes direct or contributory patent infringement, then any patent licenses granted to that entity under this Agreement for that Contribution or project shall terminate as of the date such litigation is filed.</p>
+
+    <h2>4. You Retain Ownership</h2>
+    <p>You retain ownership of the copyright in your Contributions. This Agreement does not transfer ownership of your Contributions to the Company. You are free to use, publish, and license your Contributions in any way you choose, including contributing the same code to other projects under different licenses.</p>
+
+    <h2>5. Originality of Work</h2>
+    <p>You represent that each of your Contributions is your original creation. You represent that your Contributions include complete details of any third-party license or other restriction (including related patents and trademarks) of which you are personally aware and which are associated with any part of your Contributions.</p>
+    <p>If your Contribution includes work that is not your original creation, you must identify the complete details of its source and of any license or other restriction, and you must submit it separately from your original Contributions, clearly marking it as "Not my original work — submitted under [license name]."</p>
+
+    <h2>6. Employer Rights</h2>
+    <p>If your employer(s) has rights to intellectual property that you create that includes your Contributions, you represent that you have received permission to make Contributions on behalf of that employer, that your employer has waived such rights for your Contributions to this project, or that your employer has executed a separate Corporate Contributor License Agreement with Xtellix Inc.</p>
+
+    <h2>7. No Warranty</h2>
+    <p>You provide your Contributions on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.</p>
+
+    <h2>8. Notification</h2>
+    <p>You agree to notify the Company of any facts or circumstances of which you become aware that would make these representations inaccurate in any respect.</p>
+
+    <h2>9. How to Sign</h2>
+    <p>By submitting a pull request to the envpod repository, you indicate your agreement to these terms. Your first pull request serves as your signature.</p>
+    <p>For corporate contributors or if you prefer a formal signed document, contact: <a href="mailto:mark@envpod.dev"><strong>mark@envpod.dev</strong></a></p>
+
+    <hr>
+    <p class="based-on">This CLA is based on the Apache Software Foundation Individual Contributor License Agreement v2.0, adapted for the envpod dual-license model.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo"><em>env</em>pod</div>
+      <div class="footer-copy">&copy; 2026 Xtellix Inc. All rights reserved.</div>
+    </div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="https://github.com/markamo/envpod-ce">GitHub</a>
+      <a href="/tutorials">Tutorials</a>
+      <a href="mailto:mark@envpod.dev">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

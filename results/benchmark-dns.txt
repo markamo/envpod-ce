@@ -1,0 +1,388 @@
+
+Preparing container images...
+  Building envpod-bench:latest (Docker) — installing curl + dnsutils...
+  Docker envpod-bench:latest: ready (curl + nslookup verified)
+  Building localhost/envpod-bench:latest (Podman) — installing curl + dnsutils...
+  Podman localhost/envpod-bench:latest: ready (curl + nslookup verified)
+
+envpod vs Docker vs Podman — real-world DNS benchmark
+  envpod:     /home/mymark/apps/envpod-oss/target/release/envpod
+  docker:     29.2.1
+  podman:     4.9.3
+  iterations: 10
+  target:     nslookup google.com
+  state dir:  /tmp/envpod-dns-bench-4JXI3z
+
+Warmup...
+
+Creating base instances...
+
+Test 1: Fresh instance — nslookup google.com
+  Docker:  docker run --rm  (unfiltered DNS passthrough)
+  Podman:  podman run --rm  (unfiltered DNS passthrough)
+  Envpod:  clone + run + destroy  (whitelist-filtered DNS)
+
+  Docker (10 iterations)...
+    [1/10] 747ms
+    [2/10] 677ms
+    [3/10] 657ms
+    [4/10] 670ms
+    [5/10] 794ms
+    [6/10] 731ms
+    [7/10] 661ms
+    [8/10] 670ms
+    [9/10] 667ms
+    [10/10] 741ms
+
+  Podman (10 iterations)...
+    [1/10] 763ms
+    [2/10] 720ms
+    [3/10] 779ms
+    [4/10] 793ms
+    [5/10] 804ms
+    [6/10] 790ms
+    [7/10] 778ms
+    [8/10] 801ms
+    [9/10] 722ms
+    [10/10] 790ms
+
+  Envpod (10 iterations)...
+    [1/10] 324ms
+    [2/10] 241ms
+    [3/10] 257ms
+    [4/10] 264ms
+    [5/10] 253ms
+    [6/10] 261ms
+    [7/10] 253ms
+    [8/10] 281ms
+    [9/10] 258ms
+    [10/10] 254ms
+
+Test 2: Warm run — nslookup google.com in existing container/pod
+  Docker:  docker exec  (unfiltered DNS passthrough)
+  Podman:  podman exec  (unfiltered DNS passthrough)
+  Envpod:  envpod run   (whitelist-filtered DNS)
+
+  Docker (10 iterations)...
+    [1/10] 113ms
+    [2/10] 131ms
+    [3/10] 126ms
+    [4/10] 123ms
+    [5/10] 121ms
+    [6/10] 143ms
+    [7/10] 136ms
+    [8/10] 131ms
+    [9/10] 128ms
+    [10/10] 130ms
+
+  Podman (10 iterations)...
+    [1/10] 279ms
+    [2/10] 313ms
+    [3/10] 334ms
+    [4/10] 325ms
+    [5/10] 362ms
+    [6/10] 309ms
+    [7/10] 304ms
+    [8/10] 326ms
+    [9/10] 326ms
+    [10/10] 288ms
+
+  Envpod (10 iterations)...
+    [1/10] 82ms
+    [2/10] 73ms
+    [3/10] 58ms
+    [4/10] 62ms
+    [5/10] 56ms
+    [6/10] 63ms
+    [7/10] 62ms
+    [8/10] 55ms
+    [9/10] 64ms
+    [10/10] 59ms
+
+Test 3: Fresh instance — curl https://google.com (HTTPS GET)
+  Docker:  docker run --rm  (unfiltered network)
+  Podman:  podman run --rm  (unfiltered network)
+  Envpod:  clone + run + destroy  (whitelist-filtered DNS + isolated network)
+
+  Docker (10 iterations)...
+    [1/10] 831ms
+    [2/10] 823ms
+    [3/10] 796ms
+    [4/10] 828ms
+    [5/10] 739ms
+    [6/10] 805ms
+    [7/10] 876ms
+    [8/10] 842ms
+    [9/10] 863ms
+    [10/10] 808ms
+
+  Podman (10 iterations)...
+    [1/10] 865ms
+    [2/10] 897ms
+    [3/10] 890ms
+    [4/10] 925ms
+    [5/10] 876ms
+    [6/10] 897ms
+    [7/10] 871ms
+    [8/10] 872ms
+    [9/10] 867ms
+    [10/10] 870ms
+
+  Envpod (10 iterations)...
+    [1/10] 458ms
+    [2/10] 375ms
+    [3/10] 384ms
+    [4/10] 376ms
+    [5/10] 393ms
+    [6/10] 381ms
+    [7/10] 412ms
+    [8/10] 368ms
+    [9/10] 386ms
+    [10/10] 378ms
+
+Test 4: Warm run — curl https://google.com in existing container/pod
+  Docker:  docker exec  (unfiltered network)
+  Podman:  podman exec  (unfiltered network)
+  Envpod:  envpod run   (whitelist-filtered DNS + isolated network)
+
+  Docker (10 iterations)...
+    [1/10] 246ms
+    [2/10] 231ms
+    [3/10] 277ms
+    [4/10] 265ms
+    [5/10] 256ms
+    [6/10] 249ms
+    [7/10] 275ms
+    [8/10] 248ms
+    [9/10] 253ms
+    [10/10] 261ms
+
+  Podman (10 iterations)...
+    [1/10] 417ms
+    [2/10] 421ms
+    [3/10] 439ms
+    [4/10] 384ms
+    [5/10] 374ms
+    [6/10] 424ms
+    [7/10] 376ms
+    [8/10] 431ms
+    [9/10] 432ms
+    [10/10] 447ms
+
+  Envpod (10 iterations)...
+    [1/10] 211ms
+    [2/10] 203ms
+    [3/10] 189ms
+    [4/10] 195ms
+    [5/10] 182ms
+    [6/10] 173ms
+    [7/10] 173ms
+    [8/10] 226ms
+    [9/10] 194ms
+    [10/10] 186ms
+
+Test 5: Fresh instance — curl POST httpbin.org/post (API simulation)
+  Docker:  docker run --rm  (unfiltered network)
+  Podman:  podman run --rm  (unfiltered network)
+  Envpod:  clone + run + destroy  (whitelist-filtered DNS + isolated network)
+
+  Docker (10 iterations)...
+    [1/10] 1098ms
+    [2/10] 1374ms
+    [3/10] 1036ms
+    [4/10] 1202ms
+    [5/10] 1575ms
+    [6/10] 846ms
+    [7/10] 872ms
+    [8/10] 908ms
+    [9/10] 1362ms
+    [10/10] 941ms
+
+  Podman (10 iterations)...
+    [1/10] 978ms
+    [2/10] 925ms
+    [3/10] 1128ms
+    [4/10] 967ms
+    [5/10] 1569ms
+    [6/10] 879ms
+    [7/10] 1685ms
+    [8/10] 1702ms
+    [9/10] 935ms
+    [10/10] 971ms
+
+  Envpod (10 iterations)...
+    [1/10] 901ms
+    [2/10] 462ms
+    [3/10] 627ms
+    [4/10] 666ms
+    [5/10] 467ms
+    [6/10] 800ms
+    [7/10] 550ms
+    [8/10] 439ms
+    [9/10] 453ms
+    [10/10] 451ms
+
+Test 6: Warm run — curl POST httpbin.org/post in existing container/pod
+  Docker:  docker exec  (unfiltered network)
+  Podman:  podman exec  (unfiltered network)
+  Envpod:  envpod run   (whitelist-filtered DNS + isolated network)
+
+  Docker (10 iterations)...
+    [1/10] 366ms
+    [2/10] 311ms
+    [3/10] 357ms
+    [4/10] 351ms
+    [5/10] 335ms
+    [6/10] 311ms
+    [7/10] 318ms
+    [8/10] 318ms
+    [9/10] 838ms
+    [10/10] 429ms
+
+  Podman (10 iterations)...
+    [1/10] 512ms
+    [2/10] 513ms
+    [3/10] 770ms
+    [4/10] 512ms
+    [5/10] 603ms
+    [6/10] 856ms
+    [7/10] 889ms
+    [8/10] 508ms
+    [9/10] 538ms
+    [10/10] 650ms
+
+  Envpod (10 iterations)...
+    [1/10] 285ms
+    [2/10] 511ms
+    [3/10] 471ms
+    [4/10] 524ms
+    [5/10] 266ms
+    [6/10] 298ms
+    [7/10] 471ms
+    [8/10] 1419ms
+    [9/10] 263ms
+    [10/10] 256ms
+
+Test 7: In-container bash loop — 10x nslookup google.com
+  Single container/pod entry, loop runs INSIDE — isolates pure
+  DNS governance overhead from container-entry cost.
+
+  Docker (10 iterations)...
+    [1/10] 446ms
+    [2/10] 429ms
+    [3/10] 425ms
+    [4/10] 405ms
+    [5/10] 432ms
+    [6/10] 420ms
+    [7/10] 431ms
+    [8/10] 429ms
+    [9/10] 431ms
+    [10/10] 421ms
+
+  Podman (10 iterations)...
+    [1/10] 613ms
+    [2/10] 584ms
+    [3/10] 607ms
+    [4/10] 611ms
+    [5/10] 593ms
+    [6/10] 603ms
+    [7/10] 600ms
+    [8/10] 643ms
+    [9/10] 625ms
+    [10/10] 626ms
+
+  Envpod (10 iterations)...
+    [1/10] 277ms
+    [2/10] 248ms
+    [3/10] 275ms
+    [4/10] 264ms
+    [5/10] 269ms
+    [6/10] 255ms
+    [7/10] 278ms
+    [8/10] 258ms
+    [9/10] 279ms
+    [10/10] 275ms
+
+Test 8: In-container bash loop — 10x POST httpbin.org/post
+  Single container/pod entry, loop runs INSIDE — isolates pure
+  network governance overhead from container-entry cost.
+
+  Docker (10 iterations)...
+    [1/10] 3869ms
+    [2/10] 4309ms
+    [3/10] 4217ms
+    [4/10] 3798ms
+    [5/10] 3147ms
+    [6/10] 3448ms
+    [7/10] 4278ms
+    [8/10] 3052ms
+    [9/10] 2546ms
+    [10/10] 2954ms
+
+  Podman (10 iterations)...
+    [1/10] 3372ms
+    [2/10] 2918ms
+    [3/10] 4183ms
+    [4/10] 3208ms
+    [5/10] 4144ms
+    [6/10] 5171ms
+    [7/10] 4440ms
+    [8/10] 2873ms
+    [9/10] 4642ms
+    [10/10] 4145ms
+
+  Envpod (10 iterations)...
+    [1/10] 3735ms
+    [2/10] 3355ms
+    [3/10] 3821ms
+    [4/10] 4710ms
+    [5/10] 3689ms
+    [6/10] 4986ms
+    [7/10] 4088ms
+    [8/10] 2926ms
+    [9/10] 4010ms
+    [10/10] 3249ms
+
+
+═══════════════════════════════════════════════════════════════════════
+  Results (10 iterations) — Real-World DNS + HTTPS + API
+═══════════════════════════════════════════════════════════════════════
+  Docker 29.2.1 vs Podman 4.9.3 vs envpod (native Linux backend)
+  Targets: google.com, httpbin.org
+
+  TEST                                             DOCKER     PODMAN     ENVPOD      vs DOCKER      vs PODMAN
+  ──────────────────────────────────────────── ────────── ────────── ────────── ────────────── ──────────────
+
+  Per-invocation (container entry + operation + exit)
+
+  fresh: nslookup google.com                        673ms      784ms      257ms 416ms faster 527ms faster
+  warm: nslookup google.com                         129ms      319ms       62ms 67ms faster 257ms faster
+  fresh: curl GET https://google.com                825ms      874ms      382ms 443ms faster 492ms faster
+  warm: curl GET https://google.com                 254ms      422ms      191ms 63ms faster 231ms faster
+  fresh: curl POST httpbin.org/post                1.067s      974ms      508ms 559ms faster 466ms faster
+  warm: curl POST httpbin.org/post                  343ms      570ms      384ms +41ms 186ms faster
+
+  In-container loop (single entry, 10x ops inside — pure network overhead)
+
+  loop: 10x nslookup google.com                     429ms      609ms      272ms 157ms faster 337ms faster
+  loop: 10x POST httpbin.org/post                  3.623s     4.144s     3.778s +155ms 366ms faster
+
+  fresh = create from base + run + destroy
+  warm  = run in existing instance
+  loop  = single exec/run, bash loop inside container/pod
+
+  Key insight:
+    Docker/Podman: unfiltered DNS passthrough — no governance
+    Envpod:        whitelist-filtered DNS + query logging + isolated network
+    All runtimes run identical commands (curl, nslookup) with same tools installed.
+    Per-invocation tests reflect real agent workloads (one command per session).
+    Loop tests measure pure network overhead without container-entry cost.
+
+  What envpod adds (zero extra cost):
+    + Per-pod DNS whitelist filtering with query logging
+    + Anti-DNS-tunneling detection
+    + COW filesystem (diff/commit/rollback)
+    + Action-level audit trail (JSONL)
+    + seccomp-BPF syscall filtering
+    + Credential vault
+

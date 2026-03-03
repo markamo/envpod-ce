@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 956 234" width="956" height="234">
+<defs><style>
+.t{font-family:JetBrains Mono, Fira Code, Cascadia Code, monospace;font-size:14px;white-space:pre}
+.f{opacity:0;position:absolute}
+@keyframes s{0%,100%{opacity:1}}
+#f0{animation:s 0.100s step-end 0.300s none}
+#f1{animation:s 0.120s step-end 0.400s none}
+#f2{animation:s 0.120s step-end 0.520s none}
+#f3{animation:s 0.120s step-end 0.640s none}
+#f4{animation:s 0.820s step-end 0.760s none}
+#f5{animation:s 1.500s step-end 1.580s none}
+#f6{animation:s 0.100s step-end 3.080s none}
+#f7{animation:s 0.120s step-end 3.180s none}
+#f8{animation:s 0.100s step-end 3.300s none}
+#f9{animation:s 0.100s step-end 3.400s none}
+#f10{animation:s 0.880s step-end 3.500s none}
+#f11{animation:s 1.500s step-end 4.380s none}
+#f12{animation:s 2.000s step-end 5.880s forwards}
+</style></defs>
+<rect width="100%" height="100%" fill="#1a1b26" rx="8"/>
+<circle cx="20" cy="20.0" r="6" fill="#ff5f56"/>
+<circle cx="40" cy="20.0" r="6" fill="#ffbd2e"/>
+<circle cx="60" cy="20.0" r="6" fill="#27c93f"/>
+<text x="478" y="24" text-anchor="middle" fill="#565f89" font-family="JetBrains Mono, Fira Code, Cascadia Code, monospace" font-size="12">Script</text>
+<g id="f0" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f1" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo e</tspan></text>
+</g>
+<g id="f2" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f3" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff b</tspan></text>
+</g>
+<g id="f4" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff browser</tspan></text>
+</g>
+<g id="f5" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff browser</tspan></text>
+</g>
+<g id="f6" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff browser</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f7" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff browser</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo e</tspan></text>
+</g>
+<g id="f8" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff browser</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f9" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff browser</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit</tspan></text>
+</g>
+<g id="f10" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff browser</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit brow</tspan></text>
+</g>
+<g id="f11" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff browser</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit browser</tspan></text>
+</g>
+<g id="f12" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff browser</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit browser</tspan></text>
+<text x="16" y="214.0"><tspan fill="#c0caf5" opacity="0.5">                                                                                                      md2cast</tspan></text>
+</g>
+</svg>

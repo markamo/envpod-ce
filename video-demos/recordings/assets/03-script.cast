@@ -1,0 +1,4 @@
+{"version": 2, "width": 110, "height": 8, "title": "Script", "timestamp": 1772863647, "env": {"TERM": "xterm-256color", "THEME": "monokai", "FONT_FAMILY": "JetBrains Mono, Fira Code, Menlo, monospace", "FONT_SIZE": "16"}, "idle_time_limit": 3}
+[0.3, "o", "\u001b[0mClick \"Create Snapshot\" \u2192 name it \"checkpoint-1\" \u2192 shows in timeline\u001b[0m\r\n"]
+[1.8, "o", "\u001b[8;1H"]
+[1.8, "o", "\u001b[2m                                                                                                      md2cast\u001b[0m"]

@@ -1,0 +1,88 @@
+# Browser pod — headless Chromium sandbox for web agents
+#
+# Browser seccomp profile (7 extra syscalls for Chromium zygote),
+# 256MB /dev/shm, monitored network with broad DNS for web browsing.
+# Good for: browser-use agents, web scraping, UI testing.
+#
+# Setup checks if Chrome is available from the host; if not, it installs
+# Google Chrome inside the pod (~300MB, takes 1-2 min). For faster setup,
+# install Chrome on the host first: the pod will use it automatically.
+# After first setup, use `envpod clone` for instant copies.
+#
+# Note: Firefox is a snap on Ubuntu 24.04 and does not work inside namespace
+#       pods. Use Google Chrome (deb package) instead.
+#
+# Display: use --enable-display (-d) for GUI forwarding.
+#          Auto-detects Wayland or X11. Override with display_protocol: wayland|x11.
+#          See browser-wayland.yaml for a secure Wayland-only variant.
+# Audio:   use --enable-audio (-a) for audio forwarding.
+#          Auto-detects PipeWire or PulseAudio. Override with audio_protocol: pipewire|pulseaudio.
+#
+# Usage:
+#   sudo envpod init browser-agent -c examples/browser.yaml
+#   sudo envpod run browser-agent -- google-chrome --headless --no-sandbox --dump-dom https://example.com
+#   sudo envpod run browser-agent -d -a --user browseruser -- google-chrome https://example.com
+
+name: browser-agent
+type: standard
+backend: native
+
+network:
+  mode: Monitored
+  dns:
+    mode: Blacklist
+    deny:
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+
+filesystem:
+  system_access: advanced
+  mounts:
+    - path: /opt/google
+      permissions: ReadOnly
+    - path: /etc/alternatives
+      permissions: ReadOnly
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+  max_pids: 1024
+
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"
+
+devices:
+  gpu: true
+  display: true
+  audio: true
+
+budget:
+  max_duration: "30m"
+
+audit:
+  action_log: true
+
+setup:
+  - |
+    if command -v google-chrome >/dev/null 2>&1; then
+      echo "Chrome already available"
+    else
+      apt-get update && apt-get install -y wget gnupg
+      wget -qO- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+      apt-get update && apt-get install -y google-chrome-stable
+    fi

@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tutorials — envpod</title>
+<meta name="description" content="Step-by-step tutorials for envpod: browser pods, GPU ML training, coding agents, multi-agent fleets, Node.js, pod discovery, and more.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0b;--surface:#111113;--surface2:#16161a;--border:#1e1e24;--border-hi:#2a2a32;--text:#e8e8ed;--muted:#8b8b98;--dim:#5a5a66;--green:#22c55e;--green-dim:#16a34a;--green-glow:rgba(34,197,94,0.08);--blue:#58a6ff;--yellow:#e3b341;--mono:'JetBrains Mono','SF Mono','Cascadia Code',monospace;--sans:'DM Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+code{font-family:var(--mono);font-size:0.85em;background:rgba(88,166,255,0.08);color:var(--blue);padding:2px 7px;border-radius:4px}
+pre{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;overflow-x:auto;margin:12px 0 16px;line-height:1.5}
+pre code{background:none;padding:0;font-size:13px;color:var(--text)}
+nav{position:fixed;top:0;width:100%;z-index:100;padding:14px 0;background:rgba(10,10,11,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1100px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--mono);font-weight:700;font-size:18px;color:var(--text);text-decoration:none;letter-spacing:-0.5px}
+.logo span{color:var(--green)}
+.logo-ce{font-size:10px;font-weight:700;color:var(--green);background:var(--green-glow);border:1px solid rgba(34,197,94,0.2);padding:2px 8px;border-radius:100px;letter-spacing:1.5px;margin-left:6px;vertical-align:2px}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-links a{font-size:14px;color:var(--muted);padding:6px 12px;border-radius:6px;transition:color .15s,background .15s}
+.nav-links a:hover{color:var(--text);background:var(--surface);text-decoration:none}
+.wrap{max-width:860px;margin:0 auto;padding:120px 32px 80px}
+h1{font-size:36px;font-weight:700;letter-spacing:-0.03em;margin-bottom:8px}
+.subtitle{color:var(--muted);font-size:16px;margin-bottom:40px}
+h2{font-size:22px;font-weight:700;letter-spacing:-0.02em;margin-top:56px;margin-bottom:12px;color:var(--text);padding-top:24px;border-top:1px solid var(--border)}
+h3{font-size:17px;font-weight:600;margin-top:28px;margin-bottom:8px;color:var(--text)}
+h4{font-size:15px;font-weight:600;margin-top:20px;margin-bottom:6px;color:var(--text)}
+p,li{color:var(--muted);line-height:1.75;margin-bottom:12px}
+ul,ol{padding-left:24px;margin-bottom:16px}
+li{margin-bottom:6px}
+strong{color:var(--text)}
+em{color:var(--muted);font-style:italic}
+hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th{text-align:left;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.5px}
+td{padding:10px 14px;border:1px solid var(--border);color:var(--muted)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 32px;margin-bottom:40px}
+.toc h2{margin-top:0;border-top:none;padding-top:0;font-size:18px;margin-bottom:16px}
+.toc ol{padding-left:20px;margin-bottom:0}
+.toc li{margin-bottom:8px}
+.toc a{color:var(--blue);font-size:15px}
+.note{background:var(--green-glow);border:1px solid rgba(34,197,94,0.15);border-radius:8px;padding:14px 18px;margin:12px 0 16px}
+.note p{color:var(--text);margin-bottom:0}
+.warn{background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.15);border-radius:8px;padding:14px 18px;margin:12px 0 16px}
+.warn p{color:var(--yellow);margin-bottom:0}
+.tutorial-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:24px 28px;margin-bottom:24px}
+.tutorial-card h2{margin-top:0;border-top:none;padding-top:0}
+.prereq{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:24px}
+.prereq p{margin-bottom:0;font-size:14px}
+footer{border-top:1px solid var(--border);padding:44px 0;margin-top:80px}
+.footer-inner{max-width:1100px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.footer-logo{font-family:var(--mono);font-weight:700;font-size:16px;letter-spacing:-0.02em}
+.footer-logo em{color:var(--green);font-style:normal}
+.footer-copy{color:var(--dim);font-size:12px;margin-top:4px}
+.footer-links{display:flex;gap:6px;flex-wrap:wrap}
+.footer-links a{color:var(--muted);font-size:13px;padding:4px 10px;border-radius:4px;transition:color .15s,background .15s}
+.footer-links a:hover{color:var(--text);background:var(--surface);text-decoration:none}
+@media(max-width:768px){.wrap{padding:100px 16px 48px}h1{font-size:28px}h2{font-size:19px}pre{padding:12px 14px}.toc{padding:20px 20px}.tutorial-card{padding:18px 20px}.footer-inner{flex-direction:column;text-align:center}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="logo"><span>env</span>pod<span class="logo-ce">CE</span></a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="https://github.com/markamo/envpod-ce">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <h1>Tutorials</h1>
+  <p class="subtitle">Step-by-step guides for common envpod use cases. Each tutorial is self-contained.</p>
+
+  <div class="prereq">
+    <p><strong>Prerequisites:</strong> envpod installed and working. See the <a href="https://github.com/markamo/envpod-ce#quick-start">Quick Start</a> if you're new. For a complete reference of all pod.yaml options, see <a href="https://github.com/markamo/envpod-ce/blob/main/docs/POD-CONFIG.md">Pod Configuration Reference</a>.</p>
+  </div>
+
+  <div class="toc">
+    <h2>Table of Contents</h2>
+    <ol>
+      <li><a href="#tutorial-1">Browser Pod with Display &amp; Audio</a></li>
+      <li><a href="#tutorial-2">Secure Browser (Wayland + PipeWire)</a></li>
+      <li><a href="#tutorial-3">Headless Browser Automation</a></li>
+      <li><a href="#tutorial-4">YouTube in a Sandbox</a></li>
+      <li><a href="#tutorial-5">Legacy Browser (X11 + PulseAudio)</a></li>
+      <li><a href="#tutorial-6">GPU ML Training</a></li>
+      <li><a href="#tutorial-7">Coding Agent (Claude Code)</a></li>
+      <li><a href="#tutorial-8">Multi-Agent Fleet</a></li>
+      <li><a href="#tutorial-9">Node.js Development</a></li>
+      <li><a href="#tutorial-10">Pod-to-Pod Discovery</a></li>
+      <li><a href="#tutorial-11">Live Discovery Mutations</a></li>
+      <li><a href="#tutorial-12">Action Catalog &mdash; Governed Tool Use</a></li>
+    </ol>
+  </div>
+
+  <!-- ==================== TUTORIAL 1 ==================== -->
+  <h2 id="tutorial-1">Tutorial 1: Browser Pod with Display &amp; Audio</h2>
+  <p>Run a full GUI browser inside a governed pod &mdash; with display forwarding and audio playback.</p>
+
+  <h3>What You'll Need</h3>
+  <ul>
+    <li>Google Chrome installed on the host (deb package, not snap)</li>
+    <li>X11 or Wayland display session</li>
+    <li>PulseAudio or PipeWire for audio</li>
+  </ul>
+  <div class="note"><p><strong>Note:</strong> Firefox is a snap on Ubuntu 24.04 and doesn't work inside namespace pods. Use Chrome (deb package) instead.</p></div>
+
+  <h3>Step 1: Create the Pod</h3>
+<pre><code>sudo envpod init browser-pod -c examples/browser.yaml</code></pre>
+  <p>This creates a pod with browser seccomp profile, 256 MB <code>/dev/shm</code>, GPU passthrough, display and audio access, and blacklist DNS.</p>
+
+  <h3>Step 2: Create a Browser User</h3>
+  <p>Chrome refuses to run as root. Create a non-root user inside the pod:</p>
+<pre><code>sudo envpod run browser-pod -- useradd -m browseruser</code></pre>
+
+  <h3>Step 3: Launch Chrome</h3>
+<pre><code>sudo envpod run browser-pod -d -a --user browseruser -- google-chrome https://google.com</code></pre>
+  <p><strong>Flags:</strong> <code>-d</code> auto-detects display protocol, <code>-a</code> auto-detects audio, <code>--user browseruser</code> runs as non-root.</p>
+  <p>Chrome opens inside the pod. All filesystem writes go to the COW overlay, DNS queries are logged, and resource usage is capped.</p>
+
+  <h3>Step 4: Review What Happened</h3>
+<pre><code># See filesystem changes
+sudo envpod diff browser-pod
+
+# See network activity (DNS queries)
+sudo envpod audit browser-pod
+
+# Accept or discard changes
+sudo envpod commit browser-pod     # keep browser profile/cache
+# or
+sudo envpod rollback browser-pod   # discard everything</code></pre>
+
+  <h3>Step 5: Check Security</h3>
+<pre><code>sudo envpod audit --security -c examples/browser.yaml</code></pre>
+  <p>You'll see findings including I-04 (CRITICAL: X11 keylogging) and I-05 (HIGH: microphone access). See <a href="#tutorial-2">Tutorial 2</a> to fix these.</p>
+
+  <h3>Cleanup</h3>
+<pre><code>sudo envpod destroy browser-pod --full</code></pre>
+
+  <!-- ==================== TUTORIAL 2 ==================== -->
+  <h2 id="tutorial-2">Tutorial 2: Secure Browser (Wayland + PipeWire)</h2>
+  <p>The same browser pod, but with maximum display and audio security. Drops the display finding from CRITICAL to LOW and audio from HIGH to MEDIUM.</p>
+
+  <h3>What You'll Need</h3>
+  <ul>
+    <li>Wayland compositor (GNOME on Wayland, Sway, etc.)</li>
+    <li>PipeWire audio server (default on Ubuntu 23.10+, Fedora 34+)</li>
+    <li>Google Chrome (deb package)</li>
+  </ul>
+  <p>Check your setup:</p>
+<pre><code># Should show "wayland" or a Wayland socket name
+echo $WAYLAND_DISPLAY
+
+# Should show PipeWire processes
+pw-cli info 0</code></pre>
+
+  <h3>Step 1: Create the Secure Pod</h3>
+<pre><code>sudo envpod init browser-secure -c examples/browser-wayland.yaml</code></pre>
+  <p>Key differences: <code>display_protocol: wayland</code> (no X11 fallback) and <code>audio_protocol: pipewire</code> (no PulseAudio fallback).</p>
+
+  <h3>Step 2: Create a Browser User</h3>
+<pre><code>sudo envpod run browser-secure -- useradd -m browseruser</code></pre>
+
+  <h3>Step 3: Launch Chrome on Wayland</h3>
+<pre><code>sudo envpod run browser-secure -d -a --user browseruser -- google-chrome --ozone-platform=wayland https://google.com</code></pre>
+
+  <h3>Step 4: Compare Security</h3>
+<pre><code>sudo envpod audit --security -c examples/browser-wayland.yaml</code></pre>
+  <table>
+    <tr><th>Finding</th><th>browser.yaml</th><th>browser-wayland.yaml</th></tr>
+    <tr><td>I-04 Display</td><td><strong>CRITICAL</strong> (X11 keylogging)</td><td>LOW (Wayland client isolation)</td></tr>
+    <tr><td>I-05 Audio</td><td><strong>HIGH</strong> (PulseAudio mic access)</td><td>MEDIUM (PipeWire permissions)</td></tr>
+  </table>
+  <p><strong>Why Wayland is safer:</strong> X11 has no client isolation &mdash; any client can capture keystrokes and inject input. Wayland compositors enforce strict client isolation by design.</p>
+  <p><strong>Why PipeWire is safer:</strong> PulseAudio grants unrestricted microphone access. PipeWire provides finer-grained permission controls.</p>
+
+  <h3>Cleanup</h3>
+<pre><code>sudo envpod destroy browser-secure --full</code></pre>
+
+  <!-- ==================== TUTORIAL 3 ==================== -->
+  <h2 id="tutorial-3">Tutorial 3: Headless Browser Automation</h2>
+  <p>Run browser automation (Playwright, Puppeteer, browser-use) inside a pod &mdash; no display or audio needed.</p>
+
+  <h3>Step 1: Create the Pod</h3>
+<pre><code>sudo envpod init headless -c examples/browser-use.yaml</code></pre>
+  <p>This installs <code>browser-use</code> and Playwright with Chromium during setup. Uses <code>system_access: advanced</code> for COW overlays on system directories.</p>
+
+  <h3>Step 2: Run an Automation Script</h3>
+<pre><code># Drop into the pod and write a script
+sudo envpod run headless -- /bin/bash</code></pre>
+  <p>Inside the pod:</p>
+<pre><code># Save as /opt/scrape.py
+from browser_use import Browser
+
+browser = Browser(headless=True)
+page = browser.new_page()
+page.goto("https://example.com")
+print(page.title())
+browser.close()</code></pre>
+  <p>Or run it directly:</p>
+<pre><code>sudo envpod run headless -- python3 /opt/scrape.py</code></pre>
+
+  <h3>Step 3: Review Network Activity</h3>
+<pre><code>sudo envpod audit headless</code></pre>
+  <p>No display or audio findings &mdash; headless avoids I-04 and I-05 entirely.</p>
+
+  <h3>Cleanup</h3>
+<pre><code>sudo envpod destroy headless --full</code></pre>
+
+  <!-- ==================== TUTORIAL 4 ==================== -->
+  <h2 id="tutorial-4">Tutorial 4: YouTube in a Sandbox</h2>
+  <p>Watch YouTube (or any streaming video) inside a fully governed pod with display and audio forwarding.</p>
+
+  <h3>Step 1: Create and Configure</h3>
+<pre><code>sudo envpod init youtube -c examples/browser-wayland.yaml
+sudo envpod run youtube -- useradd -m browseruser</code></pre>
+
+  <h3>Step 2: Launch Chrome</h3>
+  <p>For Wayland + PipeWire (recommended):</p>
+<pre><code>sudo envpod run youtube -d -a --user browseruser -- google-chrome --ozone-platform=wayland https://youtube.com</code></pre>
+  <p>For X11 + PulseAudio (works everywhere but less secure):</p>
+<pre><code>sudo envpod init youtube-x11 -c examples/browser.yaml
+sudo envpod run youtube-x11 -- useradd -m browseruser
+sudo envpod run youtube-x11 -d -a --user browseruser -- google-chrome https://youtube.com</code></pre>
+
+  <h3>What's Happening Under the Hood</h3>
+  <ol>
+    <li><strong>Display:</strong> The host's Wayland socket is bind-mounted into the pod. Chrome renders directly to the host compositor.</li>
+    <li><strong>Audio:</strong> The host's PipeWire socket is bind-mounted. Audio plays through the host's audio stack.</li>
+    <li><strong>GPU:</strong> <code>/dev/nvidia*</code> and <code>/dev/dri/*</code> are bind-mounted. Hardware video decoding with zero virtualization overhead.</li>
+    <li><strong>Network:</strong> DNS blacklist mode logs all domain resolutions. YouTube CDN domains are allowed.</li>
+    <li><strong>Filesystem:</strong> Chrome's profile, cache, and downloads all go to the COW overlay.</li>
+  </ol>
+
+  <h3>Cleanup</h3>
+<pre><code>sudo envpod destroy youtube --full</code></pre>
+
+  <!-- ==================== TUTORIAL 5 ==================== -->
+  <h2 id="tutorial-5">Tutorial 5: Legacy Browser (X11 + PulseAudio)</h2>
+  <p>For systems without Wayland or PipeWire &mdash; older Ubuntu (20.04, 22.04), Debian, RHEL, or any X11-based desktop.</p>
+
+  <h3>What You'll Need</h3>
+  <ul>
+    <li>X11 desktop session (GNOME on X11, XFCE, KDE on X11, i3, etc.)</li>
+    <li>PulseAudio audio server</li>
+    <li>Google Chrome (deb package)</li>
+  </ul>
+<pre><code># Should show ":0" or ":1"
+echo $DISPLAY
+
+# Should NOT be set (confirms X11, not Wayland)
+echo $WAYLAND_DISPLAY
+
+# Should show PulseAudio info
+pactl info</code></pre>
+
+  <h3>Step 1: Create the Pod</h3>
+<pre><code>sudo envpod init legacy-browser -c examples/browser.yaml</code></pre>
+
+  <h3>Step 2: Create a Browser User</h3>
+<pre><code>sudo envpod run legacy-browser -- useradd -m browseruser</code></pre>
+
+  <h3>Step 3: Launch Chrome</h3>
+<pre><code>sudo envpod run legacy-browser -d -a --user browseruser -- google-chrome https://google.com</code></pre>
+  <p><strong>What <code>-d</code> does on X11:</strong> Mounts the X11 socket, sets <code>DISPLAY=:0</code>, does NOT set <code>WAYLAND_DISPLAY</code>.</p>
+  <p><strong>What <code>-a</code> does with PulseAudio:</strong> Mounts the PulseAudio socket, copies the cookie, sets <code>PULSE_SERVER</code>.</p>
+
+  <h3>Security Considerations</h3>
+  <p>X11 + PulseAudio is the <strong>least secure</strong> display/audio combination:</p>
+  <table>
+    <tr><th>Finding</th><th>Severity</th><th>Why</th></tr>
+    <tr><td>I-04</td><td><strong>CRITICAL</strong></td><td>X11 has no client isolation &mdash; any client can keylog, screenshot, and inject input</td></tr>
+    <tr><td>I-05</td><td><strong>HIGH</strong></td><td>PulseAudio grants unrestricted microphone recording</td></tr>
+  </table>
+  <p>Acceptable for dedicated dev machines with semi-trusted agents. For production, use <a href="#tutorial-2">Tutorial 2</a>.</p>
+
+  <h3>Custom X11 + PulseAudio Config</h3>
+<pre><code># x11-pulseaudio.yaml
+name: legacy-browser
+type: standard
+backend: native
+
+devices:
+  gpu: true
+  display: true
+  display_protocol: x11          # force X11 (no Wayland fallback)
+  audio: true
+  audio_protocol: pulseaudio     # force PulseAudio (no PipeWire fallback)
+
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"
+
+network:
+  mode: Isolated
+  dns:
+    mode: Blacklist
+    deny:
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+  max_pids: 1024
+
+budget:
+  max_duration: "30m"
+
+audit:
+  action_log: true</code></pre>
+
+  <h3>Cleanup</h3>
+<pre><code>sudo envpod destroy legacy-browser --full</code></pre>
+
+  <!-- ==================== TUTORIAL 6 ==================== -->
+  <h2 id="tutorial-6">Tutorial 6: GPU ML Training</h2>
+  <p>Run GPU-accelerated machine learning training inside a governed pod.</p>
+
+  <h3>What You'll Need</h3>
+  <ul>
+    <li>NVIDIA GPU with drivers installed on host</li>
+    <li><code>nvidia-smi</code> working on the host</li>
+  </ul>
+
+  <h3>Step 1: Create the Pod</h3>
+<pre><code>sudo envpod init ml -c examples/ml-training.yaml</code></pre>
+  <p>GPU passthrough (zero-copy), 4 CPU cores, 16 GB memory, 8-hour max duration, DNS whitelist for PyPI/Hugging Face/PyTorch/Anaconda, auto-installs PyTorch.</p>
+
+  <h3>Step 2: Verify GPU Access</h3>
+<pre><code>sudo envpod run ml -- nvidia-smi</code></pre>
+  <p>GPU passthrough adds ~28ms overhead (namespace entry), after which performance is identical to the host.</p>
+
+  <h3>Step 3: Run Training</h3>
+<pre><code># Interactive
+sudo envpod run ml -- /bin/bash
+
+# Or directly
+sudo envpod run ml -- python3 -c "
+import torch
+print(f'CUDA available: {torch.cuda.is_available()}')
+print(f'GPU: {torch.cuda.get_device_name(0)}')
+x = torch.randn(1000, 1000, device='cuda')
+print(f'Tensor on GPU: {x.device}')
+"</code></pre>
+
+  <h3>Step 4: Save Results</h3>
+<pre><code># See what the training produced
+sudo envpod diff ml
+
+# Commit model checkpoints to host
+sudo envpod commit ml /opt/models/
+sudo envpod commit ml /opt/results/
+
+# Or export to a specific directory
+sudo envpod commit ml --output /tmp/training-output/
+
+# Discard everything else
+sudo envpod rollback ml</code></pre>
+
+  <h3>GPU Performance</h3>
+  <table>
+    <tr><th>Operation</th><th>Host</th><th>Pod</th><th>Overhead</th></tr>
+    <tr><td><code>nvidia-smi</code> query</td><td>52ms</td><td>80ms</td><td>+28ms (namespace entry)</td></tr>
+    <tr><td>CUDA tensor ops</td><td>baseline</td><td>identical</td><td>0ms</td></tr>
+    <tr><td>Training throughput</td><td>baseline</td><td>identical</td><td>0%</td></tr>
+  </table>
+
+  <h3>Cleanup</h3>
+<pre><code>sudo envpod destroy ml --full</code></pre>
+
+  <!-- ==================== TUTORIAL 7 ==================== -->
+  <h2 id="tutorial-7">Tutorial 7: Coding Agent (Claude Code)</h2>
+  <p>Run Claude Code (Anthropic's CLI coding agent) inside a fully governed pod.</p>
+
+  <h3>Step 1: Create the Pod</h3>
+<pre><code>sudo envpod init claude -c examples/claude-code.yaml</code></pre>
+  <p>Installs Claude Code during setup. DNS whitelist for Anthropic APIs, GitHub, npm, PyPI, Cargo. Browser seccomp profile.</p>
+
+  <h3>Step 2: Store API Key</h3>
+<pre><code>sudo envpod vault claude set ANTHROPIC_API_KEY</code></pre>
+  <p>The vault prompts interactively &mdash; the key never appears in shell history, env vars, or audit logs.</p>
+
+  <h3>Step 3: Run Claude Code</h3>
+<pre><code>sudo envpod run claude -- claude</code></pre>
+  <p>Full isolation: every file change goes to the COW overlay, only whitelisted domains reachable, every action logged.</p>
+
+  <h3>Step 4: Review and Accept Changes</h3>
+<pre><code># What did it change?
+sudo envpod diff claude
+
+# Accept specific files
+sudo envpod commit claude /workspace/src/main.rs /workspace/Cargo.toml
+
+# Or accept everything
+sudo envpod commit claude
+
+# Or reject everything
+sudo envpod rollback claude</code></pre>
+
+  <h3>Step 5: Clone for Parallel Tasks</h3>
+<pre><code># Clone the configured pod (inherits setup, API key, config)
+sudo envpod clone claude claude-task-2
+sudo envpod clone claude claude-task-3
+
+# Run each on a different task
+sudo envpod run claude -- claude "fix the auth bug"
+sudo envpod run claude-task-2 -- claude "add unit tests"
+sudo envpod run claude-task-3 -- claude "update the docs"
+
+# Review each independently
+sudo envpod diff claude
+sudo envpod diff claude-task-2
+sudo envpod diff claude-task-3</code></pre>
+
+  <h3>Other Coding Agents</h3>
+  <table>
+    <tr><th>Agent</th><th>Config</th><th>Setup</th></tr>
+    <tr><td>Claude Code</td><td><code>claude-code.yaml</code></td><td><code>curl -fsSL https://claude.ai/install.sh | bash</code></td></tr>
+    <tr><td>OpenAI Codex</td><td><code>codex.yaml</code></td><td><code>npm install -g @openai/codex</code></td></tr>
+    <tr><td>Aider</td><td><code>aider.yaml</code></td><td><code>pip install aider-chat</code></td></tr>
+    <tr><td>SWE-agent</td><td><code>swe-agent.yaml</code></td><td><code>pip install sweagent</code></td></tr>
+    <tr><td>OpenCode</td><td><code>opencode.yaml</code></td><td>Go binary install</td></tr>
+  </table>
+
+  <h3>Cleanup</h3>
+<pre><code>sudo envpod destroy claude claude-task-2 claude-task-3 --full</code></pre>
+
+  <!-- ==================== TUTORIAL 8 ==================== -->
+  <h2 id="tutorial-8">Tutorial 8: Multi-Agent Fleet</h2>
+  <p>Spin up multiple agent pods from a single base for parallel workloads.</p>
+
+  <h3>Step 1: Create a Base Pod</h3>
+<pre><code>sudo envpod base create agent-base -c examples/coding-agent.yaml</code></pre>
+  <p>Creates a reusable snapshot with all setup commands pre-run.</p>
+
+  <h3>Step 2: Clone N Agents</h3>
+<pre><code>for i in $(seq 1 10); do
+    sudo envpod clone agent-base "agent-$i"
+done</code></pre>
+  <p>Under a second for 10 clones (~8ms each). Each clone has its own overlay, network namespace, and cgroup. Shared rootfs via symlink.</p>
+
+  <h3>Step 3: Run Tasks</h3>
+<pre><code># Assign each agent a task
+sudo envpod run agent-1 -- python3 /opt/task1.py
+sudo envpod run agent-2 -- python3 /opt/task2.py
+# ...</code></pre>
+
+  <h3>Step 4: Collect Results</h3>
+<pre><code># Review each agent's output
+for i in $(seq 1 10); do
+    echo "=== agent-$i ==="
+    sudo envpod diff "agent-$i"
+done
+
+# Export all results to a directory
+for i in $(seq 1 10); do
+    sudo envpod commit "agent-$i" --output "/tmp/results/agent-$i/"
+done</code></pre>
+
+  <h3>Step 5: Tear Down</h3>
+<pre><code>sudo envpod destroy agent-1 agent-2 agent-3 agent-4 agent-5 \
+    agent-6 agent-7 agent-8 agent-9 agent-10
+sudo envpod base destroy agent-base
+sudo envpod gc</code></pre>
+
+  <h3>Scale Performance</h3>
+  <table>
+    <tr><th>Count</th><th>Create All</th><th>Run All</th><th>Destroy All</th></tr>
+    <tr><td>10</td><td>~80ms</td><td>~1.5s</td><td>~320ms</td></tr>
+    <tr><td>50</td><td>~407ms</td><td>~7.5s</td><td>~1.6s</td></tr>
+  </table>
+
+  <!-- ==================== TUTORIAL 9 ==================== -->
+  <h2 id="tutorial-9">Tutorial 9: Node.js Development</h2>
+  <p>Set up a full Node.js development environment inside a pod &mdash; with nvm, npm, and binaries accessible to both root and non-root users.</p>
+
+  <h3>The Challenge</h3>
+  <p>Setup commands run as root, but pods default to the non-root <code>agent</code> user (UID 60000). The classic nvm install puts everything under <code>/root/.nvm/</code> which is mode <code>700</code> &mdash; the agent user can't access it.</p>
+  <p><strong>The fix:</strong> Install nvm to <code>/opt/nvm</code> (world-accessible) and symlink binaries to <code>/usr/local/bin</code>.</p>
+
+  <h3>Step 1: Understand the Config</h3>
+<pre><code>name: nodejs
+type: standard
+backend: native
+
+filesystem:
+  system_access: advanced     # Required for symlinks in /usr/local/bin
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+      - /opt/nvm             # nvm install dir (large, not project code)
+      - /root/.npm           # npm cache
+      - /root/.node-gyp      # native addon build cache
+
+network:
+  mode: Monitored
+  dns:
+    mode: Whitelist
+    allow:
+      - raw.githubusercontent.com
+      - "*.githubusercontent.com"
+      - nodejs.org
+      - "*.nodejs.org"
+      - github.com
+      - "*.github.com"
+      - registry.npmjs.org
+      - "*.npmjs.org"
+      - "*.npmjs.com"
+
+processor:
+  cores: 2.0
+  memory: "2GB"</code></pre>
+  <p><strong>Key decisions:</strong> <code>system_access: advanced</code> for writable system dirs, <code>/opt/nvm</code> in tracking ignore to keep <code>envpod diff</code> useful, DNS whitelist for nvm + npm.</p>
+
+  <h3>Step 2: Create the Pod</h3>
+<pre><code>sudo envpod init myapp -c examples/nodejs.yaml</code></pre>
+  <p>During setup, nvm installs to <code>/opt/nvm</code>, Node.js 22 is downloaded, and <code>node</code>/<code>npm</code>/<code>npx</code> are symlinked to <code>/usr/local/bin</code>.</p>
+
+  <h3>Step 3: Verify Node.js</h3>
+<pre><code>sudo envpod run myapp -- node -v
+sudo envpod run myapp -- npm -v</code></pre>
+
+  <h3>Step 4: Develop Inside the Pod</h3>
+<pre><code># Interactive shell
+sudo envpod run myapp -- bash
+
+# Or run commands directly
+sudo envpod run myapp -- npm init -y
+sudo envpod run myapp -- npm install express
+sudo envpod run myapp -- node server.js</code></pre>
+
+  <h3>Step 5: Install Global npm Packages</h3>
+<pre><code>sudo envpod run myapp --root -- bash -c '
+  export NVM_DIR=/opt/nvm && . "$NVM_DIR/nvm.sh"
+  npm install -g typescript
+  ln -sf "$(which tsc)" /usr/local/bin/tsc
+  ln -sf "$(which tsserver)" /usr/local/bin/tsserver
+'
+
+# Now tsc works for all users
+sudo envpod run myapp -- tsc --version</code></pre>
+
+  <h3>Cloning for Multiple Projects</h3>
+<pre><code># Clone is ~130ms (vs minutes for full nvm + Node.js install)
+sudo envpod clone myapp project-a
+sudo envpod clone myapp project-b
+
+# Each clone has its own overlay — independent node_modules
+sudo envpod run project-a -- bash -c 'cd /workspace && npm init -y && npm install react'
+sudo envpod run project-b -- bash -c 'cd /workspace && npm init -y && npm install express'</code></pre>
+
+  <h3>Troubleshooting</h3>
+  <ul>
+    <li><strong>"Cannot change mode: Operation not permitted"</strong> &mdash; You need <code>system_access: advanced</code> in your config.</li>
+    <li><strong>"node: command not found"</strong> &mdash; The <code>/usr/local/bin</code> symlinks are missing. Re-run the symlink step.</li>
+    <li><strong>npm install hangs</strong> &mdash; The npm registry isn't in your DNS whitelist. Add <code>registry.npmjs.org</code> and <code>*.npmjs.org</code>.</li>
+    <li><strong>"EACCES: permission denied"</strong> &mdash; Run with <code>--root</code> for global installs.</li>
+  </ul>
+
+  <h3>Cleanup</h3>
+<pre><code>sudo envpod destroy myapp --full</code></pre>
+
+  <!-- ==================== TUTORIAL 10 ==================== -->
+  <h2 id="tutorial-10">Tutorial 10: Pod-to-Pod Discovery</h2>
+  <p>Let two AI agents find each other by name &mdash; without hardcoding IP addresses. One pod exposes a service, the other resolves it as <code>&lt;name&gt;.pods.local</code>.</p>
+
+  <h3>The Solution</h3>
+  <ul>
+    <li><strong><code>allow_discovery: true</code></strong> on the service pod &mdash; registers with the central DNS daemon</li>
+    <li><strong><code>allow_pods: [name]</code></strong> on the client pod &mdash; permits lookup</li>
+    <li><strong><code>envpod dns-daemon</code></strong> &mdash; host-side daemon enforcing bilateral policy</li>
+  </ul>
+  <p>Both sides must opt in. If either is missing, <code>*.pods.local</code> &rarr; NXDOMAIN.</p>
+
+  <h3>Step 1: Start the DNS Daemon</h3>
+<pre><code>sudo envpod dns-daemon</code></pre>
+  <p>Listens on <code>/var/lib/envpod/dns.sock</code>. Keep running in a dedicated terminal or as a systemd service.</p>
+
+  <h3>Step 2: Create the Service Pod</h3>
+<pre><code>sudo envpod init api-service -c examples/discovery-service.yaml</code></pre>
+  <p>Key config:</p>
+<pre><code>network:
+  mode: Isolated
+  subnet_base: "10.200.50"    # shared subnet
+  allow_discovery: true       # register as api-service.pods.local
+  internal_ports:
+    - "8080"                  # accept connections from other pods</code></pre>
+
+  <h3>Step 3: Create the Client Pod</h3>
+<pre><code>sudo envpod init api-client -c examples/discovery-client.yaml</code></pre>
+<pre><code>network:
+  mode: Isolated
+  subnet_base: "10.200.50"    # must match service pod
+  allow_pods:
+    - api-service             # permitted to resolve api-service.pods.local</code></pre>
+
+  <h3>Step 4: Run the Service</h3>
+<pre><code>sudo envpod run api-service -- python3 -m http.server 8080</code></pre>
+
+  <h3>Step 5: Connect from the Client</h3>
+<pre><code>sudo envpod run api-client -- curl http://api-service.pods.local:8080/</code></pre>
+  <p>The daemon verifies both <code>allow_discovery</code> on the target and <code>allow_pods</code> on the client before returning the A record.</p>
+
+  <h3>Wildcard Discovery</h3>
+<pre><code>network:
+  allow_pods: ["*"]    # resolve all discoverable pods</code></pre>
+  <p>The <code>*</code> matches only pods with <code>allow_discovery: true</code> &mdash; targets must still opt in.</p>
+
+  <h3>Running as a systemd Service</h3>
+<pre><code># /etc/systemd/system/envpod-dns.service
+[Unit]
+Description=envpod central pod discovery daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/envpod dns-daemon
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+<pre><code>sudo systemctl enable --now envpod-dns</code></pre>
+
+  <h3>Tear Down</h3>
+<pre><code>sudo envpod destroy api-service api-client</code></pre>
+
+  <!-- ==================== TUTORIAL 11 ==================== -->
+  <h2 id="tutorial-11">Tutorial 11: Live Discovery Mutations</h2>
+  <p>Change which pods can see each other &mdash; while they are running &mdash; without restarting anything.</p>
+
+  <h3>How It Works</h3>
+  <p><code>envpod discover</code> sends an <code>UpdateDiscovery</code> message to the daemon over the Unix socket. The daemon updates its registry immediately. The command also writes to <code>pod.yaml</code> for persistence.</p>
+
+  <h3>Checking Current State</h3>
+<pre><code>sudo envpod discover api-service</code></pre>
+<pre><code>Pod:              api-service
+IP:               10.200.50.2
+Allow discovery:  yes
+Allow pods:       client-pod</code></pre>
+
+  <h3>Enabling / Disabling Discoverability</h3>
+<pre><code># Make a pod discoverable
+sudo envpod discover worker-pod --on
+
+# Hide it again (queries return NXDOMAIN immediately)
+sudo envpod discover worker-pod --off</code></pre>
+
+  <h3>Adding / Removing Pods from allow_pods</h3>
+<pre><code># Grant a new pod permission to discover
+sudo envpod discover api-service --add-pod new-client
+
+# Revoke access
+sudo envpod discover api-service --remove-pod new-client
+
+# Revoke all access at once
+sudo envpod discover api-service --remove-pod '*'</code></pre>
+
+  <h3>Combining Flags</h3>
+<pre><code># Enable discovery and grant access simultaneously
+sudo envpod discover api-service --on --add-pod orchestrator --add-pod monitor-pod
+
+# Disable discovery and clear all in one shot
+sudo envpod discover api-service --off --remove-pod '*'</code></pre>
+
+  <h3>Scenario: Adding a Pod to a Running Fleet</h3>
+<pre><code># Grant monitor-pod permission to discover api-service
+sudo envpod discover api-service --add-pod monitor-pod
+
+# Make monitor-pod itself discoverable
+sudo envpod discover monitor-pod --on --add-pod orchestrator
+
+# Verify
+sudo envpod discover api-service
+sudo envpod discover monitor-pod</code></pre>
+
+  <h3>Scenario: Revoking a Compromised Pod</h3>
+<pre><code># Remove agent-7 from all allow_pods lists
+sudo envpod discover api-service --remove-pod agent-7
+sudo envpod discover data-store --remove-pod agent-7
+
+# Turn off agent-7's own discoverability
+sudo envpod discover agent-7 --off</code></pre>
+  <p><code>agent-7</code> is now invisible and can't resolve any <code>*.pods.local</code> names. Isolated without being destroyed.</p>
+
+  <!-- ==================== TUTORIAL 12 ==================== -->
+  <h2 id="tutorial-12">Tutorial 12: Action Catalog &mdash; Governed Tool Use</h2>
+  <p>Give an AI agent a menu of allowed actions. The agent discovers what it can do, calls actions by name, and envpod executes them &mdash; after validation, tier enforcement, and optional human approval. The agent never makes calls directly.</p>
+  <p>This is the governed equivalent of <a href="https://modelcontextprotocol.io/">MCP tool use</a>.</p>
+
+  <h3>Where <code>actions.json</code> Lives</h3>
+  <p>The catalog is a plain JSON file in the pod's state directory on the <strong>host</strong> &mdash; outside the overlay, outside the agent's reach.</p>
+<pre><code>/var/lib/envpod/pods/&lt;pod-name&gt;/
+  actions.json        &larr; the action catalog  (host-only)
+  pod.yaml            &larr; pod config
+  audit.jsonl         &larr; audit log
+  upper/              &larr; agent's COW overlay
+  merged/             &larr; agent's filesystem view
+  rootfs/             &larr; base snapshot</code></pre>
+
+  <h3>3 Ways to Add Actions</h3>
+  <p><strong>Option 1 &mdash; CLI (fastest for one-offs):</strong></p>
+<pre><code>sudo envpod actions my-agent add fetch_api \
+  --description "Fetch data from the upstream API" \
+  --type http_get \
+  --tier immediate</code></pre>
+
+  <p><strong>Option 2 &mdash; Edit <code>actions.json</code> directly:</strong></p>
+<pre><code>sudo nano /var/lib/envpod/pods/my-agent/actions.json</code></pre>
+  <p>Changes are picked up immediately. No pod restart needed.</p>
+
+  <p><strong>Option 3 &mdash; <code>pod.yaml</code> setup commands (reproducible):</strong></p>
+<pre><code># pod.yaml
+setup:
+  - cp /home/mymark/configs/my-agent-actions.json \
+       /var/lib/envpod/pods/my-agent/actions.json</code></pre>
+
+  <h3>1. Create the Pod</h3>
+<pre><code># pod.yaml
+name: my-agent
+network:
+  mode: Filtered
+  allow:
+    - api.github.com
+    - github.com
+    - hooks.slack.com
+    - pypi.org
+queue:
+  socket: true</code></pre>
+<pre><code>sudo envpod init my-agent -c pod.yaml</code></pre>
+
+  <h3>2. Create the Action Catalog</h3>
+<pre><code>sudo tee /var/lib/envpod/pods/my-agent/actions.json > /dev/null &lt;&lt; 'EOF'
+[
+  {
+    "name": "fetch_data",
+    "description": "Fetch data from the upstream API",
+    "action_type": "http_get",
+    "tier": "immediate",
+    "params": [
+      {"name": "url",     "required": true},
+      {"name": "headers", "required": false}
+    ]
+  },
+  {
+    "name": "save_output",
+    "description": "Write results to /workspace/output.json",
+    "action_type": "file_write",
+    "tier": "immediate",
+    "params": [
+      {"name": "path",    "required": true},
+      {"name": "content", "required": true},
+      {"name": "append",  "required": false}
+    ]
+  },
+  {
+    "name": "commit_work",
+    "description": "Commit completed changes to the feature branch",
+    "action_type": "git_commit",
+    "tier": "staged",
+    "params": [
+      {"name": "message", "required": true},
+      {"name": "path",    "required": false}
+    ],
+    "config": {
+      "auth_vault_key": "GITHUB_TOKEN"
+    }
+  },
+  {
+    "name": "push_work",
+    "description": "Push committed changes to remote",
+    "action_type": "git_push",
+    "tier": "staged",
+    "config": {
+      "auth_vault_key": "GITHUB_TOKEN"
+    }
+  },
+  {
+    "name": "notify_complete",
+    "description": "POST a completion notification to the team webhook",
+    "action_type": "webhook",
+    "tier": "staged",
+    "params": [
+      {"name": "url",     "required": true},
+      {"name": "payload", "required": true}
+    ]
+  }
+]
+EOF</code></pre>
+
+  <p>Verify:</p>
+<pre><code>sudo envpod actions my-agent ls
+# NAME             TIER       SCOPE      TYPE
+# fetch_data       immediate  external   http_get
+# save_output      immediate  internal   file_write
+# commit_work      staged     internal   git_commit
+# push_work        staged     internal   git_push
+# notify_complete  staged     external   webhook</code></pre>
+
+  <h3>3. Store Credentials</h3>
+<pre><code>echo "ghp_xxxxxxxxxxxx" | sudo envpod vault my-agent set GITHUB_TOKEN</code></pre>
+  <p>Encrypted at rest. The agent never sees it &mdash; envpod fetches it from the vault at execution time.</p>
+
+  <h3>4. Write the Agent</h3>
+<pre><code># agent.py
+import socket, json, time
+
+def send(msg):
+    """Send a request to the envpod queue socket and return the response."""
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    sock.connect("/run/envpod/queue.sock")
+    sock.sendall((json.dumps(msg) + "\n").encode())
+    data = b""
+    while True:
+        chunk = sock.recv(4096)
+        if not chunk:
+            break
+        data += chunk
+        if b"\n" in data:
+            break
+    sock.close()
+    return json.loads(data.strip())
+
+# Step 1: Discover the tool menu
+actions = send({"type": "list_actions"})["actions"]
+print("Available actions:")
+for a in actions:
+    print(f"  {a['name']:20} tier={a['tier']:10} type={a.get('action_type','custom')}")
+
+# Step 2: Fetch data (immediate — executes without approval)
+print("\nFetching data...")
+r = send({
+    "type": "call",
+    "action": "fetch_data",
+    "params": {"url": "https://api.github.com/repos/torvalds/linux/commits?per_page=5"}
+})
+print(f"fetch_data: {r['status']}  id={r['id']}")
+
+# Step 3: Save results (immediate)
+result = {"fetched_at": "2026-03-03T14:22:00Z", "count": 5}
+r = send({
+    "type": "call",
+    "action": "save_output",
+    "params": {
+        "path": "/workspace/output.json",
+        "content": json.dumps(result, indent=2)
+    }
+})
+print(f"save_output: {r['status']}  id={r['id']}")
+
+# Step 4: Commit (staged — waits for human approval)
+r = send({
+    "type": "call",
+    "action": "commit_work",
+    "params": {"message": "feat: add fetched commit data"}
+})
+print(f"commit_work queued: {r['id']} (status: {r['status']})")
+commit_id = r["id"]
+
+# Step 5: Notify via webhook (staged)
+r = send({
+    "type": "call",
+    "action": "notify_complete",
+    "params": {
+        "url": "https://hooks.slack.com/services/T.../B.../xxx",
+        "payload": json.dumps({"text": f"Agent complete. {result['count']} records saved."})
+    }
+})
+print(f"notify_complete queued: {r['id']} (status: {r['status']})")
+notify_id = r["id"]
+
+# Step 6: Poll for approvals
+print("\nWaiting for host approval...")
+for action_id in [commit_id, notify_id]:
+    while True:
+        status = send({"type": "poll", "id": action_id})["status"]
+        if status in ("executed", "cancelled", "blocked"):
+            print(f"  {action_id}: {status}")
+            break
+        time.sleep(2)
+
+print("\nDone.")</code></pre>
+
+  <h3>5. Run the Pod</h3>
+<pre><code>sudo envpod run my-agent -- python3 agent.py</code></pre>
+  <p><code>fetch_data</code> and <code>save_output</code> execute immediately. <code>commit_work</code> and <code>notify_complete</code> are staged &mdash; the agent blocks on the poll loop.</p>
+
+  <h3>6. Review and Approve from the Host</h3>
+<pre><code># See staged actions waiting for approval
+sudo envpod queue my-agent
+
+# Inspect full params before approving
+sudo envpod queue my-agent --id a1b2c3 --json
+
+# Approve
+sudo envpod approve my-agent a1b2c3
+sudo envpod approve my-agent a1b2c4
+
+# Or cancel
+sudo envpod cancel my-agent a1b2c4</code></pre>
+  <p>envpod fetches <code>GITHUB_TOKEN</code> from the vault and runs the git commit. The agent never saw the token.</p>
+
+  <h3>7. View the Audit Log</h3>
+<pre><code>sudo envpod audit my-agent
+# 2026-03-03 14:22:01  queue_submit   fetch_data         executed  immediate
+# 2026-03-03 14:22:02  queue_submit   save_output        executed  immediate
+# 2026-03-03 14:22:03  queue_submit   commit_work        queued    staged
+# 2026-03-03 14:22:04  queue_submit   notify_complete    queued    staged
+# 2026-03-03 14:25:11  queue_approve  commit_work        executed  approved_by=host
+# 2026-03-03 14:25:14  queue_approve  notify_complete    executed  approved_by=host</code></pre>
+
+  <h3>Hot-Reload the Catalog</h3>
+<pre><code># Decide mid-run that push should require approval
+sudo envpod actions my-agent set-tier push_work staged
+
+# Block the webhook entirely for this run
+sudo envpod actions my-agent set-tier notify_complete blocked</code></pre>
+  <p>The catalog is re-read on every <code>list_actions</code> call. No restart needed.</p>
+
+  <!-- ==================== TIPS ==================== -->
+  <h2 id="tips">Tips &amp; Troubleshooting</h2>
+
+  <h3>Chrome Won't Start</h3>
+  <ul>
+    <li>Chrome refuses to run as root. Always use <code>--user browseruser</code>.</li>
+    <li>On Wayland, Chrome needs <code>--ozone-platform=wayland</code>.</li>
+    <li>Firefox is a snap on Ubuntu 24.04 &mdash; snaps don't work in namespace pods. Use Chrome.</li>
+  </ul>
+
+  <h3>No Audio</h3>
+  <ul>
+    <li>Check <code>pw-cli info 0</code> (PipeWire) or <code>pactl info</code> (PulseAudio) on the host.</li>
+    <li>Verify the socket is mounted: <code>sudo envpod run pod -a -- ls -la /tmp/pipewire-0</code></li>
+    <li>PulseAudio requires cookie auth. envpod auto-copies it, but check permissions if audio fails.</li>
+  </ul>
+
+  <h3>GPU Not Detected</h3>
+  <ul>
+    <li>Verify <code>nvidia-smi</code> works on the host first.</li>
+    <li>Check <code>devices.gpu: true</code> in your pod config.</li>
+    <li>If <code>/dev/nvidia*</code> and <code>/dev/dri/*</code> don't exist on the host, there's nothing to mount.</li>
+  </ul>
+
+  <h3>DNS Queries Failing</h3>
+  <ul>
+    <li>Check <code>sudo envpod audit pod-name</code> for DNS deny/allow decisions.</li>
+    <li>Use <code>sudo envpod dns pod-name --allow domain.com</code> to add a domain live.</li>
+    <li>Whitelist mode: only allowed domains resolve. Blacklist mode: everything except denied domains.</li>
+  </ul>
+
+  <h3>Pod Discovery Not Working</h3>
+  <ul>
+    <li>Verify <code>envpod dns-daemon</code> is running: <code>ls -la /var/lib/envpod/dns.sock</code></li>
+    <li>Service pod needs <code>allow_discovery: true</code> and must start <strong>after</strong> the daemon.</li>
+    <li>Client pod needs <code>allow_pods: ["service-name"]</code> (or <code>["*"]</code>).</li>
+    <li>Both pods must use the same <code>subnet_base</code>.</li>
+    <li>Check <code>sudo envpod audit client-pod | grep pods.local</code> &mdash; <code>dns_deny</code> = policy blocked; no entry = daemon unreachable.</li>
+  </ul>
+
+  <h3>Pod Creation Slow</h3>
+  <ul>
+    <li><code>envpod init</code> takes ~1.3s (builds rootfs). Use <code>envpod clone</code> for subsequent pods (~130ms).</li>
+    <li>First <code>envpod run</code> after init takes ~1.3s (cold start). Subsequent runs: 20-45ms.</li>
+  </ul>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo"><em>env</em>pod</div>
+      <div class="footer-copy">&copy; 2026 Xtellix Inc. All rights reserved.</div>
+    </div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="https://github.com/markamo/envpod-ce">GitHub</a>
+      <a href="/tutorials">Tutorials</a>
+      <a href="/cla">CLA</a>
+      <a href="mailto:mark@envpod.dev">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

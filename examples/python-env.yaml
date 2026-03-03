@@ -1,0 +1,50 @@
+# Python environment pod — sandboxed Python with package registry access
+#
+# Monitored network with DNS whitelist for PyPI and common APIs.
+# Good for: data analysis agents, ML experiments, research scripts.
+#
+# Usage:
+#   sudo envpod init python-env -c examples/python-env.yaml
+#   sudo envpod run python-env -- python3
+
+name: python-env
+type: standard
+backend: native
+
+network:
+  mode: Monitored
+  dns:
+    mode: Whitelist
+    allow:
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+      - "*.pythonhosted.org"
+
+filesystem:
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+processor:
+  cores: 2.0
+  memory: "2GB"
+
+budget:
+  max_duration: "1h"
+
+audit:
+  action_log: true
+
+setup:
+  - "command -v pip >/dev/null || { apt-get update && apt-get install -y python3-pip; }"
+  - "pip install numpy pandas matplotlib scipy scikit-learn requests"

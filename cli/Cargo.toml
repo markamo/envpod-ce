@@ -1,0 +1,34 @@
+[package]
+name = "envpod-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "CLI for envpod — zero trust environments for AI agents"
+
+[[bin]]
+name = "envpod"
+path = "src/main.rs"
+
+[dependencies]
+envpod-core = { path = "../core" }
+envpod-dns = { path = "../dns" }
+anyhow.workspace = true
+chrono.workspace = true
+clap = { version = "4", features = ["derive", "env"] }
+clap_complete = "4"
+nix = { version = "0.29", features = ["signal", "process", "user"] }
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid.workspace = true
+
+# Dashboard
+axum.workspace = true
+rust-embed.workspace = true
+tower-http.workspace = true
+mime_guess.workspace = true
+open.workspace = true
+similar = "2"

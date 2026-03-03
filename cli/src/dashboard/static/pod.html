@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>envpod — pod detail</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/htmx.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>envpod <span class="version">dashboard</span></h1>
+    </header>
+
+    <div class="pod-header">
+        <div>
+            <a href="/" class="back-link">← All pods</a>
+            <h2 id="pod-name">Loading...</h2>
+        </div>
+        <div class="actions" id="pod-actions"></div>
+    </div>
+
+    <div class="info-grid" id="pod-info"></div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('overview')">Overview</button>
+        <button class="tab" onclick="showTab('audit')">Audit</button>
+        <button class="tab" onclick="showTab('diff')">Diff</button>
+        <button class="tab" onclick="showTab('resources')">Resources</button>
+        <button class="tab" onclick="showTab('snapshots')">Snapshots</button>
+        <button class="tab" onclick="showTab('queue')">Queue</button>
+    </div>
+
+    <div id="section-overview" class="section active"></div>
+    <div id="section-audit" class="section"></div>
+    <div id="section-diff" class="section"></div>
+    <div id="section-resources" class="section"></div>
+    <div id="section-snapshots" class="section"></div>
+    <div id="section-queue" class="section"></div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const podName = params.get('name');
+
+if (!podName) {
+    document.getElementById('pod-name').textContent = 'No pod specified';
+} else {
+    document.title = `envpod — ${podName}`;
+    loadPodDetail();
+    loadAudit();
+    loadDiff();
+    loadResources();
+    loadSnapshots();
+    loadQueue();
+    // Auto-refresh resources and queue
+    setInterval(loadResources, 2000);
+    setInterval(loadQueue, 3000);
+}
+
+function loadPodDetail() {
+    fetch(`/api/v1/pods/${encodeURIComponent(podName)}`)
+        .then(r => r.json())
+        .then(pod => {
+            document.getElementById('pod-name').innerHTML =
+                `<span class="status ${pod.status}"></span> ${escapeHtml(pod.name)}`;
+
+            document.getElementById('pod-info').innerHTML = `
+                <div class="info-item">
+                    <div class="label">Status</div>
+                    <div class="value">${pod.status}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Backend</div>
+                    <div class="value">${pod.backend}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Changes</div>
+                    <div class="value">${pod.diff_count}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Vault Keys</div>
+                    <div class="value">${pod.vault_keys.length}</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">Created</div>
+                    <div class="value" style="font-size:12px">${new Date(pod.created_at).toLocaleString()}</div>
+                </div>
+            `;
+
+            // Actions
+            document.getElementById('pod-actions').innerHTML = `
+                <button class="btn success" onclick="podAction('commit')" title="Commit overlay changes">Commit</button>
+                <button class="btn danger" onclick="podAction('rollback')" title="Rollback overlay changes">Rollback</button>
+                <button class="btn" onclick="podAction('freeze')" title="Freeze pod">Freeze</button>
+                <button class="btn" onclick="podAction('resume')" title="Resume pod">Resume</button>
+            `;
+
+            // Overview section — config summary
+            let configHtml = '<div class="empty"><p>No configuration loaded</p></div>';
+            if (pod.config) {
+                const c = pod.config;
+                configHtml = `
+                    <table>
+                        <tr><td style="width:200px;color:var(--text-dim)">Type</td><td>${c.type || 'standard'}</td></tr>
+                        <tr><td style="color:var(--text-dim)">User</td><td><code>${c.user || 'agent'}</code></td></tr>
+                        <tr><td style="color:var(--text-dim)">Network Mode</td><td>${c.network?.mode || 'Isolated'}</td></tr>
+                        <tr><td style="color:var(--text-dim)">DNS Mode</td><td>${c.network?.dns?.mode || 'Monitor'}</td></tr>
+                        <tr><td style="color:var(--text-dim)">CPU Cores</td><td>${c.processor?.cores || 'unlimited'}</td></tr>
+                        <tr><td style="color:var(--text-dim)">Memory</td><td>${c.processor?.memory || 'unlimited'}</td></tr>
+                        <tr><td style="color:var(--text-dim)">Vault Proxy</td><td>${c.vault?.proxy ? 'enabled' : 'disabled'}</td></tr>
+                        <tr><td style="color:var(--text-dim)">Pod Directory</td><td><code style="font-size:11px">${escapeHtml(pod.pod_dir)}</code></td></tr>
+                    </table>
+                `;
+            }
+            document.getElementById('section-overview').innerHTML = configHtml;
+        })
+        .catch(err => {
+            document.getElementById('pod-name').textContent = `Error: ${err.message}`;
+        });
+}
+
+function loadAudit() {
+    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/audit?offset=0&limit=100`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.entries || data.entries.length === 0) {
+                document.getElementById('section-audit').innerHTML =
+                    '<div class="empty"><p>No audit entries</p></div>';
+                return;
+            }
+            const rows = data.entries.map(e => `
+                <tr>
+                    <td class="mono time">${new Date(e.timestamp).toLocaleString()}</td>
+                    <td><span class="action-name">${escapeHtml(e.action)}</span></td>
+                    <td>${escapeHtml(e.detail)}</td>
+                    <td>${e.success ? '<span class="badge green">ok</span>' : '<span class="badge red">fail</span>'}</td>
+                </tr>
+            `).reverse().join('');
+
+            document.getElementById('section-audit').innerHTML = `
+                <p style="margin-bottom:12px;color:var(--text-dim)">${data.total} total entries</p>
+                <table>
+                    <thead><tr><th>Time</th><th>Action</th><th>Detail</th><th>Status</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        });
+}
+
+// ---- Diff tab ----
+
+let diffData = [];  // current diff file list
+
+function loadDiff() {
+    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/diff`)
+        .then(r => r.json())
+        .then(diffs => {
+            diffData = diffs;
+            renderDiff();
+        });
+}
+
+function renderDiff() {
+    const sec = document.getElementById('section-diff');
+    if (diffData.length === 0) {
+        sec.innerHTML = '<div class="empty"><p>No filesystem changes</p></div>';
+        return;
+    }
+
+    const kindSymbol = k => k === 'Added' ? '+' : k === 'Deleted' ? '−' : '~';
+    const kindCss    = k => k === 'Added' ? 'add' : k === 'Deleted' ? 'del' : 'modify';
+
+    const rows = diffData.map((d, i) => `
+        <div class="diff-file-row" id="dfr-${i}">
+            <div class="diff-file-header" onclick="toggleFileDiff(${i})">
+                <input type="checkbox" id="chk-${i}" onclick="event.stopPropagation()"
+                    onchange="updateCommitSelected()">
+                <span class="diff-file-toggle">▶</span>
+                <span class="diff-file-kind ${kindCss(d.kind)}">${kindSymbol(d.kind)}</span>
+                <span class="diff-file-path" title="${escapeHtml(d.path)}">${escapeHtml(d.path)}</span>
+                <span class="diff-file-size">${formatBytes(d.size)}</span>
+                <span class="diff-file-actions">
+                    <button class="diff-file-btn commit"
+                        onclick="event.stopPropagation(); commitFile('${escapeHtml(d.path)}')"
+                        title="Commit this file">Commit</button>
+                    <button class="diff-file-btn rollback"
+                        onclick="event.stopPropagation(); rollbackFile('${escapeHtml(d.path)}')"
+                        title="Rollback this file">Rollback</button>
+                </span>
+            </div>
+            <div class="diff-inline" id="dfi-${i}">
+                <div class="diff-inline-loading">Loading diff…</div>
+            </div>
+        </div>
+    `).join('');
+
+    sec.innerHTML = `
+        <div class="actions">
+            <button class="btn success" onclick="podAction('commit')" title="Commit all changes">Commit All</button>
+            <button class="btn danger"  onclick="podAction('rollback')" title="Rollback all changes">Rollback All</button>
+            <button class="btn primary" id="btn-commit-selected" style="display:none"
+                onclick="commitSelected()">Commit Selected (<span id="sel-count">0</span>)</button>
+        </div>
+        <div class="diff-select-bar">
+            <label style="cursor:pointer">
+                <input type="checkbox" id="chk-all" onchange="selectAllFiles(this.checked)">
+                &nbsp;Select all
+            </label>
+            <span style="color:var(--text-dim)">${diffData.length} file${diffData.length !== 1 ? 's' : ''} changed</span>
+        </div>
+        <div class="diff-file-list">${rows}</div>
+    `;
+}
+
+function toggleFileDiff(idx) {
+    const row = document.getElementById(`dfr-${idx}`);
+    const inline = document.getElementById(`dfi-${idx}`);
+    const isOpen = row.classList.toggle('open');
+
+    if (isOpen && inline.dataset.loaded !== '1') {
+        inline.dataset.loaded = '1';
+        const path = diffData[idx].path;
+        fetch(`/api/v1/pods/${encodeURIComponent(podName)}/file-diff?path=${encodeURIComponent(path)}`)
+            .then(r => r.json())
+            .then(fd => { inline.innerHTML = renderFileDiff(fd); })
+            .catch(() => { inline.innerHTML = '<div class="diff-inline-loading">Error loading diff</div>'; });
+    }
+}
+
+function renderFileDiff(fd) {
+    if (fd.binary) {
+        return `<div class="diff-inline-binary">Binary file — content diff not available</div>`;
+    }
+    if (!fd.lines || fd.lines.length === 0) {
+        return `<div class="diff-inline-binary">No diffable content</div>`;
+    }
+
+    const rows = fd.lines.map(line => {
+        if (line.kind === 'separator') {
+            return `<tr class="line-separator"><td colspan="4">${escapeHtml(line.text)}</td></tr>`;
+        }
+        const sign   = line.kind === 'add' ? '+' : line.kind === 'remove' ? '−' : ' ';
+        const rowCls = line.kind === 'add' ? 'line-add' : line.kind === 'remove' ? 'line-remove' : 'line-context';
+        const oldLn  = line.old_line ?? '';
+        const newLn  = line.new_line ?? '';
+        return `<tr class="${rowCls}">
+            <td class="ln">${oldLn}</td>
+            <td class="ln">${newLn}</td>
+            <td class="sign">${sign}</td>
+            <td class="diff-code">${escapeHtml(line.text)}</td>
+        </tr>`;
+    }).join('');
+
+    return `<table class="diff-table">
+        <colgroup>
+            <col style="width:44px"><col style="width:44px">
+            <col style="width:20px"><col>
+        </colgroup>
+        <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function selectAllFiles(checked) {
+    diffData.forEach((_, i) => {
+        const chk = document.getElementById(`chk-${i}`);
+        if (chk) chk.checked = checked;
+    });
+    updateCommitSelected();
+}
+
+function updateCommitSelected() {
+    const selected = diffData.filter((_, i) => document.getElementById(`chk-${i}`)?.checked).length;
+    const btn = document.getElementById('btn-commit-selected');
+    const cnt = document.getElementById('sel-count');
+    if (btn) btn.style.display = selected > 0 ? '' : 'none';
+    if (cnt) cnt.textContent = selected;
+    const allChk = document.getElementById('chk-all');
+    if (allChk) allChk.checked = selected === diffData.length && diffData.length > 0;
+}
+
+function commitSelected() {
+    const paths = diffData
+        .filter((_, i) => document.getElementById(`chk-${i}`)?.checked)
+        .map(d => d.path);
+    if (paths.length === 0) return;
+    if (!confirm(`Commit ${paths.length} selected file(s) to host?`)) return;
+    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/commit-files`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paths }),
+    })
+        .then(r => r.json())
+        .then(res => { alert(res.status || res.error); loadPodDetail(); loadDiff(); loadAudit(); })
+        .catch(err => alert('Error: ' + err.message));
+}
+
+function commitFile(path) {
+    if (!confirm(`Commit "${path}" to host?`)) return;
+    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/commit-files`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paths: [path] }),
+    })
+        .then(r => r.json())
+        .then(res => { loadPodDetail(); loadDiff(); loadAudit(); })
+        .catch(err => alert('Error: ' + err.message));
+}
+
+function rollbackFile(path) {
+    alert('Per-file rollback: coming soon. Use "Rollback All" to discard all changes.');
+}
+
+function loadResources() {
+    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/resources`)
+        .then(r => r.json())
+        .then(res => {
+            if (!res) {
+                document.getElementById('section-resources').innerHTML =
+                    '<div class="empty"><p>No resource data (pod may not have cgroups)</p></div>';
+                return;
+            }
+            const memLimit = res.memory_limit ? formatBytes(res.memory_limit) : 'unlimited';
+            const pidLimit = res.pids_limit || 'unlimited';
+
+            document.getElementById('section-resources').innerHTML = `
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="label">CPU Usage</div>
+                        <div class="value">${(res.cpu_usage_usec / 1000000).toFixed(2)}s</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">Memory</div>
+                        <div class="value">${formatBytes(res.memory_bytes)}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">Memory Limit</div>
+                        <div class="value">${memLimit}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">PIDs</div>
+                        <div class="value">${res.pids_current}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="label">PID Limit</div>
+                        <div class="value">${pidLimit}</div>
+                    </div>
+                </div>
+            `;
+        });
+}
+
+function showTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('section-' + name).classList.add('active');
+}
+
+function podAction(action) {
+    const destructive = ['rollback', 'freeze'];
+    if (destructive.includes(action)) {
+        if (!confirm(`Are you sure you want to ${action} pod "${podName}"?`)) return;
+    }
+    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/${action}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(result => {
+            alert(JSON.stringify(result.status || result.error));
+            loadPodDetail();
+            loadDiff();
+            loadAudit();
+        })
+        .catch(err => alert('Error: ' + err.message));
+}
+
+function formatBytes(bytes) {
+    if (!bytes || bytes === 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let i = 0;
+    let val = bytes;
+    while (val >= 1024 && i < units.length - 1) { val /= 1024; i++; }
+    return val.toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
+}
+
+// ---- Queue tab ----
+
+const TIER_CSS = { immediate_protected: 'green', delayed: 'yellow', staged: 'orange', blocked: 'red' };
+const STATUS_CSS = { queued: 'yellow', approved: 'green', executed: 'dim', cancelled: 'dim', blocked: 'red' };
+
+function loadQueue() {
+    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/queue`)
+        .then(r => r.json())
+        .then(actions => { renderQueue(actions); })
+        .catch(() => {
+            document.getElementById('section-queue').innerHTML =
+                '<div class="empty"><p>Could not load queue</p></div>';
+        });
+}
+
+function renderQueue(actions) {
+    const sec = document.getElementById('section-queue');
+    if (!actions || actions.length === 0) {
+        sec.innerHTML = '<div class="empty"><p>No queued actions</p></div>';
+        return;
+    }
+
+    const pending = actions.filter(a => a.status === 'queued');
+    const rest    = actions.filter(a => a.status !== 'queued');
+
+    const renderRow = (a) => {
+        const ts = new Date(a.created_at).toLocaleString();
+        const tierCss = TIER_CSS[a.tier] || 'dim';
+        const statusCss = STATUS_CSS[a.status] || 'dim';
+        const shortId = a.id.slice(0, 8);
+        const deadline = a.execute_after
+            ? `<span class="queue-deadline">auto @ ${new Date(a.execute_after).toLocaleTimeString()}</span>` : '';
+        const btns = a.status === 'queued' ? `
+            <button class="btn success" onclick="queueAction('${shortId}','approve')" title="Approve">Approve</button>
+            <button class="btn danger"  onclick="queueAction('${shortId}','cancel')"  title="Cancel">Cancel</button>
+        ` : '';
+        return `
+            <div class="queue-row status-${a.status}">
+                <div class="queue-meta">
+                    <span class="queue-id mono">${shortId}</span>
+                    <span class="badge ${tierCss}">${a.tier.replace('_',' ')}</span>
+                    <span class="badge ${statusCss}">${a.status}</span>
+                    <span class="queue-desc">${escapeHtml(a.description)}</span>
+                    ${deadline}
+                    <span class="queue-ts">${ts}</span>
+                </div>
+                <div class="queue-actions">${btns}</div>
+            </div>
+        `;
+    };
+
+    let html = '';
+    if (pending.length > 0) {
+        html += `<div class="queue-section-label">Pending (${pending.length})</div>`;
+        html += pending.map(renderRow).join('');
+    }
+    if (rest.length > 0) {
+        html += `<div class="queue-section-label" style="margin-top:16px">History</div>`;
+        html += rest.slice(0, 20).map(renderRow).join('');
+    }
+    sec.innerHTML = `<div class="queue-list">${html}</div>`;
+}
+
+function queueAction(shortId, action) {
+    const label = action === 'approve' ? 'Approve' : 'Cancel';
+    if (action === 'cancel' && !confirm(`Cancel action ${shortId}?`)) return;
+    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/queue/${encodeURIComponent(shortId)}/${action}`, {
+        method: 'POST',
+    })
+        .then(r => r.json())
+        .then(res => {
+            if (res.error) { alert('Error: ' + res.error); return; }
+            loadQueue();
+            loadAudit();
+        })
+        .catch(err => alert('Error: ' + err.message));
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// ---- Snapshots tab ----
+
+function loadSnapshots() {
+    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots`)
+        .then(r => r.json())
+        .then(snaps => { renderSnapshots(snaps); })
+        .catch(() => {
+            document.getElementById('section-snapshots').innerHTML =
+                '<div class="empty"><p>Could not load snapshots</p></div>';
+        });
+}
+
+function renderSnapshots(snaps) {
+    const sec = document.getElementById('section-snapshots');
+    const createForm = `
+        <div class="snap-create-bar">
+            <input id="snap-name-input" type="text" placeholder="Optional label…" class="snap-label-input">
+            <button class="btn success" onclick="createSnapshot()">+ New Snapshot</button>
+        </div>
+    `;
+
+    if (!snaps || snaps.length === 0) {
+        sec.innerHTML = createForm + '<div class="empty"><p>No snapshots yet</p></div>';
+        return;
+    }
+
+    const rows = snaps.map(s => {
+        const ts = new Date(s.timestamp).toLocaleString();
+        const label = s.name || (s.auto ? '<em>auto</em>' : '—');
+        const size = formatBytes(s.size_bytes);
+        const auto = s.auto ? '<span class="badge dim">auto</span>' : '';
+        return `
+            <div class="snap-row">
+                <div class="snap-meta">
+                    <span class="snap-id mono">${escapeHtml(s.id)}</span>
+                    <span class="snap-label">${label}</span>
+                    ${auto}
+                    <span class="snap-ts">${ts}</span>
+                    <span class="snap-stats">${s.file_count} file${s.file_count !== 1 ? 's' : ''} · ${size}</span>
+                </div>
+                <div class="snap-actions">
+                    <button class="btn" onclick="restoreSnapshot('${escapeHtml(s.id)}')" title="Restore this snapshot">Restore</button>
+                    <button class="btn success" onclick="promoteSnapshot('${escapeHtml(s.id)}')" title="Promote to clonable base">Promote</button>
+                    <button class="btn danger" onclick="deleteSnapshot('${escapeHtml(s.id)}')" title="Delete snapshot">Delete</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    sec.innerHTML = createForm + `<div class="snap-list">${rows}</div>`;
+}
+
+function createSnapshot() {
+    const input = document.getElementById('snap-name-input');
+    const name = input ? input.value.trim() : '';
+    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name || null }),
+    })
+        .then(r => r.json())
+        .then(res => {
+            if (res.error) { alert('Error: ' + res.error); return; }
+            if (input) input.value = '';
+            loadSnapshots();
+        })
+        .catch(err => alert('Error: ' + err.message));
+}
+
+function restoreSnapshot(snapId) {
+    if (!confirm(`Restore snapshot "${snapId}"?\n\nThe current overlay will be replaced. Any uncommitted changes will be lost.`)) return;
+    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots/${encodeURIComponent(snapId)}/restore`, {
+        method: 'POST',
+    })
+        .then(r => r.json())
+        .then(res => {
+            if (res.error) { alert('Error: ' + res.error); return; }
+            alert('Restored snapshot ' + snapId);
+            loadPodDetail();
+            loadDiff();
+            loadSnapshots();
+        })
+        .catch(err => alert('Error: ' + err.message));
+}
+
+function promoteSnapshot(snapId) {
+    const baseName = prompt(`Promote snapshot "${snapId}" to a new base.\n\nBase name (used with: envpod clone <base> <new-pod>):`);
+    if (!baseName || !baseName.trim()) return;
+    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots/${encodeURIComponent(snapId)}/promote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base_name: baseName.trim() }),
+    })
+        .then(r => r.json())
+        .then(res => {
+            if (res.error) { alert('Error: ' + res.error); return; }
+            alert(`Base '${res.base_name}' created.\n\nClone with:\n  envpod clone ${res.base_name} <new-pod>`);
+            loadSnapshots();
+        })
+        .catch(err => alert('Error: ' + err.message));
+}
+
+function deleteSnapshot(snapId) {
+    if (!confirm(`Delete snapshot "${snapId}"? This cannot be undone.`)) return;
+    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots/${encodeURIComponent(snapId)}`, {
+        method: 'DELETE',
+    })
+        .then(r => r.json())
+        .then(res => {
+            if (res.error) { alert('Error: ' + res.error); return; }
+            loadSnapshots();
+        })
+        .catch(err => alert('Error: ' + err.message));
+}
+</script>
+</body>
+</html>

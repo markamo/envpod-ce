@@ -1,0 +1,597 @@
+/* ═══════════════════════════════════════════════════════════
+   envpod.dev — Mobile Responsive Patch
+   
+   Drop this into your existing <style> block or link as a 
+   separate stylesheet AFTER your main styles.
+   
+   Covers: nav, hero, numbers, terminal, architecture diagrams,
+   feature grids, agent cards, use cases, workflow, Docker vs
+   envpod comparison, competitor cards, benchmark tables, 
+   install, OpenClaw example, pricing, contact, CTA, footer.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── HAMBURGER MENU ──
+   Add this HTML right before .nav-links:
+   <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">
+     <span></span><span></span><span></span>
+   </button>
+*/
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  z-index: 101;
+}
+.nav-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--text, #e8e8ed);
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+
+/* ══════════════════════════════════════
+   TABLET — 1024px and below
+   ══════════════════════════════════════ */
+@media (max-width: 1024px) {
+  /* Architecture diagram pods — 2+1 layout */
+  .arch-pods,
+  .pod-grid,
+  [class*="arch-grid"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  /* Docker vs envpod comparison — slightly smaller */
+  .compare-visual,
+  .docker-vs-envpod,
+  .comparison-visual {
+    gap: 16px !important;
+  }
+}
+
+/* ══════════════════════════════════════
+   MOBILE — 768px and below
+   ══════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── NAV ── */
+  .nav-toggle { display: flex; }
+  
+  .nav-links,
+  .navlinks,
+  [class*="nav-links"] {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 280px;
+    height: 100vh;
+    flex-direction: column;
+    background: var(--bg, #0a0a0b);
+    border-left: 1px solid var(--border, #1e1e24);
+    padding: 80px 24px 32px;
+    gap: 4px;
+    transition: right 0.3s ease;
+    z-index: 100;
+  }
+  .nav-links.open,
+  .navlinks.open {
+    right: 0;
+  }
+  .nav-links a,
+  .navlinks a {
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+    display: block;
+    width: 100%;
+  }
+  .nav-gh {
+    margin-left: 0 !important;
+    margin-top: 12px;
+    justify-content: center;
+  }
+
+  /* ── GLOBAL CONTAINERS ── */
+  .wrap,
+  .container,
+  [class*="container"] {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  
+  section,
+  .section,
+  .section-tinted {
+    padding-top: 56px !important;
+    padding-bottom: 56px !important;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding-top: 100px !important;
+    padding-bottom: 48px !important;
+  }
+  h1 {
+    font-size: 32px !important;
+    letter-spacing: -0.03em !important;
+  }
+  .hero-sub,
+  .sub {
+    font-size: 16px !important;
+  }
+  .hero-ctas,
+  .cta-row {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  .hero-ctas a,
+  .cta-row a,
+  .btn-p,
+  .btn-s,
+  .btn,
+  .btn.primary {
+    text-align: center;
+    justify-content: center;
+  }
+  
+  /* ── INSTALL BAR (hero) ── */
+  .install-cmd,
+  .install-bar .code-block,
+  .hero .code-block {
+    font-size: 11px !important;
+    padding: 10px 14px !important;
+    overflow-x: auto;
+  }
+  .hero-install-row {
+    max-width: 100% !important;
+    overflow: visible !important;
+    flex-wrap: wrap;
+  }
+  .hero-install-cmd {
+    white-space: normal !important;
+    word-break: break-all;
+    font-size: 11px !important;
+  }
+  .hero-install-copy {
+    flex-shrink: 0;
+  }
+
+  /* ── NUMBERS ── */
+  .numbers-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  .number-item {
+    padding: 16px 8px !important;
+  }
+  .number-item .num {
+    font-size: 20px !important;
+  }
+  .number-item .label {
+    font-size: 11px !important;
+  }
+
+  /* ── INTERACTIVE TERMINAL ── */
+  .terminal-body,
+  .terminal .terminal-body {
+    font-size: 11px !important;
+    padding: 14px 12px !important;
+    min-height: 260px !important;
+    max-height: 350px !important;
+  }
+  #ti, #term-input {
+    font-size: 11px !important;
+  }
+  .demo-label {
+    font-size: 11px !important;
+    padding: 0 8px;
+  }
+  .demo-label kbd {
+    display: none; /* hide keyboard shortcuts on mobile */
+  }
+  
+  /* Suggestion pills — horizontal scroll with hint on mobile */
+  .pills,
+  .term-suggestions {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 80px !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+    scrollbar-width: none;
+  }
+  .pills::-webkit-scrollbar,
+  .term-suggestions::-webkit-scrollbar { display: none; }
+  .swipe-hint {
+    display: block !important;
+  }
+  .pill,
+  .term-pill {
+    flex-shrink: 0;
+    font-size: 11px !important;
+    padding: 5px 10px !important;
+  }
+
+  /* ── PHILOSOPHY ── */
+  .philosophy-line {
+    font-size: 18px !important;
+  }
+  .philosophy-line.dim + .philosophy-line.dim {
+    /* "No container brain" sub-line */
+    font-size: 14px !important;
+  }
+
+  /* ── SECTION HEADINGS ── */
+  h2 {
+    font-size: 24px !important;
+  }
+  .section-sub {
+    font-size: 15px !important;
+  }
+
+  /* ── ARCHITECTURE DIAGRAMS (3 pods) ── */
+  .arch-pods,
+  .pod-grid,
+  [class*="arch-grid"] {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  /* Infrastructure bar below pods */
+  .infra-bar,
+  .platform-bar {
+    font-size: 11px !important;
+    padding: 12px !important;
+  }
+
+  /* ── FIVE WALLS ANIMATION ── */
+  .walls-box {
+    padding: 28px 16px !important;
+  }
+  .walls-grid {
+    gap: 6px !important;
+  }
+  .wall-tag {
+    font-size: 10px !important;
+    padding: 6px 10px !important;
+  }
+  .ceiling-tag {
+    font-size: 11px !important;
+  }
+
+  /* ── FEATURE GRID ── */
+  .feature-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .feature-card {
+    padding: 20px !important;
+  }
+
+  /* ── AGENT CARDS ── */
+  .agent-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .agent-cmd {
+    font-size: 10px !important;
+    overflow-x: auto;
+  }
+
+  /* ── USE CASES ── */
+  .usecase-grid,
+  .grid3 {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* ── WORKFLOW STEPS ── */
+  .step {
+    grid-template-columns: 40px 1fr !important;
+    gap: 14px !important;
+    padding: 20px 0 !important;
+  }
+  .step-content h3 {
+    font-size: 16px !important;
+  }
+
+  /* ═══ DOCKER vs ENVPOD VISUAL COMPARISON ═══
+     This is the side-by-side architecture diagram.
+     Stack vertically on mobile with "vs" between. */
+  .compare-visual,
+  .docker-vs-envpod,
+  .comparison-visual,
+  .split-compare {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  /* The "vs" divider */
+  .vs-divider,
+  .compare-vs {
+    margin: 0 auto;
+  }
+
+  /* ── COMPETITOR CARDS ── */
+  .compare-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+  .compare-col {
+    padding: 18px !important;
+  }
+  .compare-verdict {
+    font-size: 18px !important;
+  }
+  .compare-desc {
+    font-size: 13px !important;
+  }
+  .compare-callout {
+    padding: 20px 16px !important;
+  }
+  .compare-callout p {
+    font-size: 15px !important;
+  }
+
+  /* ═══ BENCHMARK TABLES ═══
+     Make tables horizontally scrollable */
+  .bench-wrap,
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+  .bench-table,
+  table.table,
+  table[class*="bench"] {
+    min-width: 580px;
+    font-size: 12px !important;
+  }
+  .bench-table th,
+  .bench-table td,
+  .table th,
+  .table td {
+    padding: 10px 10px !important;
+    font-size: 12px !important;
+    white-space: nowrap;
+  }
+  .bench-callout,
+  .callout {
+    font-size: 13px !important;
+    padding: 12px 14px !important;
+  }
+  .bench-env {
+    font-size: 11px !important;
+  }
+  /* Hint: swipe to scroll */
+  .bench-table::after,
+  .table::after {
+    content: '← swipe →';
+    display: block;
+    text-align: center;
+    font-size: 11px;
+    color: var(--dim, #5a5a66);
+    padding: 8px 0 0;
+    font-family: var(--mono);
+  }
+
+  /* ── INSTALL SECTION ── */
+  .install-tabs {
+    gap: 4px !important;
+  }
+  .itab {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+  }
+  .code-block {
+    font-size: 11px !important;
+    padding: 14px 12px !important;
+    overflow-x: auto;
+  }
+  .req-box {
+    font-size: 12px !important;
+    padding: 16px !important;
+  }
+  
+  /* OpenClaw YAML example */
+  .yaml-body,
+  .code,
+  pre {
+    font-size: 11px !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ═══ PRICING ═══ */
+  .pricing-grid,
+  .price-grid,
+  [class*="pricing-grid"] {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .price-card,
+  .pricing-card,
+  [class*="price-card"] {
+    padding: 24px 20px !important;
+  }
+  .price-card h3,
+  .pricing-card h3 {
+    font-size: 20px !important;
+  }
+  .price-amount,
+  .price-tag {
+    font-size: 32px !important;
+  }
+
+  /* ── CONTACT ── */
+  .contact-grid,
+  .split {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* ── CTA ── */
+  .cta-box {
+    padding: 40px 20px !important;
+  }
+  .cta-box h2 {
+    font-size: 22px !important;
+  }
+  .cta-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cta-actions a {
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* ── AARM ── */
+  .aarm-inner {
+    flex-direction: column !important;
+    text-align: center !important;
+    padding: 18px !important;
+  }
+  .aarm-text {
+    font-size: 13px !important;
+  }
+
+  /* ── AUDIT STRIP ── */
+  .audit-strip {
+    padding: 10px 0 !important;
+  }
+  .audit-entry {
+    font-size: 9px !important;
+    gap: 6px !important;
+  }
+
+  /* ── FOOTER ── */
+  .footer-inner,
+  .foot {
+    flex-direction: column !important;
+    text-align: center;
+    gap: 20px !important;
+  }
+  .footer-links,
+  .right {
+    justify-content: center;
+  }
+}
+
+/* ══════════════════════════════════════
+   SMALL MOBILE — 480px and below
+   ══════════════════════════════════════ */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 28px !important;
+  }
+  
+  .numbers-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  /* Hide the 5th item or wrap it */
+  .number-item:nth-child(5) {
+    grid-column: 1 / -1;
+  }
+
+  .compare-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Terminal even smaller */
+  .terminal-body {
+    font-size: 10px !important;
+    min-height: 220px !important;
+  }
+  
+  /* Pricing buttons stack */
+  .price-card .cta-actions,
+  .pricing-card .btn-group {
+    flex-direction: column;
+  }
+
+  /* KPI boxes from preview layout */
+  .kpi {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+}
+
+/* ══════════════════════════════════════
+   TOUCH DEVICE OPTIMIZATIONS
+   ══════════════════════════════════════ */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger tap targets */
+  .pill, .term-pill {
+    padding: 8px 14px !important;
+    min-height: 36px;
+  }
+  .itab {
+    min-height: 40px;
+  }
+  .nav-links a, .navlinks a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .btn-p, .btn-s, .btn {
+    min-height: 44px;
+  }
+  
+  /* Disable hover effects that look stuck on mobile */
+  .feature-card:hover,
+  .agent-card:hover,
+  .usecase-card:hover,
+  .arch-card:hover {
+    transform: none !important;
+  }
+  
+  /* Terminal input — make it more obvious on mobile */
+  #ti, #term-input {
+    font-size: 16px !important; /* prevents iOS zoom on focus */
+  }
+}
+
+/* ══════════════════════════════════════
+   LANDSCAPE PHONE (short viewport)
+   ══════════════════════════════════════ */
+@media (max-height: 500px) and (max-width: 900px) {
+  .hero {
+    padding-top: 80px !important;
+    padding-bottom: 24px !important;
+  }
+  .terminal-body {
+    max-height: 200px !important;
+    min-height: 160px !important;
+  }
+}
+
+/* ══════════════════════════════════════
+   BENCHMARK TABLE WRAPPER
+   
+   If your tables aren't already in a wrapper div,
+   wrap each <table> in:
+   <div class="table-scroll">
+     <table>...</table>
+   </div>
+   ══════════════════════════════════════ */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  border: 1px solid var(--border, #1e1e24);
+}
+.table-scroll table {
+  border: none;
+  border-radius: 0;
+}
+.table-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+.table-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-hi, #2a2a32);
+  border-radius: 2px;
+}

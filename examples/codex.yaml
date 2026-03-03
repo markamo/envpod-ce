@@ -1,0 +1,97 @@
+# Codex pod — OpenAI's CLI coding agent
+#
+# OpenAI Codex CLI is a terminal coding agent that uses OpenAI models
+# for code generation, debugging, and refactoring. It applies its own
+# Landlock + seccomp sandbox internally, so envpod provides the outer
+# governance layer.
+#
+# Needs: api.openai.com (OpenAI API), package registries (npm/pip/cargo),
+# GitHub (code operations). Requires Node.js 18+.
+# Uses system_access: advanced for nvm to install Node.js.
+#
+# Usage:
+#   sudo envpod init codex -c examples/codex.yaml
+#   sudo envpod setup codex
+#   sudo envpod run codex -- codex
+
+name: codex
+type: standard
+backend: native
+
+network:
+  mode: Monitored
+  dns:
+    mode: Whitelist
+    allow:
+      # OpenAI API
+      - api.openai.com
+      - "*.openai.com"
+      # GitHub (code, PRs, issues)
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+      # npm registry
+      - registry.npmjs.org
+      - "*.npmjs.org"
+      # PyPI
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+      # Cargo/crates.io
+      - crates.io
+      - "*.crates.io"
+      - static.crates.io
+      # nvm + Node.js downloads
+      - nodejs.org
+      - "*.nodejs.org"
+
+filesystem:
+  system_access: advanced
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+      - /opt/nvm             # nvm install dir
+      - /root/.npm
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+
+security:
+  seccomp_profile: default
+  shm_size: "64MB"
+
+budget:
+  max_duration: "30m"
+
+# Vault proxy injection — agent never sees the real API key.
+# To enable: sudo envpod vault codex set OPENAI_API_KEY
+#            sudo envpod vault codex bind OPENAI_API_KEY api.openai.com "Authorization: Bearer {value}"
+vault:
+  proxy: false
+  bindings: []
+
+audit:
+  action_log: true
+
+setup:
+  # Install nvm to /opt/nvm — world-accessible (not /root/.nvm which is mode 700)
+  - "export NVM_DIR=/opt/nvm && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash"
+  - "export NVM_DIR=/opt/nvm && . \"$NVM_DIR/nvm.sh\" && nvm install 22"
+  # Symlink to /usr/local/bin — always in PATH for root and non-root users
+  - |
+    export NVM_DIR=/opt/nvm
+    . "$NVM_DIR/nvm.sh"
+    ln -sf "$(which node)" /usr/local/bin/node
+    ln -sf "$(which npm)" /usr/local/bin/npm
+    ln -sf "$(which npx)" /usr/local/bin/npx
+  - "npm install -g @openai/codex"

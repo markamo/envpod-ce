@@ -1,0 +1,57 @@
+# General-purpose development pod — full internet, advanced filesystem
+#
+# Use this when you need unrestricted network access for installing
+# packages, pulling repos, or testing APIs. All DNS queries are logged
+# but nothing is blocked.
+#
+# Usage:
+#   sudo envpod init mybox -c examples/devbox.yaml
+#   sudo envpod run mybox -- bash
+
+name: devbox
+type: standard
+backend: native
+
+filesystem:
+  system_access: advanced
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      # System package managers
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+      # Language toolchain caches (not user project files)
+      - /root/.nvm
+      - /root/.npm
+      - /root/.node-gyp
+      - /root/.bun
+      - /root/.cargo
+      - /root/.rustup
+      - /root/.cache
+      - /root/.local/lib
+      - /root/.config
+
+network:
+  mode: Monitored
+  dns:
+    mode: Monitor
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+
+security:
+  seccomp_profile: default
+
+budget:
+  max_duration: "8h"
+
+audit:
+  action_log: true

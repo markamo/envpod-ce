@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>envpod Pro — Early Access Waitlist</title>
+<meta name="description" content="Get early access to envpod Pro — vault proxy injection, advanced diff, prompt screening, and TLS inspection for production AI agent deployments.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
+<script src="https://embed.formaloo.me/v1/main.js" defer async></script>
+<style>
+:root {
+  --bg: #0a0a0b;
+  --surface: #111113;
+  --surface2: #16161a;
+  --border: #1e1e24;
+  --border-hi: #2a2a32;
+  --text: #e8e8ed;
+  --muted: #8b8b98;
+  --dim: #5a5a66;
+  --green: #22c55e;
+  --green-glow: rgba(34,197,94,0.08);
+  --blue: #58a6ff;
+  --purple: #bc8cff;
+  --mono: 'JetBrains Mono', 'SF Mono', monospace;
+  --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(900px 600px at 20% 0%,rgba(34,197,94,0.07),transparent 55%),radial-gradient(700px 500px at 80% 20%,rgba(188,140,255,0.06),transparent 50%),var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── NAV ── */
+nav{width:100%;padding:14px 0;background:rgba(10,10,11,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1100px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--mono);font-weight:700;font-size:18px;color:var(--text);text-decoration:none;letter-spacing:-0.5px}
+.logo span{color:var(--green)}
+.nav-back{font-size:14px;color:var(--muted);padding:6px 12px;border-radius:6px;transition:color .15s,background .15s;display:flex;align-items:center;gap:6px}
+.nav-back:hover{color:var(--text);background:var(--surface);text-decoration:none}
+
+/* ── PAGE ── */
+.page{max-width:640px;margin:0 auto;padding:80px 32px 100px}
+
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--purple);background:rgba(188,140,255,0.08);border:1px solid rgba(188,140,255,0.18);padding:5px 14px;border-radius:100px;margin-bottom:28px}
+.badge::before{content:'';width:6px;height:6px;background:var(--purple);border-radius:50%;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── HEADING ── */
+.page h1{font-size:clamp(30px,5vw,44px);font-weight:800;line-height:1.08;letter-spacing:-0.03em;margin-bottom:16px}
+.page h1 .accent{color:var(--green)}
+.page .sub{font-size:17px;color:var(--muted);line-height:1.65;margin-bottom:40px}
+
+/* ── FEATURES ── */
+.feature-list{list-style:none;margin-bottom:44px;display:flex;flex-direction:column;gap:10px}
+.feature-list li{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--muted);line-height:1.5}
+.feature-list li::before{content:'→';font-family:var(--mono);color:var(--green);flex-shrink:0;margin-top:1px}
+.feature-list li strong{color:var(--text)}
+
+/* ── FORMALOO WRAP ── */
+.form-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+
+/* ── FOOTER ── */
+.footer{text-align:center;padding:32px;font-size:12px;color:var(--dim);border-top:1px solid var(--border)}
+.footer a{color:var(--dim)}
+.footer a:hover{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="logo">env<span>pod</span></a>
+    <a href="/" class="nav-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to home
+    </a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="badge">Pro · Early Access</div>
+  <h1>Get early access to<br><span class="accent">envpod Pro</span></h1>
+  <p class="sub">Pro is coming soon. Leave your details and we'll reach out personally before launch — no spam, one email.</p>
+
+  <ul class="feature-list">
+    <li><strong>Vault proxy injection</strong> — API keys never visible to the agent, not even in env vars</li>
+    <li><strong>Advanced diff dashboard</strong> — per-line staging, per-hunk approval, side-by-side view</li>
+    <li><strong>Prompt &amp; instruction screening</strong> — detect jailbreak attempts before execution</li>
+    <li><strong>TLS packet inspection</strong> — see exactly what the agent sends over HTTPS</li>
+    <li><strong>Base pod export / import</strong> — portable environment snapshots across machines</li>
+    <li><strong>Priority support</strong> — direct line to the team</li>
+  </ul>
+
+  <div class="form-wrap">
+    <div class="formaloo--root-container" data-form-slug="B07TEPCP" style="width:100%;height:750px"></div>
+  </div>
+</div>
+
+<div class="footer">
+  Copyright 2026 Mark Amo-Boateng / Xtellix Inc. ·
+  <a href="https://github.com/markamo/envpod-ce/blob/main/LICENSE">BSL 1.1</a> ·
+  <a href="mailto:mark@envpod.dev">mark@envpod.dev</a>
+</div>
+
+</body>
+</html>

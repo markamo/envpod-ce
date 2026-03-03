@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Install to First Pod in 60 Seconds</title>
+<!-- SVG mode: no external JS/CSS needed -->
+<style>
+  :root {
+    --bg: #1a1b26;
+    --fg: #c0caf5;
+    --muted: #565f89;
+    --accent: #7aa2f7;
+    --border: #292e42;
+    --code-bg: #24283b;
+    --blockquote-border: #e0af68;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.7;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+  h1 {
+    font-size: 2rem;
+    margin: 2rem 0 1rem;
+    color: #c0caf5;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0.5rem;
+  }
+  h2 {
+    font-size: 1.5rem;
+    margin: 2.5rem 0 1rem;
+    color: var(--accent);
+  }
+  h3 { font-size: 1.2rem; margin: 1.5rem 0 0.5rem; color: var(--fg); }
+  p { margin: 0.8rem 0; }
+  li { margin: 0.3rem 0 0.3rem 1.5rem; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+  blockquote {
+    border-left: 3px solid var(--blockquote-border);
+    padding: 0.5rem 1rem;
+    margin: 1rem 0;
+    color: var(--muted);
+    background: rgba(224, 175, 104, 0.05);
+    border-radius: 0 4px 4px 0;
+  }
+  .cast-block {
+    margin: 1.5rem 0;
+  }
+  .player {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .svg-player {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .svg-player svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  details {
+    margin-top: 0.5rem;
+  }
+  summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 0.3rem 0;
+    user-select: none;
+  }
+  summary:hover { color: var(--accent); }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+    margin-top: 0.5rem;
+  }
+  code {
+    font-family: JetBrains Mono, Fira Code, Cascadia Code, monospace;
+    font-size: 0.9rem;
+    color: var(--fg);
+  }
+  .media-block {
+    margin: 1.5rem 0;
+    text-align: center;
+  }
+  .media {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .code-copy {
+    position: relative;
+    margin-top: 0.5rem;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: var(--border);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: inherit;
+    z-index: 1;
+    transition: color 0.2s, background 0.2s;
+  }
+  .copy-btn:hover { color: var(--fg); background: var(--code-bg); }
+  .copy-btn.copied { color: #9ece6a; }
+  /* Asciinema player overrides */
+  .ap-wrapper { border-radius: 8px !important; }
+</style>
+<!-- SVG mode -->
+</head>
+<body>
+<h1>Install to First Pod in 60 Seconds</h1>
+<blockquote><p>Docker isolates. Envpod governs.</p></blockquote>
+<hr>
+<h2>Install</h2>
+<div class="cast-block">
+  <div class="svg-player"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 948 204" style="width:100%;max-width:948px;border-radius:8px;background:#1a1b26">
+<style>
+.t{font-family:JetBrains Mono, Fira Code, Cascadia Code, monospace;font-size:14px;white-space:pre}
+.f{opacity:0}
+@keyframes f0{0%{opacity:0}5.04%{opacity:1}7.06%{opacity:0}100%{opacity:0}}
+#f0{animation:f0 5.95s step-end infinite}
+@keyframes f1{0%{opacity:0}7.06%{opacity:1}9.08%{opacity:0}100%{opacity:0}}
+#f1{animation:f1 5.95s step-end infinite}
+@keyframes f2{0%{opacity:0}9.08%{opacity:1}11.09%{opacity:0}100%{opacity:0}}
+#f2{animation:f2 5.95s step-end infinite}
+@keyframes f3{0%{opacity:0}11.09%{opacity:1}13.11%{opacity:0}100%{opacity:0}}
+#f3{animation:f3 5.95s step-end infinite}
+@keyframes f4{0%{opacity:0}13.11%{opacity:1}15.13%{opacity:0}100%{opacity:0}}
+#f4{animation:f4 5.95s step-end infinite}
+@keyframes f5{0%{opacity:0}15.13%{opacity:1}17.14%{opacity:0}100%{opacity:0}}
+#f5{animation:f5 5.95s step-end infinite}
+@keyframes f6{0%{opacity:0}17.14%{opacity:1}19.16%{opacity:0}100%{opacity:0}}
+#f6{animation:f6 5.95s step-end infinite}
+@keyframes f7{0%{opacity:0}19.16%{opacity:1}21.18%{opacity:0}100%{opacity:0}}
+#f7{animation:f7 5.95s step-end infinite}
+@keyframes f8{0%{opacity:0}21.18%{opacity:1}23.19%{opacity:0}100%{opacity:0}}
+#f8{animation:f8 5.95s step-end infinite}
+@keyframes f9{0%{opacity:0}23.19%{opacity:1}25.21%{opacity:0}100%{opacity:0}}
+#f9{animation:f9 5.95s step-end infinite}
+@keyframes f10{0%{opacity:0}25.21%{opacity:1}27.23%{opacity:0}100%{opacity:0}}
+#f10{animation:f10 5.95s step-end infinite}
+@keyframes f11{0%{opacity:0}27.23%{opacity:1}41.18%{opacity:0}100%{opacity:0}}
+#f11{animation:f11 5.95s step-end infinite}
+@keyframes f12{0%{opacity:0}41.18%{opacity:1}66.39%{opacity:0}100%{opacity:0}}
+#f12{animation:f12 5.95s step-end infinite}
+@keyframes f13{0%{opacity:0}66.39%{opacity:1}100.00%{opacity:0}100%{opacity:0}}
+#f13{animation:f13 5.95s step-end infinite}
+svg{cursor:pointer}
+</style>
+<script type="text/ecmascript"><![CDATA[document.documentElement.addEventListener("click",function(e){var s=e.currentTarget;var gs=s.querySelectorAll("[id^=f]");var st=gs[0]?getComputedStyle(gs[0]).animationPlayState:"running";var nv=st==="running"?"paused":"running";for(var i=0;i<gs.length;i++)gs[i].style.animationPlayState=nv;});]]></script>
+<g id="f0" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f1" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl</tspan></text>
+</g>
+<g id="f2" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsS</tspan></text>
+</g>
+<g id="f3" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL ht</tspan></text>
+</g>
+<g id="f4" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https:</tspan></text>
+</g>
+<g id="f5" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://en</tspan></text>
+</g>
+<g id="f6" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod</tspan></text>
+</g>
+<g id="f7" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod.dev</tspan></text>
+</g>
+<g id="f8" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod.dev/ins</tspan></text>
+</g>
+<g id="f9" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod.dev/install</tspan></text>
+</g>
+<g id="f10" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod.dev/install.sh</tspan></text>
+</g>
+<g id="f11" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod.dev/install.sh | sh</tspan></text>
+</g>
+<g id="f12" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod.dev/install.sh | sh</tspan></text>
+</g>
+<g id="f13" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">curl -fsSL https://envpod.dev/install.sh | sh</tspan></text>
+<text x="12" y="188.0"><tspan fill="#c0caf5" opacity="0.5">                                                                                                      md2cast</tspan></text>
+</g>
+</svg></div>
+  <div class="code-copy">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code class="language-bash">curl -fsSL https://envpod.dev/install.sh | sh</code></pre>
+  </div>
+</div>
+<div class="cast-block">
+  <div class="svg-player"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 948 168" style="width:100%;max-width:948px;border-radius:8px;background:#1a1b26">
+<style>
+.t{font-family:JetBrains Mono, Fira Code, Cascadia Code, monospace;font-size:14px;white-space:pre}
+.f{opacity:0}
+@keyframes f0{0%{opacity:0}7.89%{opacity:1}47.37%{opacity:0}100%{opacity:0}}
+#f0{animation:f0 3.80s step-end infinite}
+@keyframes f1{0%{opacity:0}47.37%{opacity:1}100.00%{opacity:0}100%{opacity:0}}
+#f1{animation:f1 3.80s step-end infinite}
+svg{cursor:pointer}
+</style>
+<script type="text/ecmascript"><![CDATA[document.documentElement.addEventListener("click",function(e){var s=e.currentTarget;var gs=s.querySelectorAll("[id^=f]");var st=gs[0]?getComputedStyle(gs[0]).animationPlayState:"running";var nv=st==="running"?"paused":"running";for(var i=0;i<gs.length;i++)gs[i].style.animationPlayState=nv;});]]></script>
+<g id="f0" class="f t">
+<text x="12" y="26.0"><tspan fill="#c0caf5">envpod v0.1.0 installed to /usr/local/bin/envpod</tspan></text>
+</g>
+<g id="f1" class="f t">
+<text x="12" y="26.0"><tspan fill="#c0caf5">envpod v0.1.0 installed to /usr/local/bin/envpod</tspan></text>
+<text x="12" y="152.0"><tspan fill="#c0caf5" opacity="0.5">                                                                                                      md2cast</tspan></text>
+</g>
+</svg></div>
+  <div class="code-copy">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code class="language-text">envpod v0.1.0 installed to /usr/local/bin/envpod</code></pre>
+  </div>
+</div>
+<h2>Show Presets</h2>
+<div class="cast-block">
+  <div class="svg-player"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 948 546" style="width:100%;max-width:948px;border-radius:8px;background:#1a1b26">
+<style>
+.t{font-family:JetBrains Mono, Fira Code, Cascadia Code, monospace;font-size:14px;white-space:pre}
+.f{opacity:0}
+@keyframes f0{0%{opacity:0}5.98%{opacity:1}8.37%{opacity:0}100%{opacity:0}}
+#f0{animation:f0 5.02s step-end infinite}
+@keyframes f1{0%{opacity:0}8.37%{opacity:1}10.76%{opacity:0}100%{opacity:0}}
+#f1{animation:f1 5.02s step-end infinite}
+@keyframes f2{0%{opacity:0}10.76%{opacity:1}13.15%{opacity:0}100%{opacity:0}}
+#f2{animation:f2 5.02s step-end infinite}
+@keyframes f3{0%{opacity:0}13.15%{opacity:1}30.28%{opacity:0}100%{opacity:0}}
+#f3{animation:f3 5.02s step-end infinite}
+@keyframes f4{0%{opacity:0}30.28%{opacity:1}60.16%{opacity:0}100%{opacity:0}}
+#f4{animation:f4 5.02s step-end infinite}
+@keyframes f5{0%{opacity:0}60.16%{opacity:1}60.16%{opacity:0}100%{opacity:0}}
+#f5{animation:f5 5.02s step-end infinite}
+@keyframes f6{0%{opacity:0}60.16%{opacity:1}100.00%{opacity:0}100%{opacity:0}}
+#f6{animation:f6 5.02s step-end infinite}
+svg{cursor:pointer}
+</style>
+<script type="text/ecmascript"><![CDATA[document.documentElement.addEventListener("click",function(e){var s=e.currentTarget;var gs=s.querySelectorAll("[id^=f]");var st=gs[0]?getComputedStyle(gs[0]).animationPlayState:"running";var nv=st==="running"?"paused":"running";for(var i=0;i<gs.length;i++)gs[i].style.animationPlayState=nv;});]]></script>
+<g id="f0" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f1" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpo</tspan></text>
+</g>
+<g id="f2" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod pr</tspan></text>
+</g>
+<g id="f3" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod preset</tspan></text>
+</g>
+<g id="f4" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+</g>
+<g id="f5" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" font-weight="bold">Coding Agents</tspan></text>
+<text x="12" y="62.0"><tspan fill="#c0caf5">    1  claude-code     Anthropic Claude Code CLI</tspan></text>
+<text x="12" y="80.0"><tspan fill="#c0caf5">    2  codex           OpenAI Codex CLI</tspan></text>
+<text x="12" y="98.0"><tspan fill="#c0caf5">    3  gemini-cli      Google Gemini CLI</tspan></text>
+<text x="12" y="116.0"><tspan fill="#c0caf5">    4  opencode        OpenCode terminal agent</tspan></text>
+<text x="12" y="134.0"><tspan fill="#c0caf5">    5  aider           Aider AI pair programmer</tspan></text>
+<text x="12" y="152.0"><tspan fill="#c0caf5">    6  swe-agent       SWE-agent autonomous coder</tspan></text>
+<text x="12" y="188.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" font-weight="bold">Frameworks</tspan></text>
+<text x="12" y="206.0"><tspan fill="#c0caf5">    7  langgraph       LangGraph workflows</tspan></text>
+<text x="12" y="224.0"><tspan fill="#c0caf5">    8  google-adk      Google Agent Development Kit</tspan></text>
+<text x="12" y="242.0"><tspan fill="#c0caf5">    9  openclaw        OpenClaw messaging assistant</tspan></text>
+<text x="12" y="278.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" font-weight="bold">Browser Agents</tspan></text>
+<text x="12" y="296.0"><tspan fill="#c0caf5">   10  browser-use     Browser-use web automation</tspan></text>
+<text x="12" y="314.0"><tspan fill="#c0caf5">   11  playwright      Playwright browser automation</tspan></text>
+<text x="12" y="332.0"><tspan fill="#c0caf5">   12  browser         Headless Chrome sandbox</tspan></text>
+<text x="12" y="368.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" font-weight="bold">Environments</tspan></text>
+<text x="12" y="386.0"><tspan fill="#c0caf5">   13  devbox          General dev sandbox</tspan></text>
+<text x="12" y="404.0"><tspan fill="#c0caf5">   14  python-env      Python environment</tspan></text>
+<text x="12" y="422.0"><tspan fill="#c0caf5">   15  nodejs          Node.js environment</tspan></text>
+<text x="12" y="440.0"><tspan fill="#c0caf5">   16  web-display     noVNC desktop</tspan></text>
+<text x="12" y="458.0"><tspan fill="#c0caf5">   17  desktop         XFCE desktop via noVNC</tspan></text>
+<text x="12" y="476.0"><tspan fill="#c0caf5">   18  vscode          VS Code in the browser</tspan></text>
+</g>
+<g id="f6" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" font-weight="bold">Coding Agents</tspan></text>
+<text x="12" y="62.0"><tspan fill="#c0caf5">    1  claude-code     Anthropic Claude Code CLI</tspan></text>
+<text x="12" y="80.0"><tspan fill="#c0caf5">    2  codex           OpenAI Codex CLI</tspan></text>
+<text x="12" y="98.0"><tspan fill="#c0caf5">    3  gemini-cli      Google Gemini CLI</tspan></text>
+<text x="12" y="116.0"><tspan fill="#c0caf5">    4  opencode        OpenCode terminal agent</tspan></text>
+<text x="12" y="134.0"><tspan fill="#c0caf5">    5  aider           Aider AI pair programmer</tspan></text>
+<text x="12" y="152.0"><tspan fill="#c0caf5">    6  swe-agent       SWE-agent autonomous coder</tspan></text>
+<text x="12" y="188.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" font-weight="bold">Frameworks</tspan></text>
+<text x="12" y="206.0"><tspan fill="#c0caf5">    7  langgraph       LangGraph workflows</tspan></text>
+<text x="12" y="224.0"><tspan fill="#c0caf5">    8  google-adk      Google Agent Development Kit</tspan></text>
+<text x="12" y="242.0"><tspan fill="#c0caf5">    9  openclaw        OpenClaw messaging assistant</tspan></text>
+<text x="12" y="278.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" font-weight="bold">Browser Agents</tspan></text>
+<text x="12" y="296.0"><tspan fill="#c0caf5">   10  browser-use     Browser-use web automation</tspan></text>
+<text x="12" y="314.0"><tspan fill="#c0caf5">   11  playwright      Playwright browser automation</tspan></text>
+<text x="12" y="332.0"><tspan fill="#c0caf5">   12  browser         Headless Chrome sandbox</tspan></text>
+<text x="12" y="368.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" font-weight="bold">Environments</tspan></text>
+<text x="12" y="386.0"><tspan fill="#c0caf5">   13  devbox          General dev sandbox</tspan></text>
+<text x="12" y="404.0"><tspan fill="#c0caf5">   14  python-env      Python environment</tspan></text>
+<text x="12" y="422.0"><tspan fill="#c0caf5">   15  nodejs          Node.js environment</tspan></text>
+<text x="12" y="440.0"><tspan fill="#c0caf5">   16  web-display     noVNC desktop</tspan></text>
+<text x="12" y="458.0"><tspan fill="#c0caf5">   17  desktop         XFCE desktop via noVNC</tspan></text>
+<text x="12" y="476.0"><tspan fill="#c0caf5">   18  vscode          VS Code in the browser</tspan></text>
+<text x="12" y="530.0"><tspan fill="#c0caf5" opacity="0.5">                                                                                                      md2cast</tspan></text>
+</g>
+</svg></div>
+  <div class="code-copy">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code class="language-bash">envpod presets</code></pre>
+  </div>
+</div>
+<hr>
+<h2>Create a Pod</h2>
+<div class="cast-block">
+  <div class="svg-player"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 948 492" style="width:100%;max-width:948px;border-radius:8px;background:#1a1b26">
+<style>
+.t{font-family:JetBrains Mono, Fira Code, Cascadia Code, monospace;font-size:14px;white-space:pre}
+.f{opacity:0}
+@keyframes f0{0%{opacity:0}5.23%{opacity:1}7.32%{opacity:0}100%{opacity:0}}
+#f0{animation:f0 5.74s step-end infinite}
+@keyframes f1{0%{opacity:0}7.32%{opacity:1}9.41%{opacity:0}100%{opacity:0}}
+#f1{animation:f1 5.74s step-end infinite}
+@keyframes f2{0%{opacity:0}9.41%{opacity:1}11.50%{opacity:0}100%{opacity:0}}
+#f2{animation:f2 5.74s step-end infinite}
+@keyframes f3{0%{opacity:0}11.50%{opacity:1}13.59%{opacity:0}100%{opacity:0}}
+#f3{animation:f3 5.74s step-end infinite}
+@keyframes f4{0%{opacity:0}13.59%{opacity:1}15.68%{opacity:0}100%{opacity:0}}
+#f4{animation:f4 5.74s step-end infinite}
+@keyframes f5{0%{opacity:0}15.68%{opacity:1}17.77%{opacity:0}100%{opacity:0}}
+#f5{animation:f5 5.74s step-end infinite}
+@keyframes f6{0%{opacity:0}17.77%{opacity:1}19.86%{opacity:0}100%{opacity:0}}
+#f6{animation:f6 5.74s step-end infinite}
+@keyframes f7{0%{opacity:0}19.86%{opacity:1}21.95%{opacity:0}100%{opacity:0}}
+#f7{animation:f7 5.74s step-end infinite}
+@keyframes f8{0%{opacity:0}21.95%{opacity:1}24.04%{opacity:0}100%{opacity:0}}
+#f8{animation:f8 5.74s step-end infinite}
+@keyframes f9{0%{opacity:0}24.04%{opacity:1}39.02%{opacity:0}100%{opacity:0}}
+#f9{animation:f9 5.74s step-end infinite}
+@keyframes f10{0%{opacity:0}39.02%{opacity:1}65.16%{opacity:0}100%{opacity:0}}
+#f10{animation:f10 5.74s step-end infinite}
+@keyframes f11{0%{opacity:0}65.16%{opacity:1}65.16%{opacity:0}100%{opacity:0}}
+#f11{animation:f11 5.74s step-end infinite}
+@keyframes f12{0%{opacity:0}65.16%{opacity:1}100.00%{opacity:0}100%{opacity:0}}
+#f12{animation:f12 5.74s step-end infinite}
+svg{cursor:pointer}
+</style>
+<script type="text/ecmascript"><![CDATA[document.documentElement.addEventListener("click",function(e){var s=e.currentTarget;var gs=s.querySelectorAll("[id^=f]");var st=gs[0]?getComputedStyle(gs[0]).animationPlayState:"running";var nv=st==="running"?"paused":"running";for(var i=0;i<gs.length;i++)gs[i].style.animationPlayState=nv;});]]></script>
+<g id="f0" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f1" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo</tspan></text>
+</g>
+<g id="f2" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envp</tspan></text>
+</g>
+<g id="f3" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod i</tspan></text>
+</g>
+<g id="f4" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init</tspan></text>
+</g>
+<g id="f5" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init hell</tspan></text>
+</g>
+<g id="f6" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init hello --</tspan></text>
+</g>
+<g id="f7" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init hello --pres</tspan></text>
+</g>
+<g id="f8" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init hello --preset d</tspan></text>
+</g>
+<g id="f9" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init hello --preset devbo</tspan></text>
+</g>
+<g id="f10" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init hello --preset devbox</tspan></text>
+</g>
+<g id="f11" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init hello --preset devbox</tspan></text>
+<text x="12" y="62.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" font-weight="bold">┌─────────────────────────────────────────────────────┐</tspan></text>
+<text x="12" y="80.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" font-weight="bold">│ envpod v0.1.0 — Zero-trust governance for AI agents │</tspan></text>
+<text x="12" y="98.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" font-weight="bold">└─────────────────────────────────────────────────────┘</tspan></text>
+<text x="12" y="134.0"><tspan fill="#c0caf5">  ────────────────────────────────────────</tspan></text>
+<text x="12" y="152.0"><tspan fill="#c0caf5">  Pod Created · hello  994ms</tspan></text>
+<text x="12" y="170.0"><tspan fill="#c0caf5">  ────────────────────────────────────────</tspan></text>
+<text x="12" y="206.0"><tspan fill="#c0caf5">  Backend  native</tspan></text>
+<text x="12" y="224.0"><tspan fill="#c0caf5">  Network  monitored · dns monitor</tspan></text>
+<text x="12" y="242.0"><tspan fill="#c0caf5">  FS       system advanced</tspan></text>
+<text x="12" y="260.0"><tspan fill="#c0caf5">  CPU      2 cores · 4GB</tspan></text>
+<text x="12" y="278.0"><tspan fill="#c0caf5">  Budget   8h</tspan></text>
+<text x="12" y="332.0"><tspan fill="#c0caf5">  ────────────────────────────────────────</tspan></text>
+<text x="12" y="350.0"><tspan fill="#c0caf5">  Ready  1.4s</tspan></text>
+<text x="12" y="368.0"><tspan fill="#c0caf5">  ────────────────────────────────────────</tspan></text>
+<text x="12" y="404.0"><tspan fill="#c0caf5">  Run  sudo envpod run hello -- bash</tspan></text>
+<text x="12" y="422.0"><tspan fill="#c0caf5">  Security 2 notes — run: sudo envpod audit hello --security</tspan></text>
+</g>
+<g id="f12" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init hello --preset devbox</tspan></text>
+<text x="12" y="62.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" font-weight="bold">┌─────────────────────────────────────────────────────┐</tspan></text>
+<text x="12" y="80.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" font-weight="bold">│ envpod v0.1.0 — Zero-trust governance for AI agents │</tspan></text>
+<text x="12" y="98.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" font-weight="bold">└─────────────────────────────────────────────────────┘</tspan></text>
+<text x="12" y="134.0"><tspan fill="#c0caf5">  ────────────────────────────────────────</tspan></text>
+<text x="12" y="152.0"><tspan fill="#c0caf5">  Pod Created · hello  994ms</tspan></text>
+<text x="12" y="170.0"><tspan fill="#c0caf5">  ────────────────────────────────────────</tspan></text>
+<text x="12" y="206.0"><tspan fill="#c0caf5">  Backend  native</tspan></text>
+<text x="12" y="224.0"><tspan fill="#c0caf5">  Network  monitored · dns monitor</tspan></text>
+<text x="12" y="242.0"><tspan fill="#c0caf5">  FS       system advanced</tspan></text>
+<text x="12" y="260.0"><tspan fill="#c0caf5">  CPU      2 cores · 4GB</tspan></text>
+<text x="12" y="278.0"><tspan fill="#c0caf5">  Budget   8h</tspan></text>
+<text x="12" y="332.0"><tspan fill="#c0caf5">  ────────────────────────────────────────</tspan></text>
+<text x="12" y="350.0"><tspan fill="#c0caf5">  Ready  1.4s</tspan></text>
+<text x="12" y="368.0"><tspan fill="#c0caf5">  ────────────────────────────────────────</tspan></text>
+<text x="12" y="404.0"><tspan fill="#c0caf5">  Run  sudo envpod run hello -- bash</tspan></text>
+<text x="12" y="422.0"><tspan fill="#c0caf5">  Security 2 notes — run: sudo envpod audit hello --security</tspan></text>
+<text x="12" y="476.0"><tspan fill="#c0caf5" opacity="0.5">                                                                                                      md2cast</tspan></text>
+</g>
+</svg></div>
+  <div class="code-copy">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code class="language-bash">sudo envpod init hello --preset devbox</code></pre>
+  </div>
+</div>
+<h2>Run a Command Inside</h2>
+<p>The agent thinks it wrote to your filesystem. It didn't.</p>
+<div class="cast-block">
+  <div class="svg-player"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 948 600" style="width:100%;max-width:948px;border-radius:8px;background:#1a1b26">
+<style>
+.t{font-family:JetBrains Mono, Fira Code, Cascadia Code, monospace;font-size:14px;white-space:pre}
+.f{opacity:0}
+@keyframes f0{0%{opacity:0}3.47%{opacity:1}4.86%{opacity:0}100%{opacity:0}}
+#f0{animation:f0 8.65s step-end infinite}
+@keyframes f1{0%{opacity:0}4.86%{opacity:1}6.24%{opacity:0}100%{opacity:0}}
+#f1{animation:f1 8.65s step-end infinite}
+@keyframes f2{0%{opacity:0}6.24%{opacity:1}7.63%{opacity:0}100%{opacity:0}}
+#f2{animation:f2 8.65s step-end infinite}
+@keyframes f3{0%{opacity:0}7.63%{opacity:1}9.02%{opacity:0}100%{opacity:0}}
+#f3{animation:f3 8.65s step-end infinite}
+@keyframes f4{0%{opacity:0}9.02%{opacity:1}10.40%{opacity:0}100%{opacity:0}}
+#f4{animation:f4 8.65s step-end infinite}
+@keyframes f5{0%{opacity:0}10.40%{opacity:1}11.79%{opacity:0}100%{opacity:0}}
+#f5{animation:f5 8.65s step-end infinite}
+@keyframes f6{0%{opacity:0}11.79%{opacity:1}13.18%{opacity:0}100%{opacity:0}}
+#f6{animation:f6 8.65s step-end infinite}
+@keyframes f7{0%{opacity:0}13.18%{opacity:1}14.57%{opacity:0}100%{opacity:0}}
+#f7{animation:f7 8.65s step-end infinite}
+@keyframes f8{0%{opacity:0}14.57%{opacity:1}15.95%{opacity:0}100%{opacity:0}}
+#f8{animation:f8 8.65s step-end infinite}
+@keyframes f9{0%{opacity:0}15.95%{opacity:1}17.34%{opacity:0}100%{opacity:0}}
+#f9{animation:f9 8.65s step-end infinite}
+@keyframes f10{0%{opacity:0}17.34%{opacity:1}18.73%{opacity:0}100%{opacity:0}}
+#f10{animation:f10 8.65s step-end infinite}
+@keyframes f11{0%{opacity:0}18.73%{opacity:1}20.12%{opacity:0}100%{opacity:0}}
+#f11{animation:f11 8.65s step-end infinite}
+@keyframes f12{0%{opacity:0}20.12%{opacity:1}21.50%{opacity:0}100%{opacity:0}}
+#f12{animation:f12 8.65s step-end infinite}
+@keyframes f13{0%{opacity:0}21.50%{opacity:1}22.89%{opacity:0}100%{opacity:0}}
+#f13{animation:f13 8.65s step-end infinite}
+@keyframes f14{0%{opacity:0}22.89%{opacity:1}24.28%{opacity:0}100%{opacity:0}}
+#f14{animation:f14 8.65s step-end infinite}
+@keyframes f15{0%{opacity:0}24.28%{opacity:1}25.66%{opacity:0}100%{opacity:0}}
+#f15{animation:f15 8.65s step-end infinite}
+@keyframes f16{0%{opacity:0}25.66%{opacity:1}27.05%{opacity:0}100%{opacity:0}}
+#f16{animation:f16 8.65s step-end infinite}
+@keyframes f17{0%{opacity:0}27.05%{opacity:1}28.44%{opacity:0}100%{opacity:0}}
+#f17{animation:f17 8.65s step-end infinite}
+@keyframes f18{0%{opacity:0}28.44%{opacity:1}29.83%{opacity:0}100%{opacity:0}}
+#f18{animation:f18 8.65s step-end infinite}
+@keyframes f19{0%{opacity:0}29.83%{opacity:1}31.21%{opacity:0}100%{opacity:0}}
+#f19{animation:f19 8.65s step-end infinite}
+@keyframes f20{0%{opacity:0}31.21%{opacity:1}32.60%{opacity:0}100%{opacity:0}}
+#f20{animation:f20 8.65s step-end infinite}
+@keyframes f21{0%{opacity:0}32.60%{opacity:1}33.99%{opacity:0}100%{opacity:0}}
+#f21{animation:f21 8.65s step-end infinite}
+@keyframes f22{0%{opacity:0}33.99%{opacity:1}35.38%{opacity:0}100%{opacity:0}}
+#f22{animation:f22 8.65s step-end infinite}
+@keyframes f23{0%{opacity:0}35.38%{opacity:1}36.76%{opacity:0}100%{opacity:0}}
+#f23{animation:f23 8.65s step-end infinite}
+@keyframes f24{0%{opacity:0}36.76%{opacity:1}38.15%{opacity:0}100%{opacity:0}}
+#f24{animation:f24 8.65s step-end infinite}
+@keyframes f25{0%{opacity:0}38.15%{opacity:1}39.54%{opacity:0}100%{opacity:0}}
+#f25{animation:f25 8.65s step-end infinite}
+@keyframes f26{0%{opacity:0}39.54%{opacity:1}40.92%{opacity:0}100%{opacity:0}}
+#f26{animation:f26 8.65s step-end infinite}
+@keyframes f27{0%{opacity:0}40.92%{opacity:1}42.31%{opacity:0}100%{opacity:0}}
+#f27{animation:f27 8.65s step-end infinite}
+@keyframes f28{0%{opacity:0}42.31%{opacity:1}43.70%{opacity:0}100%{opacity:0}}
+#f28{animation:f28 8.65s step-end infinite}
+@keyframes f29{0%{opacity:0}43.70%{opacity:1}45.09%{opacity:0}100%{opacity:0}}
+#f29{animation:f29 8.65s step-end infinite}
+@keyframes f30{0%{opacity:0}45.09%{opacity:1}46.47%{opacity:0}100%{opacity:0}}
+#f30{animation:f30 8.65s step-end infinite}
+@keyframes f31{0%{opacity:0}46.47%{opacity:1}47.86%{opacity:0}100%{opacity:0}}
+#f31{animation:f31 8.65s step-end infinite}
+@keyframes f32{0%{opacity:0}47.86%{opacity:1}49.25%{opacity:0}100%{opacity:0}}
+#f32{animation:f32 8.65s step-end infinite}
+@keyframes f33{0%{opacity:0}49.25%{opacity:1}59.54%{opacity:0}100%{opacity:0}}
+#f33{animation:f33 8.65s step-end infinite}
+@keyframes f34{0%{opacity:0}59.54%{opacity:1}76.88%{opacity:0}100%{opacity:0}}
+#f34{animation:f34 8.65s step-end infinite}
+@keyframes f35{0%{opacity:0}76.88%{opacity:1}76.88%{opacity:0}100%{opacity:0}}
+#f35{animation:f35 8.65s step-end infinite}
+@keyframes f36{0%{opacity:0}76.88%{opacity:1}100.00%{opacity:0}100%{opacity:0}}
+#f36{animation:f36 8.65s step-end infinite}
+svg{cursor:pointer}
+</style>
+<script type="text/ecmascript"><![CDATA[document.documentElement.addEventListener("click",function(e){var s=e.currentTarget;var gs=s.querySelectorAll("[id^=f]");var st=gs[0]?getComputedStyle(gs[0]).animationPlayState:"running";var nv=st==="running"?"paused":"running";for(var i=0;i<gs.length;i++)gs[i].style.animationPlayState=nv;});]]></script>
+<g id="f0" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f1" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo</tspan></text>
+</g>
+<g id="f2" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envp</tspan></text>
+</g>
+<g id="f3" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod r</tspan></text>
+</g>
+<g id="f4" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run h</tspan></text>
+</g>
+<g id="f5" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello</tspan></text>
+</g>
+<g id="f6" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello --</tspan></text>
+</g>
+<g id="f7" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash</tspan></text>
+</g>
+<g id="f8" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c</tspan></text>
+</g>
+<g id="f9" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;ech</tspan></text>
+</g>
+<g id="f10" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 't</tspan></text>
+</g>
+<g id="f11" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the a</tspan></text>
+</g>
+<g id="f12" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent</tspan></text>
+</g>
+<g id="f13" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wro</tspan></text>
+</g>
+<g id="f14" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote t</tspan></text>
+</g>
+<g id="f15" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this'</tspan></text>
+</g>
+<g id="f16" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /</tspan></text>
+</g>
+<g id="f17" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home</tspan></text>
+</g>
+<g id="f18" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/age</tspan></text>
+</g>
+<g id="f19" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/h</tspan></text>
+</g>
+<g id="f20" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello</tspan></text>
+</g>
+<g id="f21" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt</tspan></text>
+</g>
+<g id="f22" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp;</tspan></text>
+</g>
+<g id="f23" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo</tspan></text>
+</g>
+<g id="f24" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wr</tspan></text>
+</g>
+<g id="f25" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote</tspan></text>
+</g>
+<g id="f26" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /hom</tspan></text>
+</g>
+<g id="f27" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">g</tspan></text>
+</g>
+<g id="f28" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">gent/</tspan></text>
+</g>
+<g id="f29" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">gent/hell</tspan></text>
+</g>
+<g id="f30" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">gent/hello.tx</tspan></text>
+</g>
+<g id="f31" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">gent/hello.txt in</tspan></text>
+</g>
+<g id="f32" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">gent/hello.txt inside</tspan></text>
+</g>
+<g id="f33" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">gent/hello.txt inside pod</tspan></text>
+</g>
+<g id="f34" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="12" y="44.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c </tspan><tspan fill="#cccc66">&quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="12" y="62.0"><tspan fill="#cccc66">gent/hello.txt inside pod'&quot;</tspan></text>
+</g>
+<g id="f35" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c </tspan><tspan fill="#cccc66">&quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="12" y="44.0"><tspan fill="#cccc66">gent/hello.txt inside pod'&quot;</tspan></text>
+<text x="12" y="62.0"><tspan fill="#c0caf5">wrote /home/agent/hello.txt inside pod</tspan></text>
+<text x="12" y="98.0"><tspan fill="#c0caf5">  ┌─────────────────────────────────────────────────────┐</tspan></text>
+<text x="12" y="116.0"><tspan fill="#c0caf5">  │ envpod v0.1.0 — Zero-trust governance for AI agents │</tspan></text>
+<text x="12" y="134.0"><tspan fill="#c0caf5">  └─────────────────────────────────────────────────────┘</tspan></text>
+<text x="12" y="170.0"><tspan fill="#c0caf5">  This pod is governed. Every action is:</tspan></text>
+<text x="12" y="188.0"><tspan fill="#c0caf5">    · Isolated    — writes go to a COW overlay, never the host</tspan></text>
+<text x="12" y="206.0"><tspan fill="#c0caf5">    · Auditable   — all actions logged to the audit trail</tspan></text>
+<text x="12" y="224.0"><tspan fill="#c0caf5">    · Reversible  — review changes with diff, commit or rollback</tspan></text>
+<text x="12" y="242.0"><tspan fill="#c0caf5">    · Restricted — network filtered, resources capped</tspan></text>
+<text x="12" y="278.0"><tspan fill="#c0caf5">  Commands: envpod diff | commit | rollback | audit</tspan></text>
+<text x="12" y="314.0"><tspan fill="#c0caf5">  © 2026 Mark Amo-Boateng / Xtellix Inc. — Apache-2.0 License</tspan></text>
+<text x="12" y="332.0"><tspan fill="#c0caf5">  https://envpod.com</tspan></text>
+<text x="12" y="386.0"><tspan fill="#c0caf5">  envpod · hello</tspan></text>
+<text x="12" y="404.0"><tspan fill="#c0caf5">  Type      standard</tspan></text>
+<text x="12" y="422.0"><tspan fill="#c0caf5">  Network   monitored · dns monitor</tspan></text>
+<text x="12" y="440.0"><tspan fill="#c0caf5">  FS        system advanced</tspan></text>
+<text x="12" y="458.0"><tspan fill="#c0caf5">  CPU       2 cores · 4GB</tspan></text>
+<text x="12" y="476.0"><tspan fill="#c0caf5">  GPU       denied</tspan></text>
+<text x="12" y="494.0"><tspan fill="#c0caf5">  Budget    8h</tspan></text>
+<text x="12" y="530.0"><tspan fill="#c0caf5">  Command   bash -c echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/agent/hello.txt i</tspan></text>
+<text x="12" y="548.0"><tspan fill="#c0caf5">nside pod'</tspan></text>
+<text x="12" y="566.0"><tspan fill="#c0caf5">  User      agent</tspan></text>
+</g>
+<g id="f36" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run hello -- bash -c </tspan><tspan fill="#cccc66">&quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/a</tspan></text>
+<text x="12" y="44.0"><tspan fill="#cccc66">gent/hello.txt inside pod'&quot;</tspan></text>
+<text x="12" y="62.0"><tspan fill="#c0caf5">wrote /home/agent/hello.txt inside pod</tspan></text>
+<text x="12" y="98.0"><tspan fill="#c0caf5">  ┌─────────────────────────────────────────────────────┐</tspan></text>
+<text x="12" y="116.0"><tspan fill="#c0caf5">  │ envpod v0.1.0 — Zero-trust governance for AI agents │</tspan></text>
+<text x="12" y="134.0"><tspan fill="#c0caf5">  └─────────────────────────────────────────────────────┘</tspan></text>
+<text x="12" y="170.0"><tspan fill="#c0caf5">  This pod is governed. Every action is:</tspan></text>
+<text x="12" y="188.0"><tspan fill="#c0caf5">    · Isolated    — writes go to a COW overlay, never the host</tspan></text>
+<text x="12" y="206.0"><tspan fill="#c0caf5">    · Auditable   — all actions logged to the audit trail</tspan></text>
+<text x="12" y="224.0"><tspan fill="#c0caf5">    · Reversible  — review changes with diff, commit or rollback</tspan></text>
+<text x="12" y="242.0"><tspan fill="#c0caf5">    · Restricted — network filtered, resources capped</tspan></text>
+<text x="12" y="278.0"><tspan fill="#c0caf5">  Commands: envpod diff | commit | rollback | audit</tspan></text>
+<text x="12" y="314.0"><tspan fill="#c0caf5">  © 2026 Mark Amo-Boateng / Xtellix Inc. — Apache-2.0 License</tspan></text>
+<text x="12" y="332.0"><tspan fill="#c0caf5">  https://envpod.com</tspan></text>
+<text x="12" y="386.0"><tspan fill="#c0caf5">  envpod · hello</tspan></text>
+<text x="12" y="404.0"><tspan fill="#c0caf5">  Type      standard</tspan></text>
+<text x="12" y="422.0"><tspan fill="#c0caf5">  Network   monitored · dns monitor</tspan></text>
+<text x="12" y="440.0"><tspan fill="#c0caf5">  FS        system advanced</tspan></text>
+<text x="12" y="458.0"><tspan fill="#c0caf5">  CPU       2 cores · 4GB</tspan></text>
+<text x="12" y="476.0"><tspan fill="#c0caf5">  GPU       denied</tspan></text>
+<text x="12" y="494.0"><tspan fill="#c0caf5">  Budget    8h</tspan></text>
+<text x="12" y="530.0"><tspan fill="#c0caf5">  Command   bash -c echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/agent/hello.txt i</tspan></text>
+<text x="12" y="548.0"><tspan fill="#c0caf5">nside pod'</tspan></text>
+<text x="12" y="566.0"><tspan fill="#c0caf5">  User      agent</tspan></text>
+<text x="12" y="584.0"><tspan fill="#c0caf5" opacity="0.5">                                                                                                      md2cast</tspan></text>
+</g>
+</svg></div>
+  <div class="code-copy">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code class="language-bash">sudo envpod run hello -- bash -c &quot;echo 'the agent wrote this' &gt; /home/agent/hello.txt &amp;&amp; echo 'wrote /home/agent/hello.txt inside pod'&quot;</code></pre>
+  </div>
+</div>
+<hr>
+<h2>Review Changes</h2>
+<p>Every change goes to a copy-on-write overlay. You review before anything touches the host.</p>
+<div class="cast-block">
+  <div class="svg-player"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 948 204" style="width:100%;max-width:948px;border-radius:8px;background:#1a1b26">
+<style>
+.t{font-family:JetBrains Mono, Fira Code, Cascadia Code, monospace;font-size:14px;white-space:pre}
+.f{opacity:0}
+@keyframes f0{0%{opacity:0}5.70%{opacity:1}7.98%{opacity:0}100%{opacity:0}}
+#f0{animation:f0 5.26s step-end infinite}
+@keyframes f1{0%{opacity:0}7.98%{opacity:1}10.27%{opacity:0}100%{opacity:0}}
+#f1{animation:f1 5.26s step-end infinite}
+@keyframes f2{0%{opacity:0}10.27%{opacity:1}12.55%{opacity:0}100%{opacity:0}}
+#f2{animation:f2 5.26s step-end infinite}
+@keyframes f3{0%{opacity:0}12.55%{opacity:1}14.83%{opacity:0}100%{opacity:0}}
+#f3{animation:f3 5.26s step-end infinite}
+@keyframes f4{0%{opacity:0}14.83%{opacity:1}17.11%{opacity:0}100%{opacity:0}}
+#f4{animation:f4 5.26s step-end infinite}
+@keyframes f5{0%{opacity:0}17.11%{opacity:1}33.46%{opacity:0}100%{opacity:0}}
+#f5{animation:f5 5.26s step-end infinite}
+@keyframes f6{0%{opacity:0}33.46%{opacity:1}61.98%{opacity:0}100%{opacity:0}}
+#f6{animation:f6 5.26s step-end infinite}
+@keyframes f7{0%{opacity:0}61.98%{opacity:1}61.98%{opacity:0}100%{opacity:0}}
+#f7{animation:f7 5.26s step-end infinite}
+@keyframes f8{0%{opacity:0}61.98%{opacity:1}100.00%{opacity:0}100%{opacity:0}}
+#f8{animation:f8 5.26s step-end infinite}
+svg{cursor:pointer}
+</style>
+<script type="text/ecmascript"><![CDATA[document.documentElement.addEventListener("click",function(e){var s=e.currentTarget;var gs=s.querySelectorAll("[id^=f]");var st=gs[0]?getComputedStyle(gs[0]).animationPlayState:"running";var nv=st==="running"?"paused":"running";for(var i=0;i<gs.length;i++)gs[i].style.animationPlayState=nv;});]]></script>
+<g id="f0" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f1" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo</tspan></text>
+</g>
+<g id="f2" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envp</tspan></text>
+</g>
+<g id="f3" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod d</tspan></text>
+</g>
+<g id="f4" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff</tspan></text>
+</g>
+<g id="f5" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff hell</tspan></text>
+</g>
+<g id="f6" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff hello</tspan></text>
+</g>
+<g id="f7" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff hello</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">~  /home/agent/hello.txt (21 bytes)</tspan></text>
+<text x="12" y="80.0"><tspan fill="#c0caf5">1 change(s) in pod 'hello'</tspan></text>
+<text x="12" y="98.0"><tspan fill="#c0caf5">(filtered by tracking config — use --all to see all changes)</tspan></text>
+</g>
+<g id="f8" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff hello</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">~  /home/agent/hello.txt (21 bytes)</tspan></text>
+<text x="12" y="80.0"><tspan fill="#c0caf5">1 change(s) in pod 'hello'</tspan></text>
+<text x="12" y="98.0"><tspan fill="#c0caf5">(filtered by tracking config — use --all to see all changes)</tspan></text>
+<text x="12" y="188.0"><tspan fill="#c0caf5" opacity="0.5">                                                                                                      md2cast</tspan></text>
+</g>
+</svg></div>
+  <div class="code-copy">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code class="language-bash">sudo envpod diff hello</code></pre>
+  </div>
+</div>
+<h2>Commit</h2>
+<p>Commit what you want. Roll back the rest. That's governance.</p>
+<div class="cast-block">
+  <div class="svg-player"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 948 204" style="width:100%;max-width:948px;border-radius:8px;background:#1a1b26">
+<style>
+.t{font-family:JetBrains Mono, Fira Code, Cascadia Code, monospace;font-size:14px;white-space:pre}
+.f{opacity:0}
+@keyframes f0{0%{opacity:0}5.64%{opacity:1}7.89%{opacity:0}100%{opacity:0}}
+#f0{animation:f0 5.32s step-end infinite}
+@keyframes f1{0%{opacity:0}7.89%{opacity:1}10.15%{opacity:0}100%{opacity:0}}
+#f1{animation:f1 5.32s step-end infinite}
+@keyframes f2{0%{opacity:0}10.15%{opacity:1}12.41%{opacity:0}100%{opacity:0}}
+#f2{animation:f2 5.32s step-end infinite}
+@keyframes f3{0%{opacity:0}12.41%{opacity:1}14.66%{opacity:0}100%{opacity:0}}
+#f3{animation:f3 5.32s step-end infinite}
+@keyframes f4{0%{opacity:0}14.66%{opacity:1}16.92%{opacity:0}100%{opacity:0}}
+#f4{animation:f4 5.32s step-end infinite}
+@keyframes f5{0%{opacity:0}16.92%{opacity:1}19.17%{opacity:0}100%{opacity:0}}
+#f5{animation:f5 5.32s step-end infinite}
+@keyframes f6{0%{opacity:0}19.17%{opacity:1}34.21%{opacity:0}100%{opacity:0}}
+#f6{animation:f6 5.32s step-end infinite}
+@keyframes f7{0%{opacity:0}34.21%{opacity:1}62.41%{opacity:0}100%{opacity:0}}
+#f7{animation:f7 5.32s step-end infinite}
+@keyframes f8{0%{opacity:0}62.41%{opacity:1}62.41%{opacity:0}100%{opacity:0}}
+#f8{animation:f8 5.32s step-end infinite}
+@keyframes f9{0%{opacity:0}62.41%{opacity:1}100.00%{opacity:0}100%{opacity:0}}
+#f9{animation:f9 5.32s step-end infinite}
+svg{cursor:pointer}
+</style>
+<script type="text/ecmascript"><![CDATA[document.documentElement.addEventListener("click",function(e){var s=e.currentTarget;var gs=s.querySelectorAll("[id^=f]");var st=gs[0]?getComputedStyle(gs[0]).animationPlayState:"running";var nv=st==="running"?"paused":"running";for(var i=0;i<gs.length;i++)gs[i].style.animationPlayState=nv;});]]></script>
+<g id="f0" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f1" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo</tspan></text>
+</g>
+<g id="f2" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envp</tspan></text>
+</g>
+<g id="f3" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod c</tspan></text>
+</g>
+<g id="f4" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commi</tspan></text>
+</g>
+<g id="f5" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit he</tspan></text>
+</g>
+<g id="f6" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit hello</tspan></text>
+</g>
+<g id="f7" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit hello</tspan></text>
+</g>
+<g id="f8" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit hello</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">Committing 1 change(s) from pod 'hello' to host filesystem...</tspan></text>
+<text x="12" y="62.0"><tspan fill="#c0caf5">~  /home/agent/hello.txt (21 bytes)</tspan></text>
+<text x="12" y="80.0"><tspan fill="#c0caf5">Done</tspan></text>
+</g>
+<g id="f9" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit hello</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">Committing 1 change(s) from pod 'hello' to host filesystem...</tspan></text>
+<text x="12" y="62.0"><tspan fill="#c0caf5">~  /home/agent/hello.txt (21 bytes)</tspan></text>
+<text x="12" y="80.0"><tspan fill="#c0caf5">Done</tspan></text>
+<text x="12" y="188.0"><tspan fill="#c0caf5" opacity="0.5">                                                                                                      md2cast</tspan></text>
+</g>
+</svg></div>
+  <div class="code-copy">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code class="language-bash">sudo envpod commit hello</code></pre>
+  </div>
+</div>
+<hr>
+<h2>Audit Trail</h2>
+<p>Every action logged. Append-only. Free and open source.</p>
+<div class="cast-block">
+  <div class="svg-player"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 948 258" style="width:100%;max-width:948px;border-radius:8px;background:#1a1b26">
+<style>
+.t{font-family:JetBrains Mono, Fira Code, Cascadia Code, monospace;font-size:14px;white-space:pre}
+.f{opacity:0}
+@keyframes f0{0%{opacity:0}5.67%{opacity:1}7.94%{opacity:0}100%{opacity:0}}
+#f0{animation:f0 5.29s step-end infinite}
+@keyframes f1{0%{opacity:0}7.94%{opacity:1}10.21%{opacity:0}100%{opacity:0}}
+#f1{animation:f1 5.29s step-end infinite}
+@keyframes f2{0%{opacity:0}10.21%{opacity:1}12.48%{opacity:0}100%{opacity:0}}
+#f2{animation:f2 5.29s step-end infinite}
+@keyframes f3{0%{opacity:0}12.48%{opacity:1}14.74%{opacity:0}100%{opacity:0}}
+#f3{animation:f3 5.29s step-end infinite}
+@keyframes f4{0%{opacity:0}14.74%{opacity:1}17.01%{opacity:0}100%{opacity:0}}
+#f4{animation:f4 5.29s step-end infinite}
+@keyframes f5{0%{opacity:0}17.01%{opacity:1}33.84%{opacity:0}100%{opacity:0}}
+#f5{animation:f5 5.29s step-end infinite}
+@keyframes f6{0%{opacity:0}33.84%{opacity:1}62.19%{opacity:0}100%{opacity:0}}
+#f6{animation:f6 5.29s step-end infinite}
+@keyframes f7{0%{opacity:0}62.19%{opacity:1}62.19%{opacity:0}100%{opacity:0}}
+#f7{animation:f7 5.29s step-end infinite}
+@keyframes f8{0%{opacity:0}62.19%{opacity:1}100.00%{opacity:0}100%{opacity:0}}
+#f8{animation:f8 5.29s step-end infinite}
+svg{cursor:pointer}
+</style>
+<script type="text/ecmascript"><![CDATA[document.documentElement.addEventListener("click",function(e){var s=e.currentTarget;var gs=s.querySelectorAll("[id^=f]");var st=gs[0]?getComputedStyle(gs[0]).animationPlayState:"running";var nv=st==="running"?"paused":"running";for(var i=0;i<gs.length;i++)gs[i].style.animationPlayState=nv;});]]></script>
+<g id="f0" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f1" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo</tspan></text>
+</g>
+<g id="f2" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envp</tspan></text>
+</g>
+<g id="f3" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod a</tspan></text>
+</g>
+<g id="f4" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit</tspan></text>
+</g>
+<g id="f5" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit hel</tspan></text>
+</g>
+<g id="f6" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit hello</tspan></text>
+</g>
+<g id="f7" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit hello</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">TIMESTAMP                ACTION       OK   DETAIL</tspan></text>
+<text x="12" y="62.0"><tspan fill="#c0caf5">------------------------------------------------------------------------</tspan></text>
+<text x="12" y="80.0"><tspan fill="#c0caf5">2026-03-07 06:18:07 UTC  create yes  backend=native</tspan></text>
+<text x="12" y="98.0"><tspan fill="#c0caf5">2026-03-07 06:18:08 UTC  start yes  pid=547520, cmd=bash -c echo 'the agent wrote this' &gt; /home/agent/hello.tx</tspan></text>
+<text x="12" y="116.0"><tspan fill="#c0caf5">t &amp;&amp; echo 'wrote /home/agent/hello.txt inside pod'</tspan></text>
+<text x="12" y="134.0"><tspan fill="#c0caf5">2026-03-07 06:18:08 UTC  diff yes  5 change(s)</tspan></text>
+<text x="12" y="152.0"><tspan fill="#c0caf5">2026-03-07 06:18:08 UTC  diff yes  5 change(s)</tspan></text>
+<text x="12" y="170.0"><tspan fill="#c0caf5">2026-03-07 06:18:08 UTC  commit yes  1 file(s)</tspan></text>
+<text x="12" y="206.0"><tspan fill="#c0caf5">5 entry(ies) for pod 'hello'</tspan></text>
+</g>
+<g id="f8" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit hello</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">TIMESTAMP                ACTION       OK   DETAIL</tspan></text>
+<text x="12" y="62.0"><tspan fill="#c0caf5">------------------------------------------------------------------------</tspan></text>
+<text x="12" y="80.0"><tspan fill="#c0caf5">2026-03-07 06:18:07 UTC  create yes  backend=native</tspan></text>
+<text x="12" y="98.0"><tspan fill="#c0caf5">2026-03-07 06:18:08 UTC  start yes  pid=547520, cmd=bash -c echo 'the agent wrote this' &gt; /home/agent/hello.tx</tspan></text>
+<text x="12" y="116.0"><tspan fill="#c0caf5">t &amp;&amp; echo 'wrote /home/agent/hello.txt inside pod'</tspan></text>
+<text x="12" y="134.0"><tspan fill="#c0caf5">2026-03-07 06:18:08 UTC  diff yes  5 change(s)</tspan></text>
+<text x="12" y="152.0"><tspan fill="#c0caf5">2026-03-07 06:18:08 UTC  diff yes  5 change(s)</tspan></text>
+<text x="12" y="170.0"><tspan fill="#c0caf5">2026-03-07 06:18:08 UTC  commit yes  1 file(s)</tspan></text>
+<text x="12" y="206.0"><tspan fill="#c0caf5">5 entry(ies) for pod 'hello'</tspan></text>
+<text x="12" y="242.0"><tspan fill="#c0caf5" opacity="0.5">                                                                                                      md2cast</tspan></text>
+</g>
+</svg></div>
+  <div class="code-copy">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code class="language-bash">sudo envpod audit hello</code></pre>
+  </div>
+</div>
+<h2>Cleanup</h2>
+<div class="cast-block">
+  <div class="svg-player"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 948 204" style="width:100%;max-width:948px;border-radius:8px;background:#1a1b26">
+<style>
+.t{font-family:JetBrains Mono, Fira Code, Cascadia Code, monospace;font-size:14px;white-space:pre}
+.f{opacity:0}
+@keyframes f0{0%{opacity:0}5.61%{opacity:1}7.85%{opacity:0}100%{opacity:0}}
+#f0{animation:f0 5.35s step-end infinite}
+@keyframes f1{0%{opacity:0}7.85%{opacity:1}10.09%{opacity:0}100%{opacity:0}}
+#f1{animation:f1 5.35s step-end infinite}
+@keyframes f2{0%{opacity:0}10.09%{opacity:1}12.34%{opacity:0}100%{opacity:0}}
+#f2{animation:f2 5.35s step-end infinite}
+@keyframes f3{0%{opacity:0}12.34%{opacity:1}14.58%{opacity:0}100%{opacity:0}}
+#f3{animation:f3 5.35s step-end infinite}
+@keyframes f4{0%{opacity:0}14.58%{opacity:1}16.82%{opacity:0}100%{opacity:0}}
+#f4{animation:f4 5.35s step-end infinite}
+@keyframes f5{0%{opacity:0}16.82%{opacity:1}19.07%{opacity:0}100%{opacity:0}}
+#f5{animation:f5 5.35s step-end infinite}
+@keyframes f6{0%{opacity:0}19.07%{opacity:1}34.58%{opacity:0}100%{opacity:0}}
+#f6{animation:f6 5.35s step-end infinite}
+@keyframes f7{0%{opacity:0}34.58%{opacity:1}62.62%{opacity:0}100%{opacity:0}}
+#f7{animation:f7 5.35s step-end infinite}
+@keyframes f8{0%{opacity:0}62.62%{opacity:1}62.62%{opacity:0}100%{opacity:0}}
+#f8{animation:f8 5.35s step-end infinite}
+@keyframes f9{0%{opacity:0}62.62%{opacity:1}100.00%{opacity:0}100%{opacity:0}}
+#f9{animation:f9 5.35s step-end infinite}
+svg{cursor:pointer}
+</style>
+<script type="text/ecmascript"><![CDATA[document.documentElement.addEventListener("click",function(e){var s=e.currentTarget;var gs=s.querySelectorAll("[id^=f]");var st=gs[0]?getComputedStyle(gs[0]).animationPlayState:"running";var nv=st==="running"?"paused":"running";for(var i=0;i<gs.length;i++)gs[i].style.animationPlayState=nv;});]]></script>
+<g id="f0" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f1" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo</tspan></text>
+</g>
+<g id="f2" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envp</tspan></text>
+</g>
+<g id="f3" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod d</tspan></text>
+</g>
+<g id="f4" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod destr</tspan></text>
+</g>
+<g id="f5" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod destroy h</tspan></text>
+</g>
+<g id="f6" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod destroy hello</tspan></text>
+</g>
+<g id="f7" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod destroy hello</tspan></text>
+</g>
+<g id="f8" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod destroy hello</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">Destroyed pod 'hello'</tspan></text>
+</g>
+<g id="f9" class="f t">
+<text x="12" y="26.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod destroy hello</tspan></text>
+<text x="12" y="44.0"><tspan fill="#c0caf5">Destroyed pod 'hello'</tspan></text>
+<text x="12" y="188.0"><tspan fill="#c0caf5" opacity="0.5">                                                                                                      md2cast</tspan></text>
+</g>
+</svg></div>
+  <div class="code-copy">
+    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+    <pre><code class="language-bash">sudo envpod destroy hello</code></pre>
+  </div>
+</div>
+<blockquote><p>github.com/markamo/envpod-ce</p></blockquote>
+<script>
+function copyCode(btn) {
+  var code = btn.parentElement.querySelector('code').textContent;
+  navigator.clipboard.writeText(code).then(function() {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+</script>
+<footer style="margin-top:4rem;padding:1.5rem 0 0.5rem;text-align:center;font-size:0.75rem;color:var(--muted);opacity:0.6;">
+  Made with <a href="https://github.com/markamo/md2cast" style="color:var(--accent);text-decoration:none;">md2cast</a>
+</footer>
+</body>
+</html>

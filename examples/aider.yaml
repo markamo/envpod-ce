@@ -1,0 +1,84 @@
+# Aider pod — open-source AI pair programming agent
+#
+# Aider is a popular Python-based coding agent that works with multiple LLM
+# providers via litellm. It edits code directly in your repo using git.
+# Optional browser feature (via Playwright) for including web pages in context.
+#
+# Needs: LLM provider APIs (Anthropic, OpenAI, DeepSeek, Google), PyPI,
+# GitHub (for git operations). Python 3.9-3.12.
+# Install: pip install aider-chat (or curl installer for isolated install).
+#
+# Usage:
+#   sudo envpod init aider -c examples/aider.yaml
+#   sudo envpod setup aider
+#   sudo envpod run aider -- aider --model sonnet
+
+name: aider
+type: standard
+backend: native
+
+network:
+  mode: Monitored
+  dns:
+    mode: Whitelist
+    allow:
+      # LLM providers (aider supports all via litellm)
+      - api.anthropic.com
+      - "*.anthropic.com"
+      - api.openai.com
+      - "*.openai.com"
+      - api.deepseek.com
+      - "*.deepseek.com"
+      - generativelanguage.googleapis.com
+      - "*.googleapis.com"
+      - openrouter.ai
+      - "*.openrouter.ai"
+      # GitHub (git clone, push, PRs)
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+      # PyPI (pip install aider-chat)
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+      # Aider installer
+      - aider.chat
+
+filesystem:
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+processor:
+  cores: 1.0
+  memory: "1GB"
+
+security:
+  seccomp_profile: default
+  shm_size: "64MB"
+
+budget:
+  max_duration: "2h"
+
+# Vault proxy injection — supports multiple providers.
+# To enable: sudo envpod vault aider set ANTHROPIC_API_KEY
+#            sudo envpod vault aider bind ANTHROPIC_API_KEY api.anthropic.com "Authorization: Bearer {value}"
+vault:
+  proxy: false
+  bindings: []
+
+audit:
+  action_log: true
+
+setup:
+  - "command -v pip >/dev/null || { apt-get update && apt-get install -y python3-pip; }"
+  - "pip install aider-chat"

@@ -1,0 +1,252 @@
+name: Build and publish release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v0.1.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            rust_target: x86_64-unknown-linux-musl
+            apt_pkg: musl-tools
+            cc: musl-gcc
+            cross: false
+          - arch: arm64
+            rust_target: aarch64-unknown-linux-musl
+            apt_pkg: gcc-aarch64-linux-gnu
+            cross: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ${{ matrix.apt_pkg }}
+
+      - name: Install cross (ARM64 only)
+        if: matrix.cross
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cross
+
+      - name: Build binary (x86_64)
+        if: "!matrix.cross"
+        env:
+          CC_x86_64_unknown_linux_musl: musl-gcc
+        run: cargo build --release --target ${{ matrix.rust_target }}
+
+      - name: Build binary (ARM64 via cross)
+        if: matrix.cross
+        run: cross build --release --target ${{ matrix.rust_target }}
+
+      - name: Assemble release
+        run: |
+          ARCH="${{ matrix.arch }}"
+          TARGET="${{ matrix.rust_target }}"
+          VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          RELEASE_NAME="envpod-${VERSION}-linux-${ARCH}"
+          RELEASE_DIR="release/${RELEASE_NAME}"
+
+          mkdir -p "${RELEASE_DIR}/docs" "${RELEASE_DIR}/examples"
+          cp "target/${TARGET}/release/envpod" "${RELEASE_DIR}/envpod"
+          chmod 755 "${RELEASE_DIR}/envpod"
+          cp LICENSE "${RELEASE_DIR}/LICENSE"
+          cp uninstall.sh "${RELEASE_DIR}/uninstall.sh"
+          chmod 755 "${RELEASE_DIR}/uninstall.sh"
+
+          # Copy docs
+          for doc in FEATURES.md TUTORIALS.md ACTION-CATALOG.md CLI-BLACKBOOK.md FOR-DOCKER-USERS.md EMBEDDED.md; do
+            [ -f "docs/${doc}" ] && cp "docs/${doc}" "${RELEASE_DIR}/docs/${doc}" || true
+          done
+
+          # Copy examples
+          cp examples/*.yaml "${RELEASE_DIR}/examples/"
+          cp examples/*.sh "${RELEASE_DIR}/examples/" 2>/dev/null || true
+
+          # Generate install.sh
+          cat > "${RELEASE_DIR}/install.sh" << 'INSTALL_EOF'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          ENVPOD_VERSION="PLACEHOLDER_VERSION"
+          INSTALL_DIR="/usr/local/bin"
+          STATE_DIR="/var/lib/envpod"
+          EXAMPLES_DIR="${ENVPOD_EXAMPLES_DIR:-/usr/local/share/envpod/examples}"
+          SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          while [[ $# -gt 0 ]]; do
+            case "$1" in
+              --examples-dir)   EXAMPLES_DIR="$2"; shift 2 ;;
+              --examples-dir=*) EXAMPLES_DIR="${1#*=}"; shift ;;
+              --no-examples)    EXAMPLES_DIR=""; shift ;;
+              --help|-h) echo "Usage: sudo bash install.sh [--examples-dir <path>] [--no-examples]"; exit 0 ;;
+              *) echo "Unknown argument: $1"; exit 1 ;;
+            esac
+          done
+          GREEN='\033[0;32m'; YELLOW='\033[0;33m'; RED='\033[0;31m'; BOLD='\033[1m'; NC='\033[0m'
+          info() { echo -e "${GREEN}[✓]${NC} $*"; }
+          warn() { echo -e "${YELLOW}[!]${NC} $*"; }
+          fail() { echo -e "${RED}[✗]${NC} $*"; exit 1; }
+          step() { echo -e "\n${BOLD}→ $*${NC}"; }
+          echo -e "${BOLD}"
+          echo "  ┌──────────────────────────────────────┐"
+          echo "  │       envpod installer v${ENVPOD_VERSION}        │"
+          echo "  │    Zero-trust environments for AI    │"
+          echo "  └──────────────────────────────────────┘"
+          echo -e "${NC}"
+          [[ $EUID -ne 0 ]] && fail "Run as root (sudo bash install.sh)"
+          step "Checking prerequisites"
+          KMAJOR=$(uname -r | cut -d. -f1); KMINOR=$(uname -r | cut -d. -f2)
+          { [[ $KMAJOR -lt 5 ]] || { [[ $KMAJOR -eq 5 ]] && [[ $KMINOR -lt 11 ]]; }; } && fail "Kernel $(uname -r) too old. Requires 5.11+"
+          info "Kernel $(uname -r)"
+          [[ ! -f /sys/fs/cgroup/cgroup.controllers ]] && fail "cgroups v2 required. See docs/EMBEDDED.md for Pi setup."
+          info "cgroups v2 available"
+          modprobe overlay 2>/dev/null || grep -q overlay /proc/filesystems || fail "OverlayFS not available"
+          info "OverlayFS available"
+          command -v iptables >/dev/null || fail "iptables not found: apt install iptables"
+          command -v ip >/dev/null || fail "iproute2 not found: apt install iproute2"
+          info "iptables + iproute2 found"
+          step "Installing binary"
+          cp "$SCRIPT_DIR/envpod" "$INSTALL_DIR/envpod" && chmod 755 "$INSTALL_DIR/envpod"
+          info "Installed to $INSTALL_DIR/envpod"
+          step "Creating state directories"
+          mkdir -p "$STATE_DIR/state" "$STATE_DIR/pods"
+          info "$STATE_DIR created"
+          step "Installing shell completions"
+          REAL_USER="${SUDO_USER:-root}"; REAL_HOME=$(eval echo "~$REAL_USER")
+          REAL_SHELL=$(getent passwd "$REAL_USER" 2>/dev/null | cut -d: -f7 || echo "/bin/bash")
+          case "$REAL_SHELL" in
+            */zsh) mkdir -p "$REAL_HOME/.zfunc"; "$INSTALL_DIR/envpod" completions zsh > "$REAL_HOME/.zfunc/_envpod"; chown -R "$REAL_USER":"$REAL_USER" "$REAL_HOME/.zfunc" 2>/dev/null || true; info "Zsh completions installed" ;&
+            *) mkdir -p /etc/bash_completion.d; "$INSTALL_DIR/envpod" completions bash > /etc/bash_completion.d/envpod; info "Bash completions installed" ;;
+          esac
+          step "Enabling IP forwarding"
+          sysctl -w net.ipv4.ip_forward=1 >/dev/null
+          [[ ! -f /etc/sysctl.d/99-envpod.conf ]] && echo "net.ipv4.ip_forward = 1" > /etc/sysctl.d/99-envpod.conf
+          info "IP forwarding enabled"
+          step "Installing examples"
+          if [[ -z "$EXAMPLES_DIR" ]]; then
+            info "Examples skipped (--no-examples)"
+          elif [[ -d "$SCRIPT_DIR/examples" ]]; then
+            mkdir -p "$EXAMPLES_DIR"; cp "$SCRIPT_DIR/examples/"*.yaml "$EXAMPLES_DIR/"; cp "$SCRIPT_DIR/examples/"*.sh "$EXAMPLES_DIR/" 2>/dev/null || true
+            info "Examples installed to $EXAMPLES_DIR/"
+          fi
+          step "Installing uninstall script"
+          SHARE_DIR="/usr/local/share/envpod"
+          mkdir -p "$SHARE_DIR"
+          if [[ -f "$SCRIPT_DIR/uninstall.sh" ]]; then
+            cp "$SCRIPT_DIR/uninstall.sh" "$SHARE_DIR/uninstall.sh"
+            chmod 755 "$SHARE_DIR/uninstall.sh"
+            info "Uninstall script: sudo bash $SHARE_DIR/uninstall.sh"
+          fi
+          step "Verifying"
+          "$INSTALL_DIR/envpod" --version && info "envpod installed successfully"
+          echo ""; echo -e "${GREEN}${BOLD}Done!${NC}"; echo ""
+          echo "  sudo envpod init my-agent -c pod.yaml"
+          echo "  sudo envpod run my-agent -- bash"
+          echo ""
+          echo "  To uninstall: sudo bash /usr/local/share/envpod/uninstall.sh"
+          echo ""
+          INSTALL_EOF
+          sed -i "s/PLACEHOLDER_VERSION/${VERSION}/g" "${RELEASE_DIR}/install.sh"
+          chmod 755 "${RELEASE_DIR}/install.sh"
+
+          # Generate README
+          cat > "${RELEASE_DIR}/README.md" << EOF
+          # envpod v${VERSION} — ${ARCH}
+          Zero-trust governance environments for AI agents.
+          Copyright 2026 Mark Amo-Boateng / Xtellix Inc.
+          Licensed under the BSL 1.1. Converts to AGPL-3.0 on 2030-03-07.
+
+          ## Install
+          \`\`\`bash
+          sudo bash install.sh
+          \`\`\`
+
+          ## Source
+          https://github.com/markamo/envpod-ce
+          EOF
+
+          # Create tarball
+          tar czf "envpod-linux-${ARCH}.tar.gz" -C release "${RELEASE_NAME}"
+          echo "RELEASE_NAME=${RELEASE_NAME}" >> "$GITHUB_ENV"
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+
+      - name: Upload tarball artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: envpod-linux-${{ matrix.arch }}
+          path: envpod-linux-${{ matrix.arch }}.tar.gz
+          retention-days: 1
+
+  release:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "TAG=${GITHUB_REF_NAME:-v${VERSION}}" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.TAG }}"
+          VERSION="${{ steps.version.outputs.VERSION }}"
+
+          # Compute SHA-256
+          SHA_X86=$(sha256sum envpod-linux-x86_64.tar.gz | awk '{print $1}')
+          SHA_ARM64=$(sha256sum envpod-linux-arm64.tar.gz | awk '{print $1}')
+
+          NOTES="## envpod v${VERSION}
+
+          Zero-trust governance environments for AI agents.
+
+          ### Install
+          \`\`\`bash
+          curl -fsSL https://envpod.dev/install.sh | sh
+          \`\`\`
+
+          ### SHA-256
+          \`\`\`
+          ${SHA_X86}  envpod-linux-x86_64.tar.gz
+          ${SHA_ARM64}  envpod-linux-arm64.tar.gz
+          \`\`\`
+
+          ---
+          Copyright 2026 Mark Amo-Boateng / Xtellix Inc. · BSL 1.1"
+
+          # Delete existing release if present, then recreate
+          gh release delete "${TAG}" --yes 2>/dev/null || true
+          gh release create "${TAG}" \
+            envpod-linux-x86_64.tar.gz \
+            envpod-linux-arm64.tar.gz \
+            --title "envpod v${VERSION}" \
+            --notes "${NOTES}"

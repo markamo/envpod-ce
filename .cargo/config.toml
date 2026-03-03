@@ -1,0 +1,21 @@
+# Cargo cross-compilation configuration for envpod
+#
+# x86_64 (default — static musl binary)
+# ---------------------------------------------------------------------------
+[target.x86_64-unknown-linux-musl]
+linker = "musl-gcc"
+
+# aarch64 (Raspberry Pi 4/5, Jetson Orin — static musl binary)
+# ---------------------------------------------------------------------------
+# Option 1 (recommended): use `cross` — Docker-based, no toolchain setup
+#   cargo install cross
+#   cross build --release --target aarch64-unknown-linux-musl
+#
+# Option 2: native toolchain via musl.cc or zigbuild
+#   cargo install cargo-zigbuild
+#   cargo zigbuild --release --target aarch64-unknown-linux-musl
+#
+# Option 3: install aarch64-linux-musl-gcc from musl.cc prebuilt toolchain
+#   and uncomment the linker below:
+# [target.aarch64-unknown-linux-musl]
+# linker = "aarch64-linux-musl-gcc"

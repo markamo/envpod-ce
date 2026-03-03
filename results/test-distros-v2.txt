@@ -1,0 +1,49 @@
+
+╔═══════════════════════════════════════════════════════╗
+║      envpod multi-distro test suite v2               ║
+║      download → portable → install → govern          ║
+╚═══════════════════════════════════════════════════════╝
+
+[0;34m[envpod-test][0m Testing ubuntu-24.04 (ubuntu:24.04)...
+[0;32m[PASS][0m ubuntu-24.04
+
+[0;34m[envpod-test][0m Testing debian-12 (debian:12)...
+[0;32m[PASS][0m debian-12
+
+[0;34m[envpod-test][0m Testing fedora-41 (fedora:41)...
+[0;32m[PASS][0m fedora-41
+
+[0;34m[envpod-test][0m Testing arch (archlinux:latest)...
+[0;32m[PASS][0m arch
+
+[0;34m[envpod-test][0m Testing ubuntu-22.04 (ubuntu:22.04)...
+[0;32m[PASS][0m ubuntu-22.04
+
+[0;34m[envpod-test][0m Testing rocky-9 (rockylinux:9)...
+[0;32m[PASS][0m rocky-9
+
+[0;34m[envpod-test][0m Testing alma-9 (almalinux:9)...
+[0;32m[PASS][0m alma-9
+
+[0;34m[envpod-test][0m Testing opensuse (opensuse/leap:15.6)...
+[0;32m[PASS][0m opensuse
+
+[0;34m[envpod-test][0m Testing amazon-linux (amazonlinux:2023)...
+[0;32m[PASS][0m amazon-linux
+
+
+═══════════════════════════════════════════════════════
+  RESULTS SUMMARY (277s)
+═══════════════════════════════════════════════════════
+  [0;32m✓[0m ubuntu-24.04
+  [0;32m✓[0m debian-12
+  [0;32m✓[0m fedora-41
+  [0;32m✓[0m arch
+  [0;32m✓[0m ubuntu-22.04
+  [0;32m✓[0m rocky-9
+  [0;32m✓[0m alma-9
+  [0;32m✓[0m opensuse
+  [0;32m✓[0m amazon-linux
+
+  Passed: 9  Failed: 0
+═══════════════════════════════════════════════════════

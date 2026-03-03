@@ -1,0 +1,62 @@
+# VS Code pod — code-server (VS Code in the browser)
+#
+# Runs code-server, providing a full VS Code experience accessible via
+# http://localhost:8080 in your browser. Includes Node.js for extension
+# support and language toolchains.
+#
+# Port 8080 is forwarded to localhost by default. Access via browser
+# after `envpod run`.
+#
+# Usage:
+#   sudo envpod init vscode -c examples/vscode.yaml
+#   sudo envpod setup vscode
+#   sudo envpod run vscode -p 8080:8080 -- code-server --bind-addr 0.0.0.0:8080 --auth none
+#   # Open http://localhost:8080
+
+name: vscode
+type: standard
+backend: native
+
+network:
+  mode: Monitored
+  dns:
+    mode: Blacklist
+    deny:
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+      - "*.lan"
+
+filesystem:
+  system_access: advanced
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+      - /opt/nvm
+      - /root/.npm
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+
+security:
+  seccomp_profile: default
+  shm_size: "64MB"
+
+budget:
+  max_duration: "8h"
+
+audit:
+  action_log: true
+
+setup:
+  - "curl -fsSL https://code-server.dev/install.sh | sh"

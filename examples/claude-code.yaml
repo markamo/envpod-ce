@@ -1,0 +1,88 @@
+# Claude Code pod — Anthropic's CLI coding agent
+#
+# Claude Code is Anthropic's official CLI for Claude, used for code generation,
+# refactoring, debugging, and multi-step software engineering tasks. It can
+# optionally launch headless Chromium for web research (browser seccomp profile).
+#
+# Needs: api.anthropic.com (Claude API), package registries (npm/pip/cargo),
+# GitHub (code operations), sentry.io (telemetry).
+# Install: native installer (curl), no Node.js required.
+#
+# Usage:
+#   sudo envpod init claude-code -c examples/claude-code.yaml
+#   sudo envpod setup claude-code
+#   sudo envpod run claude-code -- claude
+
+name: claude-code
+type: standard
+backend: native
+
+network:
+  mode: Monitored
+  dns:
+    mode: Whitelist
+    allow:
+      # Claude API
+      - api.anthropic.com
+      - "*.anthropic.com"
+      # Claude Code installer
+      - claude.ai
+      - "*.claude.ai"
+      # GitHub (code, PRs, issues)
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+      # npm registry
+      - registry.npmjs.org
+      - "*.npmjs.org"
+      # PyPI
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+      # Cargo/crates.io
+      - crates.io
+      - "*.crates.io"
+      - static.crates.io
+      # Telemetry (Claude Code reports errors via Sentry)
+      - "*.sentry.io"
+
+filesystem:
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+  max_pids: 1024
+
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"
+
+budget:
+  max_duration: "30m"
+
+# Vault proxy injection — agent never sees the real API key.
+# The proxy intercepts HTTPS to api.anthropic.com and injects the
+# real Authorization header from the encrypted vault.
+# To enable: sudo envpod vault claude-code set ANTHROPIC_API_KEY
+#            sudo envpod vault claude-code bind ANTHROPIC_API_KEY api.anthropic.com "Authorization: Bearer {value}"
+vault:
+  proxy: false              # set to true (or use `vault bind`) to enable proxy injection
+  bindings: []
+
+audit:
+  action_log: true
+
+setup:
+  - "curl -fsSL https://claude.ai/install.sh | bash"

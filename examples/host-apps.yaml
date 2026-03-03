@@ -1,0 +1,22 @@
+# Auto-mount host applications — no reinstall inside the pod.
+# envpod resolves each binary via `which` + `ldd`, then bind-mounts
+# the binary, shared libraries, and known data directories read-only.
+name: host-apps-demo
+type: standard
+
+filesystem:
+  system_access: safe
+  apps:
+    - google-chrome
+    - python3
+    - node
+
+network:
+  mode: Filtered
+  dns:
+    mode: whitelist
+    allow:
+      - "*.google.com"
+      - "*.googleapis.com"
+      - "*.npmjs.org"
+      - "pypi.org"

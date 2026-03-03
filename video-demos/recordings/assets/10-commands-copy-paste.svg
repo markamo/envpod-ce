@@ -1,0 +1,748 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 956 378" width="956" height="378">
+<defs><style>
+.t{font-family:JetBrains Mono, Fira Code, Cascadia Code, monospace;font-size:14px;white-space:pre}
+.f{opacity:0;position:absolute}
+@keyframes s{0%,100%{opacity:1}}
+#f0{animation:s 0.100s step-end 0.300s none}
+#f1{animation:s 0.120s step-end 0.400s none}
+#f2{animation:s 0.860s step-end 0.520s none}
+#f3{animation:s 1.500s step-end 1.380s none}
+#f4{animation:s 0.100s step-end 2.880s none}
+#f5{animation:s 0.100s step-end 2.980s none}
+#f6{animation:s 0.100s step-end 3.080s none}
+#f7{animation:s 0.120s step-end 3.180s none}
+#f8{animation:s 0.100s step-end 3.300s none}
+#f9{animation:s 0.100s step-end 3.400s none}
+#f10{animation:s 0.100s step-end 3.500s none}
+#f11{animation:s 0.100s step-end 3.600s none}
+#f12{animation:s 0.120s step-end 3.700s none}
+#f13{animation:s 0.840s step-end 3.820s none}
+#f14{animation:s 1.500s step-end 4.660s none}
+#f15{animation:s 0.120s step-end 6.160s none}
+#f16{animation:s 0.120s step-end 6.280s none}
+#f17{animation:s 0.120s step-end 6.400s none}
+#f18{animation:s 0.100s step-end 6.520s none}
+#f19{animation:s 0.120s step-end 6.620s none}
+#f20{animation:s 0.120s step-end 6.740s none}
+#f21{animation:s 0.120s step-end 6.860s none}
+#f22{animation:s 0.120s step-end 6.980s none}
+#f23{animation:s 0.880s step-end 7.100s none}
+#f24{animation:s 1.500s step-end 7.980s none}
+#f25{animation:s 0.120s step-end 9.480s none}
+#f26{animation:s 0.120s step-end 9.600s none}
+#f27{animation:s 0.120s step-end 9.720s none}
+#f28{animation:s 0.120s step-end 9.840s none}
+#f29{animation:s 0.120s step-end 9.960s none}
+#f30{animation:s 0.120s step-end 10.080s none}
+#f31{animation:s 0.820s step-end 10.200s none}
+#f32{animation:s 1.500s step-end 11.020s none}
+#f33{animation:s 0.120s step-end 12.520s none}
+#f34{animation:s 0.120s step-end 12.640s none}
+#f35{animation:s 0.120s step-end 12.760s none}
+#f36{animation:s 0.120s step-end 12.880s none}
+#f37{animation:s 0.900s step-end 13.000s none}
+#f38{animation:s 1.500s step-end 13.900s none}
+#f39{animation:s 0.120s step-end 15.400s none}
+#f40{animation:s 0.120s step-end 15.520s none}
+#f41{animation:s 0.120s step-end 15.640s none}
+#f42{animation:s 0.120s step-end 15.760s none}
+#f43{animation:s 0.880s step-end 15.880s none}
+#f44{animation:s 1.500s step-end 16.760s none}
+#f45{animation:s 0.120s step-end 18.260s none}
+#f46{animation:s 0.100s step-end 18.380s none}
+#f47{animation:s 0.120s step-end 18.480s none}
+#f48{animation:s 0.120s step-end 18.600s none}
+#f49{animation:s 0.100s step-end 18.720s none}
+#f50{animation:s 0.840s step-end 18.820s none}
+#f51{animation:s 1.500s step-end 19.660s none}
+#f52{animation:s 0.100s step-end 21.160s none}
+#f53{animation:s 0.120s step-end 21.260s none}
+#f54{animation:s 0.100s step-end 21.380s none}
+#f55{animation:s 0.120s step-end 21.480s none}
+#f56{animation:s 0.120s step-end 21.600s none}
+#f57{animation:s 0.100s step-end 21.720s none}
+#f58{animation:s 0.100s step-end 21.820s none}
+#f59{animation:s 0.840s step-end 21.920s none}
+#f60{animation:s 1.500s step-end 22.760s none}
+#f61{animation:s 0.120s step-end 24.260s none}
+#f62{animation:s 0.100s step-end 24.380s none}
+#f63{animation:s 0.120s step-end 24.480s none}
+#f64{animation:s 0.120s step-end 24.600s none}
+#f65{animation:s 0.100s step-end 24.720s none}
+#f66{animation:s 0.100s step-end 24.820s none}
+#f67{animation:s 0.120s step-end 24.920s none}
+#f68{animation:s 0.880s step-end 25.040s none}
+#f69{animation:s 1.500s step-end 25.920s none}
+#f70{animation:s 0.120s step-end 27.420s none}
+#f71{animation:s 0.100s step-end 27.540s none}
+#f72{animation:s 0.120s step-end 27.640s none}
+#f73{animation:s 0.120s step-end 27.760s none}
+#f74{animation:s 0.100s step-end 27.880s none}
+#f75{animation:s 0.120s step-end 27.980s none}
+#f76{animation:s 0.120s step-end 28.100s none}
+#f77{animation:s 0.100s step-end 28.220s none}
+#f78{animation:s 0.100s step-end 28.320s none}
+#f79{animation:s 0.120s step-end 28.420s none}
+#f80{animation:s 0.840s step-end 28.540s none}
+#f81{animation:s 1.500s step-end 29.380s none}
+#f82{animation:s 2.000s step-end 30.880s forwards}
+</style></defs>
+<rect width="100%" height="100%" fill="#1a1b26" rx="8"/>
+<circle cx="20" cy="20.0" r="6" fill="#ff5f56"/>
+<circle cx="40" cy="20.0" r="6" fill="#ffbd2e"/>
+<circle cx="60" cy="20.0" r="6" fill="#27c93f"/>
+<text x="478" y="24" text-anchor="middle" fill="#565f89" font-family="JetBrains Mono, Fira Code, Cascadia Code, monospace" font-size="12">Commands (copy-paste)</text>
+<g id="f0" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f1" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod</tspan></text>
+</g>
+<g id="f2" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod prese</tspan></text>
+</g>
+<g id="f3" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+</g>
+<g id="f4" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f5" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo e</tspan></text>
+</g>
+<g id="f6" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f7" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init</tspan></text>
+</g>
+<g id="f8" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claud</tspan></text>
+</g>
+<g id="f9" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-cod</tspan></text>
+</g>
+<g id="f10" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --p</tspan></text>
+</g>
+<g id="f11" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset</tspan></text>
+</g>
+<g id="f12" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset clau</tspan></text>
+</g>
+<g id="f13" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-cod</tspan></text>
+</g>
+<g id="f14" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+</g>
+<g id="f15" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f16" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f17" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod v</tspan></text>
+</g>
+<g id="f18" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault c</tspan></text>
+</g>
+<g id="f19" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude</tspan></text>
+</g>
+<g id="f20" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code</tspan></text>
+</g>
+<g id="f21" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set AN</tspan></text>
+</g>
+<g id="f22" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPI</tspan></text>
+</g>
+<g id="f23" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_</tspan></text>
+</g>
+<g id="f24" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+</g>
+<g id="f25" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f26" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f27" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod r</tspan></text>
+</g>
+<g id="f28" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run cla</tspan></text>
+</g>
+<g id="f29" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-co</tspan></text>
+</g>
+<g id="f30" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code --</tspan></text>
+</g>
+<g id="f31" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+</g>
+<g id="f32" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+</g>
+<g id="f33" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f34" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f35" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod a</tspan></text>
+</g>
+<g id="f36" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit c</tspan></text>
+</g>
+<g id="f37" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-</tspan></text>
+</g>
+<g id="f38" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+</g>
+<g id="f39" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f40" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f41" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod d</tspan></text>
+</g>
+<g id="f42" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff cl</tspan></text>
+</g>
+<g id="f43" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-c</tspan></text>
+</g>
+<g id="f44" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+</g>
+<g id="f45" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f46" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f47" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f48" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit</tspan></text>
+</g>
+<g id="f49" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claud</tspan></text>
+</g>
+<g id="f50" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-cod</tspan></text>
+</g>
+<g id="f51" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+</g>
+<g id="f52" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f53" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo e</tspan></text>
+</g>
+<g id="f54" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f55" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit</tspan></text>
+</g>
+<g id="f56" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claud</tspan></text>
+</g>
+<g id="f57" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+</g>
+<g id="f58" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --se</tspan></text>
+</g>
+<g id="f59" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --securit</tspan></text>
+</g>
+<g id="f60" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+</g>
+<g id="f61" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f62" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f63" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f64" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone</tspan></text>
+</g>
+<g id="f65" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude</tspan></text>
+</g>
+<g id="f66" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code</tspan></text>
+</g>
+<g id="f67" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code clau</tspan></text>
+</g>
+<g id="f68" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-cod</tspan></text>
+</g>
+<g id="f69" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-code-2</tspan></text>
+</g>
+<g id="f70" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-code-2</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f71" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-code-2</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f72" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-code-2</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f73" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-code-2</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run cl</tspan></text>
+</g>
+<g id="f74" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-code-2</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-c</tspan></text>
+</g>
+<g id="f75" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-code-2</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code-2</tspan></text>
+</g>
+<g id="f76" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-code-2</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code-2 -- ec</tspan></text>
+</g>
+<g id="f77" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-code-2</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code-2 -- echo &quot;I'</tspan></text>
+</g>
+<g id="f78" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-code-2</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code-2 -- echo &quot;I'm a s</tspan></text>
+</g>
+<g id="f79" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-code-2</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code-2 -- echo &quot;I'm a separa</tspan></text>
+</g>
+<g id="f80" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-code-2</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code-2 -- echo &quot;I'm a separate pod</tspan></text>
+</g>
+<g id="f81" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-code-2</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code-2 -- echo </tspan><tspan fill="#cccc66">&quot;I'm a separate pod&quot;</tspan></text>
+</g>
+<g id="f82" class="f t">
+<text x="16" y="70.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">envpod presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod vault claude-code set ANTHROPIC_API_KEY</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code -- claude</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code</tspan></text>
+<text x="16" y="160.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod diff claude-code</tspan></text>
+<text x="16" y="178.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod commit claude-code</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod audit claude-code --security</tspan></text>
+<text x="16" y="214.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod clone claude-code claude-code-2</tspan></text>
+<text x="16" y="232.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod run claude-code-2 -- echo </tspan><tspan fill="#cccc66">&quot;I'm a separate pod&quot;</tspan></text>
+<text x="16" y="358.0"><tspan fill="#c0caf5" opacity="0.5">                                                                                                      md2cast</tspan></text>
+</g>
+</svg>

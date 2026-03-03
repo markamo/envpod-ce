@@ -1,0 +1,32 @@
+# Demo pod — minimal example for quick testing
+#
+# Small resource limits, network limited to two whitelisted domains.
+# Good for: demos, quick testing, verifying envpod installation.
+#
+# Usage:
+#   sudo envpod init demo -c examples/demo-pod.yaml
+#   sudo envpod run demo -- /bin/bash
+#   sudo envpod diff demo
+#   sudo envpod audit demo
+
+name: demo-agent
+type: standard
+backend: native
+
+network:
+  mode: Isolated
+  dns:
+    mode: Whitelist
+    allow:
+      - api.anthropic.com
+      - github.com
+
+processor:
+  cores: 1.0
+  memory: "512MB"
+
+budget:
+  max_duration: "5m"
+
+audit:
+  action_log: true

@@ -1,0 +1,74 @@
+# Raspberry Pi pod — lightweight AI agent on Raspberry Pi 4 / 5 (ARM64)
+#
+# Optimized for Raspberry Pi 4 (4GB or 8GB) and Raspberry Pi 5 (4GB or 8GB)
+# running Raspberry Pi OS (64-bit) or Ubuntu 24.04 LTS for Raspberry Pi.
+# Designed for edge AI inference: LLM agent tasks, sensor pipelines, automation.
+#
+# Pi-specific notes:
+#   - Raspberry Pi 4 has a VideoCore VI GPU — NOT exposed for CUDA/OpenCL
+#   - Raspberry Pi 5 has a VideoCore VII GPU — similarly limited
+#   - For NPU/ML acceleration on Pi 5: use Hailo AI HAT+ (/dev/hailo0)
+#   - Keep memory limit generous to allow model loading (e.g. llama.cpp with 7B Q4)
+#   - envpod ARM64 binary required: envpod-0.2.0-linux-aarch64.tar.gz
+#
+# Prerequisites:
+#   sudo envpod init pi-agent -c examples/raspberry-pi.yaml
+#   sudo envpod run pi-agent -- python3 agent.py
+#
+# Kernel requirements:
+#   - Raspberry Pi OS 64-bit (kernel 6.1+) — namespaces and cgroups v2 enabled
+#   - Ubuntu 24.04 for Pi — kernel 6.8+, cgroups v2 by default
+#   - For Raspberry Pi OS: add `systemd.unified_cgroup_hierarchy=1` to /boot/cmdline.txt
+
+name: pi-agent
+type: standard
+backend: native
+
+network:
+  mode: Isolated
+  dns:
+    mode: Whitelist
+    allow:
+      # API endpoints your agent needs
+      - api.anthropic.com
+      - api.openai.com
+      # Package installs (optional — remove if setup is done offline)
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+
+filesystem:
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+    ignore:
+      - /var/cache
+      - /tmp
+      - /run
+
+# Raspberry Pi 4/5: 4GB or 8GB total RAM
+# Leave at least 512MB for host OS + kernel
+processor:
+  cores: 3.0         # Pi 4/5 has 4 cores; leave 1 for host OS
+  memory: "2GB"      # Conservative for 4GB Pi; increase to 6GB on 8GB Pi 5
+  max_pids: 512
+
+devices:
+  gpu: false         # No CUDA/OpenCL on Pi GPU; use llama.cpp CPU inference
+  display: false     # Headless edge agent
+  audio: false
+
+security:
+  seccomp_profile: default
+
+budget:
+  max_duration: "24h"   # Long-running edge agents
+
+audit:
+  action_log: true
+
+# Example: install llama.cpp + llama-cpp-python for on-device LLM inference
+setup:
+  - "pip3 install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu"

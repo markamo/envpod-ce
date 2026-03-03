@@ -1,0 +1,78 @@
+# Jetson Orin pod — AI inference and training on NVIDIA Jetson Orin (ARM64)
+#
+# Designed for NVIDIA Jetson Orin modules running JetPack 6 (Ubuntu 22.04).
+# Passes through the integrated GPU for CUDA/TensorRT inference workloads.
+# Network is limited to model registries and inference APIs.
+#
+# Jetson-specific notes:
+#   - GPU is integrated (iGPU) — exposed via /dev/nvidia0 and /dev/nvhost-*
+#   - JetPack 6 ships CUDA 12.x, TensorRT 10.x, cuDNN 9.x
+#   - Memory is shared between CPU and GPU — size limits apply to total SoC RAM
+#   - envpod ARM64 binary required: envpod-0.2.0-linux-aarch64.tar.gz
+#
+# Prerequisites:
+#   sudo envpod init jetson-agent -c examples/jetson-orin.yaml
+#   sudo envpod run jetson-agent -- python3 infer.py
+#
+# Install JetPack dependencies inside pod (during setup):
+#   pip3 install torch torchvision --index-url https://developer.download.nvidia.com/compute/redist/jp/v60
+
+name: jetson-agent
+type: standard
+backend: native
+
+network:
+  mode: Isolated
+  dns:
+    mode: Whitelist
+    allow:
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+      - huggingface.co
+      - "*.huggingface.co"
+      # NVIDIA model catalog and JetPack package feeds
+      - developer.download.nvidia.com
+      - "*.nvidia.com"
+      # NGC (NVIDIA GPU Cloud) for models and containers
+      - ngc.nvidia.com
+      - "*.ngc.nvidia.com"
+
+filesystem:
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /tmp
+      - /run
+
+# Jetson Orin memory: Orin NX 16GB has 16GB shared CPU+GPU RAM.
+# Reserve headroom for host OS and JetPack runtime.
+processor:
+  cores: 6.0         # Orin NX has 8 ARM Cortex-A78AE cores; leave 2 for host
+  memory: "10GB"     # Leave ~4-6GB for host OS + CUDA runtime overhead
+  max_pids: 1024
+
+devices:
+  gpu: true          # Pass through /dev/nvidia0, /dev/nvidiactl, /dev/nvhost-*
+  display: false     # Headless inference — no display needed
+  audio: false
+
+security:
+  seccomp_profile: default
+
+budget:
+  max_duration: "12h"
+
+audit:
+  action_log: true
+
+setup:
+  - "pip3 install numpy onnxruntime"
+  # Uncomment for PyTorch on Jetson (JetPack wheels):
+  # - "pip3 install torch torchvision --index-url https://developer.download.nvidia.com/compute/redist/jp/v60"

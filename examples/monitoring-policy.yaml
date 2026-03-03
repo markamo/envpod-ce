@@ -1,0 +1,56 @@
+# Example monitoring policy for envpod pods.
+#
+# Install into a pod with:
+#   sudo envpod monitor <pod> set-policy examples/monitoring-policy.yaml
+#
+# The monitor agent evaluates these rules every check_interval_secs
+# and can autonomously freeze or restrict the pod. Only humans can kill.
+
+check_interval_secs: 5
+
+rules:
+  # Memory above 90% of limit → restrict to 256 MB
+  - name: memory_high
+    condition:
+      type: resource_threshold
+      resource: memory
+      max_percent: 90.0
+    response:
+      type: restrict
+      memory_bytes: 268435456  # 256 MB
+
+  # CPU above 95% of limit → restrict to 0.5 cores
+  - name: cpu_high
+    condition:
+      type: resource_threshold
+      resource: cpu
+      max_percent: 95.0
+    response:
+      type: restrict
+      cpu_cores: 0.5
+
+  # More than 200 audit actions per minute → freeze
+  - name: action_flood
+    condition:
+      type: max_actions_per_minute
+      limit: 200
+    response:
+      type: freeze
+
+  # vault_get followed by dns_query within 10 seconds → freeze
+  # (possible data exfiltration: agent reads secret then makes network call)
+  - name: exfiltration_pattern
+    condition:
+      type: forbidden_sequence
+      actions: [vault_get, dns_query]
+      window_secs: 10
+    response:
+      type: freeze
+
+  # Budget exceeded → freeze immediately
+  - name: budget_exceeded
+    condition:
+      type: forbidden_action
+      action: budget_exceeded
+    response:
+      type: freeze

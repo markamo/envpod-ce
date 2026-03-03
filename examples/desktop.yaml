@@ -1,0 +1,64 @@
+# Desktop pod — lightweight XFCE desktop via noVNC
+#
+# A full graphical desktop environment (XFCE4) accessible via browser
+# at http://localhost:6080. Uses Xvfb + x11vnc + websockify (noVNC).
+# Lightweight — XFCE uses ~200MB RAM. Good for GUI apps, browser testing,
+# or any workflow that needs a desktop.
+#
+# Setup installs XFCE (~250MB) + Chrome (~300MB). First init takes 2-4 min.
+# For faster setup, install Chrome on the host first.
+# After first setup, use `envpod clone` for instant copies.
+#
+# Usage:
+#   sudo envpod init desktop -c examples/desktop.yaml
+#   sudo envpod setup desktop
+#   sudo envpod run desktop -p 6080:6080
+#   # Open http://localhost:6080
+
+name: desktop
+type: standard
+user: root
+
+web_display:
+  type: novnc
+  port: 6080
+  resolution: "1280x720"
+
+filesystem:
+  system_access: advanced
+
+network:
+  mode: Monitored
+  dns:
+    mode: Blacklist
+    deny:
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+
+processor:
+  cores: 2.0
+  memory: "2GB"
+  max_pids: 2048
+
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"
+
+budget:
+  max_duration: "8h"
+
+audit:
+  action_log: true
+
+setup:
+  - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends xfce4 xfce4-terminal dbus-x11"
+  - |
+    if command -v google-chrome >/dev/null 2>&1; then
+      echo "Chrome already available"
+    else
+      apt-get install -y wget gnupg
+      wget -qO- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+      apt-get update && apt-get install -y google-chrome-stable
+    fi

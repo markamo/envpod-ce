@@ -1,0 +1,37 @@
+[workspace]
+members = ["cli", "core", "dns"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "BSL-1.1"
+repository = "https://github.com/markamo/envpod-ce"
+
+[workspace.dependencies]
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+hickory-proto = "0.25"
+hickory-resolver = { version = "0.25", features = ["tokio"] }
+socket2 = { version = "0.5", features = ["all"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+thiserror = "2"
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+uuid = { version = "1", features = ["v4", "serde"] }
+
+# HTTP action executor (client-side only — no TLS server/CA generation)
+hyper = { version = "1", features = ["http1", "client", "server"] }
+hyper-util = { version = "0.1", features = ["tokio", "http1", "client-legacy"] }
+http-body-util = "0.1"
+webpki-roots = "0.26"
+hyper-rustls = { version = "0.27", features = ["http1", "ring", "webpki-tokio"] }
+
+# Dashboard
+axum = "0.8"
+rust-embed = "8"
+tower-http = { version = "0.6", features = ["cors"] }
+mime_guess = "2"
+open = "5"

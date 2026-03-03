@@ -1,0 +1,83 @@
+
+Preparing images...
+Measuring Docker image sizes...
+Measuring Podman image sizes...
+Measuring Docker container overhead...
+Measuring Podman container overhead...
+Creating envpod pods and measuring sizes...
+
+  [1m┌─────────────────────────────────────────────────────────┐[0m
+  [1m│ envpod OSS v0.1.0 — Zero-trust governance for AI agents │[0m
+  [1m└─────────────────────────────────────────────────────────┘[0m
+
+  ────────────────────────────────────────
+  Pod Created · size-test  1.0s
+  ────────────────────────────────────────
+
+  Backend  native
+  Network  isolated · dns whitelist
+  FS       system safe
+  CPU      1 core · 256MB
+  Budget   1m
+
+
+  ────────────────────────────────────────
+  Ready  1.0s
+  ────────────────────────────────────────
+
+  Run  sudo envpod run size-test -- bash
+
+Measuring envpod sizes...
+
+═══════════════════════════════════════════════════════════════════════
+  Disk Footprint Comparison
+═══════════════════════════════════════════════════════════════════════
+  Docker 29.2.1, Podman 4.9.3, envpod (native Linux backend)
+
+  Base image / base pod (ubuntu 24.04)
+
+  RUNTIME                                SIZE
+  ────────────────────────────── ────────────
+  Docker image                       119.0 MB
+  Podman image                        76.9 MB
+  Envpod base pod                    104.8 MB
+
+  Envpod base is 11% smaller than Docker image
+
+  Per-instance overhead (unique disk cost per container/pod)
+
+  RUNTIME                                SIZE
+  ────────────────────────────── ────────────
+  Docker container layer               4.0 KB
+  Podman container layer              10.7 KB
+  Envpod pod (unique)                  1.2 KB
+  Envpod clone (unique)                1.2 KB
+
+  Note: all runtimes share base image/rootfs across instances.
+  Sizes above are the per-instance writable layer only.
+
+  Envpod pod breakdown
+
+  COMPONENT                                   SIZE  
+  ─────────────────────────────────── ────────────
+  base pod (shared rootfs + state)        104.8 MB  
+    rootfs/                               104.8 MB  (shared with base via symlink)
+  pod unique overhead                       1.2 KB  (pod.yaml + empty dirs)
+    upper/                                     0 B  (COW layer, grows with changes)
+  clone unique overhead                     1.2 KB  (rootfs symlinked to base)
+
+  GPU image / base pod (CUDA 12.0 ubuntu 22.04)
+
+  RUNTIME                                SIZE
+  ────────────────────────────── ────────────
+  Docker image                       338.0 MB
+  Podman image                       228.8 MB
+  Envpod base pod (gpu: true)        104.8 MB
+
+  Envpod GPU base is 68% smaller than Docker CUDA image
+
+  Why envpod is smaller:
+    Docker/Podman: full distro userland copied into image (~120MB+ for ubuntu)
+    Envpod: only /etc + apt state in rootfs; /usr /bin /lib bind-mounted from host
+    Clones share the base rootfs via symlink — near-zero per-clone overhead
+

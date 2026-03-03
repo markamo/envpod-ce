@@ -1,0 +1,85 @@
+# OpenCode pod — open-source AI coding agent for the terminal
+#
+# OpenCode is a Go-based TUI coding agent that supports 75+ LLM providers
+# (Anthropic, OpenAI, Google, Groq, OpenRouter, local via Ollama, etc.).
+# Compiled binary, no runtime dependencies.
+#
+# Needs: LLM provider APIs, package registries, GitHub.
+# Install: curl script (downloads a Go binary, no runtime needed).
+#
+# Usage:
+#   sudo envpod init opencode -c examples/opencode.yaml
+#   sudo envpod setup opencode
+#   sudo envpod run opencode -- opencode
+
+name: opencode
+type: standard
+backend: native
+
+network:
+  mode: Monitored
+  dns:
+    mode: Whitelist
+    allow:
+      # LLM providers
+      - api.anthropic.com
+      - "*.anthropic.com"
+      - api.openai.com
+      - "*.openai.com"
+      - generativelanguage.googleapis.com
+      - "*.googleapis.com"
+      - api.groq.com
+      - "*.groq.com"
+      - openrouter.ai
+      - "*.openrouter.ai"
+      # GitHub (code, PRs, installer)
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+      # Package registries
+      - registry.npmjs.org
+      - "*.npmjs.org"
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+      - crates.io
+      - "*.crates.io"
+      - static.crates.io
+
+filesystem:
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+
+budget:
+  max_duration: "4h"
+
+# Vault proxy injection — supports multiple providers.
+# To enable for Anthropic:
+#   sudo envpod vault opencode set ANTHROPIC_API_KEY
+#   sudo envpod vault opencode bind ANTHROPIC_API_KEY api.anthropic.com "Authorization: Bearer {value}"
+# To enable for OpenAI:
+#   sudo envpod vault opencode set OPENAI_API_KEY
+#   sudo envpod vault opencode bind OPENAI_API_KEY api.openai.com "Authorization: Bearer {value}"
+vault:
+  proxy: false
+  bindings: []
+
+audit:
+  action_log: true
+
+setup:
+  - "curl -fsSL https://opencode.ai/install | bash"

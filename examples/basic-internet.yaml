@@ -1,0 +1,42 @@
+# Basic CLI pod with internet access
+#
+# Own network namespace (isolated from host) but DNS in Monitor mode —
+# all domains resolve, every DNS query is logged for audit.
+#
+# Usage:
+#   sudo envpod init web-cli -c examples/basic-internet.yaml
+#   sudo envpod run web-cli -- /bin/bash
+#   sudo envpod audit web-cli          # see DNS queries
+
+name: web-cli
+type: standard
+backend: native
+
+network:
+  mode: Monitored
+  dns:
+    mode: Monitor
+
+filesystem:
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+processor:
+  cores: 1.0
+  memory: "512MB"
+
+budget:
+  max_duration: "15m"
+
+audit:
+  action_log: true

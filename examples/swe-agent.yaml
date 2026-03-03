@@ -1,0 +1,84 @@
+# SWE-agent pod — Princeton's autonomous software engineering agent
+#
+# SWE-agent autonomously resolves GitHub issues by cloning repos, analyzing
+# code, and generating patches. Uses LLM providers via litellm. CLI-only,
+# no browser needed. Python 3.11+.
+#
+# Note: SWE-agent normally uses Docker as its internal sandbox, but inside
+# envpod it runs directly (envpod IS the sandbox). Use --sandbox.type=local
+# or SWE-MiniSandbox mode.
+#
+# Note: The PyPI "sweagent" package is stale. Must install from source.
+#
+# Needs: LLM provider APIs, GitHub API + git clone, PyPI.
+#
+# Usage:
+#   sudo envpod init swe-agent -c examples/swe-agent.yaml
+#   sudo envpod setup swe-agent
+#   sudo envpod run swe-agent -- python -m swe_agent.run ...
+
+name: swe-agent
+type: standard
+backend: native
+
+network:
+  mode: Monitored
+  dns:
+    mode: Whitelist
+    allow:
+      # LLM providers
+      - api.anthropic.com
+      - "*.anthropic.com"
+      - api.openai.com
+      - "*.openai.com"
+      - api.together.ai
+      - "*.together.ai"
+      # GitHub (clone repos, read issues, submit PRs)
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+      - api.github.com
+      # PyPI (dependencies)
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+
+filesystem:
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+processor:
+  cores: 2.0
+  memory: "2GB"
+
+security:
+  seccomp_profile: default
+  shm_size: "64MB"
+
+budget:
+  max_duration: "1h"
+
+# Vault proxy injection — supports multiple providers.
+# To enable: sudo envpod vault swe-agent set ANTHROPIC_API_KEY
+#            sudo envpod vault swe-agent bind ANTHROPIC_API_KEY api.anthropic.com "Authorization: Bearer {value}"
+vault:
+  proxy: false
+  bindings: []
+
+audit:
+  action_log: true
+
+setup:
+  - "command -v pip >/dev/null || { apt-get update && apt-get install -y python3-pip; }"
+  - "git clone https://github.com/SWE-agent/SWE-agent.git /opt/swe-agent"
+  - "cd /opt/swe-agent && pip install --editable ."

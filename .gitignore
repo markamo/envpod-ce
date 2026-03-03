@@ -1,0 +1,11 @@
+/target/
+release/
+envpod-*.tar.gz
+*.deb
+*.rpm
+Cargo.lock
+"website/website ideasl/"
+ideas/
+docs/IDEAS.md
+ideas/
+website/website ideasl/

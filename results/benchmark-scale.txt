@@ -1,0 +1,100 @@
+
+Scale Benchmark — 50 instances
+
+Preparing images...
+  Docker ubuntu:24.04: ready
+  Podman docker.io/library/ubuntu:24.04: ready
+Creating envpod base pod...
+  envpod base: ready
+
+Test 1: Create 50 instances
+
+  Creating 50 Docker containers...
+    Done: 6.1s total, 123ms/instance
+  Creating 50 Podman containers...
+    Done: 7.3s total, 146ms/instance
+  Creating 50 envpod clones...
+    Done: 517ms total, 10ms/instance
+
+Test 2: Total disk overhead for 50 instances
+
+  Measuring Docker container layers...
+  Measuring Podman container layers...
+  Measuring envpod pod directories...
+
+Test 3: Run /bin/true in all 50 instances
+
+  Running in 50 Docker containers...
+    Done: 10.7s total, 215ms/instance
+  Running in 50 Podman containers...
+    Done: 27.4s total, 548ms/instance
+  Running in 50 envpod clones...
+    Done: 8.4s total, 169ms/instance
+
+Test 4: Destroy all 50 instances
+
+  Destroying 50 Docker containers...
+    Done: 1.1s
+  Destroying 50 Podman containers...
+    Done: 1.8s
+  Destroying 50 envpod clones...
+    Done: 1.6s
+  Running envpod gc (iptables cleanup)...
+    Done: 12.6s
+
+═══════════════════════════════════════════════════════════════════════
+  Scale Benchmark — 50 instances
+═══════════════════════════════════════════════════════════════════════
+  Docker 29.2.1, Podman 4.9.3, envpod (native Linux backend)
+
+  Create 50 instances
+
+  RUNTIME                     TOTAL PER INSTANCE
+  ──────────────────── ──────────── ────────────
+  Docker                       6.1s        123ms
+  Podman                       7.3s        146ms
+  Envpod (clone)              517ms         10ms
+
+  Envpod is 11.9x faster than Docker, 14.1x faster than Podman
+
+  Total disk overhead (50 instances)
+
+  RUNTIME                     TOTAL
+  ──────────────────── ────────────
+  Docker                   200.0 KB
+  Podman                        0 B
+  Envpod                    65.4 KB
+
+  Run /bin/true in all 50 instances
+
+  RUNTIME                     TOTAL PER INSTANCE
+  ──────────────────── ──────────── ────────────
+  Docker                      10.7s        215ms
+  Podman                      27.4s        548ms
+  Envpod                       8.4s        169ms
+
+  Note: envpod first run triggers deferred network setup (cgroup + netns).
+
+  Destroy 50 instances
+
+  RUNTIME                   DESTROY DESTROY + GC
+  ──────────────────── ──────────── ────────────
+  Docker                       1.1s          —
+  Podman                       1.8s          —
+  Envpod                       1.6s        14.2s
+
+  Envpod destroy defers iptables cleanup for speed. Run 'envpod gc' to
+  clean up stale rules (12.6s for 50 pods). Dead rules are harmless — they
+  reference non-existent interfaces and never match traffic.
+
+  Full lifecycle: create + run + destroy 50 instances
+
+  RUNTIME                     TOTAL PER INSTANCE
+  ──────────────────── ──────────── ────────────
+  Docker                      18.0s        361ms
+  Podman                      36.5s        731ms
+  Envpod                      10.6s        212ms
+  Envpod (with gc)            23.2s        464ms
+
+  Envpod full lifecycle is 1.7x faster than Docker, 3.4x faster than Podman
+

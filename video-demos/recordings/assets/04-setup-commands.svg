@@ -1,0 +1,329 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 956 360" width="956" height="360">
+<defs><style>
+.t{font-family:JetBrains Mono, Fira Code, Cascadia Code, monospace;font-size:14px;white-space:pre}
+.f{opacity:0;position:absolute}
+@keyframes s{0%,100%{opacity:1}}
+#f0{animation:s 0.300s step-end 0.300s none}
+#f1{animation:s 0.120s step-end 0.600s none}
+#f2{animation:s 0.120s step-end 0.720s none}
+#f3{animation:s 0.120s step-end 0.840s none}
+#f4{animation:s 0.100s step-end 0.960s none}
+#f5{animation:s 0.120s step-end 1.060s none}
+#f6{animation:s 0.100s step-end 1.180s none}
+#f7{animation:s 0.120s step-end 1.280s none}
+#f8{animation:s 0.100s step-end 1.400s none}
+#f9{animation:s 0.880s step-end 1.500s none}
+#f10{animation:s 1.500s step-end 2.380s none}
+#f11{animation:s 0.100s step-end 3.880s none}
+#f12{animation:s 0.100s step-end 3.980s none}
+#f13{animation:s 0.120s step-end 4.080s none}
+#f14{animation:s 0.120s step-end 4.200s none}
+#f15{animation:s 0.120s step-end 4.320s none}
+#f16{animation:s 0.120s step-end 4.440s none}
+#f17{animation:s 0.100s step-end 4.560s none}
+#f18{animation:s 0.880s step-end 4.660s none}
+#f19{animation:s 1.500s step-end 5.540s none}
+#f20{animation:s 0.120s step-end 7.040s none}
+#f21{animation:s 0.120s step-end 7.160s none}
+#f22{animation:s 0.120s step-end 7.280s none}
+#f23{animation:s 0.120s step-end 7.400s none}
+#f24{animation:s 0.100s step-end 7.520s none}
+#f25{animation:s 0.120s step-end 7.620s none}
+#f26{animation:s 0.120s step-end 7.740s none}
+#f27{animation:s 0.800s step-end 7.860s none}
+#f28{animation:s 1.500s step-end 8.660s none}
+#f29{animation:s 0.120s step-end 10.160s none}
+#f30{animation:s 0.100s step-end 10.280s none}
+#f31{animation:s 0.120s step-end 10.380s none}
+#f32{animation:s 0.120s step-end 10.500s none}
+#f33{animation:s 0.100s step-end 10.620s none}
+#f34{animation:s 0.120s step-end 10.720s none}
+#f35{animation:s 0.860s step-end 10.840s none}
+#f36{animation:s 1.800s step-end 11.700s none}
+#f37{animation:s 0.300s step-end 13.500s none}
+#f38{animation:s 0.120s step-end 13.800s none}
+#f39{animation:s 0.120s step-end 13.920s none}
+#f40{animation:s 0.100s step-end 14.040s none}
+#f41{animation:s 0.880s step-end 14.140s none}
+#f42{animation:s 1.500s step-end 15.020s none}
+#f43{animation:s 0.300s step-end 16.520s none}
+#f44{animation:s 2.000s step-end 16.820s forwards}
+</style></defs>
+<rect width="100%" height="100%" fill="#1a1b26" rx="8"/>
+<circle cx="20" cy="20.0" r="6" fill="#ff5f56"/>
+<circle cx="40" cy="20.0" r="6" fill="#ffbd2e"/>
+<circle cx="60" cy="20.0" r="6" fill="#27c93f"/>
+<text x="478" y="24" text-anchor="middle" fill="#565f89" font-family="JetBrains Mono, Fira Code, Cascadia Code, monospace" font-size="12">Setup Commands</text>
+<g id="f0" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+</g>
+<g id="f1" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f2" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f3" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod i</tspan></text>
+</g>
+<g id="f4" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init cl</tspan></text>
+</g>
+<g id="f5" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-</tspan></text>
+</g>
+<g id="f6" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code -</tspan></text>
+</g>
+<g id="f7" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --pres</tspan></text>
+</g>
+<g id="f8" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset cla</tspan></text>
+</g>
+<g id="f9" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-c</tspan></text>
+</g>
+<g id="f10" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+</g>
+<g id="f11" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f12" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo e</tspan></text>
+</g>
+<g id="f13" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f14" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init</tspan></text>
+</g>
+<g id="f15" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init opencl</tspan></text>
+</g>
+<g id="f16" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --p</tspan></text>
+</g>
+<g id="f17" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset</tspan></text>
+</g>
+<g id="f18" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openc</tspan></text>
+</g>
+<g id="f19" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+</g>
+<g id="f20" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f21" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f22" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod i</tspan></text>
+</g>
+<g id="f23" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init br</tspan></text>
+</g>
+<g id="f24" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser</tspan></text>
+</g>
+<g id="f25" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --pre</tspan></text>
+</g>
+<g id="f26" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset br</tspan></text>
+</g>
+<g id="f27" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+</g>
+<g id="f28" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+</g>
+<g id="f29" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f30" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f31" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod</tspan></text>
+</g>
+<g id="f32" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init a</tspan></text>
+</g>
+<g id="f33" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init aider -</tspan></text>
+</g>
+<g id="f34" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init aider --pres</tspan></text>
+</g>
+<g id="f35" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init aider --preset aid</tspan></text>
+</g>
+<g id="f36" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init aider --preset aider</tspan></text>
+</g>
+<g id="f37" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init aider --preset aider</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Start dashboard</tspan></text>
+</g>
+<g id="f38" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init aider --preset aider</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Start dashboard</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$</tspan></text>
+</g>
+<g id="f39" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init aider --preset aider</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Start dashboard</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo en</tspan></text>
+</g>
+<g id="f40" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init aider --preset aider</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Start dashboard</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod d</tspan></text>
+</g>
+<g id="f41" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init aider --preset aider</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Start dashboard</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod dashbo</tspan></text>
+</g>
+<g id="f42" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init aider --preset aider</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Start dashboard</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod dashboard</tspan></text>
+</g>
+<g id="f43" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init aider --preset aider</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Start dashboard</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod dashboard</tspan></text>
+<text x="16" y="214.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Opens http://localhost:9090</tspan></text>
+</g>
+<g id="f44" class="f t">
+<text x="16" y="70.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Create pods using presets</tspan></text>
+<text x="16" y="88.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init claude-code --preset claude-code</tspan></text>
+<text x="16" y="106.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init openclaw --preset openclaw</tspan></text>
+<text x="16" y="124.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init browser --preset browser</tspan></text>
+<text x="16" y="142.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod init aider --preset aider</tspan></text>
+<text x="16" y="178.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Start dashboard</tspan></text>
+<text x="16" y="196.0"><tspan fill="#9ece6a">$ </tspan><tspan fill="#c0caf5">sudo envpod dashboard</tspan></text>
+<text x="16" y="214.0"><tspan fill="#c0caf5">  </tspan><tspan fill="#c0caf5" opacity="0.5"># Opens http://localhost:9090</tspan></text>
+<text x="16" y="340.0"><tspan fill="#c0caf5" opacity="0.5">                                                                                                      md2cast</tspan></text>
+</g>
+</svg>

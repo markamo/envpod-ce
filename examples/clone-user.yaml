@@ -1,0 +1,33 @@
+# Clone host user environment into the pod.
+# Same username, shell, dotfiles, and workspace directories — but
+# isolated with UID 60000 and sensitive paths excluded by default.
+name: clone-user-demo
+type: standard
+
+host_user:
+  clone_host: true
+  dirs:
+    - Documents
+    - Projects
+    - src
+  # Defaults exclude .ssh, .gnupg, .aws, .docker, etc.
+  # Override to customize:
+  # exclude:
+  #   - .ssh
+  #   - .config/gcloud
+
+filesystem:
+  system_access: safe
+  apps:
+    - python3
+    - git
+
+network:
+  mode: Filtered
+  dns:
+    mode: whitelist
+    allow:
+      - "github.com"
+      - "*.githubusercontent.com"
+      - "pypi.org"
+      - "files.pythonhosted.org"

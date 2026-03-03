@@ -1,0 +1,62 @@
+# Coding agent pod — general-purpose AI coding sandbox
+#
+# Isolated network with DNS whitelist for LLM APIs, package registries,
+# and GitHub. 2 CPU cores, 4 GB memory, 4-hour budget.
+# Good for: any AI coding agent that needs API + package access.
+#
+# Usage:
+#   sudo envpod init my-agent -c examples/coding-agent.yaml
+#   sudo envpod run my-agent -- /bin/bash
+#   sudo envpod diff my-agent
+#   sudo envpod commit my-agent
+
+name: coding-agent
+type: standard
+backend: native
+
+network:
+  mode: Isolated
+  dns:
+    mode: Whitelist
+    allow:
+      # LLM APIs
+      - api.anthropic.com
+      - api.openai.com
+      # Package registries
+      - registry.npmjs.org
+      - pypi.org
+      - files.pythonhosted.org
+      - crates.io
+      - static.crates.io
+      # GitHub
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+
+filesystem:
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+
+budget:
+  max_duration: "4h"
+
+audit:
+  action_log: true
+
+setup:
+  - "git config --global user.name 'Coding Agent'"
+  - "git config --global user.email 'agent@envpod.local'"

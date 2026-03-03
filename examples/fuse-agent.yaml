@@ -1,0 +1,55 @@
+# FUSE agent pod — sandbox with FUSE filesystem support
+#
+# Passes through /dev/fuse for agents that need to mount custom
+# filesystems (e.g., sshfs, s3fs, rclone). No GPU access.
+#
+# Usage:
+#   sudo envpod init fuse-agent -c examples/fuse-agent.yaml
+#   sudo envpod run fuse-agent -- /bin/bash
+
+name: fuse-agent
+type: standard
+backend: native
+
+network:
+  mode: Monitored
+  dns:
+    mode: Whitelist
+    allow:
+      - "*.amazonaws.com"
+      - "*.storage.googleapis.com"
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+
+filesystem:
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+processor:
+  cores: 2.0
+  memory: "2GB"
+
+devices:
+  gpu: false
+  extra:
+    - "/dev/fuse"
+
+budget:
+  max_duration: "2h"
+
+audit:
+  action_log: true
+
+setup:
+  - "pip install s3fs rclone"

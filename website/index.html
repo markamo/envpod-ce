@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>envpod — Zero-trust governance for AI agents</title>
+<meta name="description" content="Docker isolates. Envpod governs. Copy-on-write filesystem review, encrypted credential vault, action approval queue, and DNS filtering for AI agents. Free and open source.">
+<meta property="og:title" content="envpod — Zero-trust governance for AI agents">
+<meta property="og:description" content="Docker isolates. Envpod governs. Every file change reviewed. Every action approved. Every secret protected.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0b;--surface:#111113;--surface2:#16161a;--border:#1e1e24;--border-hi:#2a2a32;--text:#e8e8ed;--muted:#8b8b98;--dim:#5a5a66;--green:#22c55e;--green-dim:#16a34a;--green-glow:rgba(34,197,94,0.08);--blue:#58a6ff;--blue-glow:rgba(88,166,255,0.08);--orange:#f59e0b;--red:#ef4444;--purple:#bc8cff;--mono:'JetBrains Mono','SF Mono','Cascadia Code',monospace;--sans:'DM Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif}*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{background:radial-gradient(1200px 700px at 15% 5%,rgba(34,197,94,0.07),transparent 55%),radial-gradient(900px 600px at 85% 15%,rgba(88,166,255,0.06),transparent 50%),var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}code{font-family:var(--mono);font-size:0.85em;background:var(--blue-glow);color:var(--blue);padding:2px 7px;border-radius:4px}.wrap{max-width:1100px;margin:0 auto;padding:0 32px}nav{position:fixed;top:0;width:100%;z-index:100;padding:14px 0;background:rgba(10,10,11,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}.nav-inner{max-width:1100px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between}.logo{font-family:var(--mono);font-weight:700;font-size:18px;color:var(--text);text-decoration:none;letter-spacing:-0.5px}.logo span{color:var(--green)}.nav-links{display:flex;gap:4px;align-items:center}.nav-links a{font-size:14px;color:var(--muted);padding:6px 12px;border-radius:6px;transition:color .15s,background .15s}.nav-links a:hover{color:var(--text);background:var(--surface);text-decoration:none}.nav-gh{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)!important;font-size:13px;font-weight:500;margin-left:8px;transition:border-color .15s!important}.nav-gh:hover{border-color:var(--green)!important;text-decoration:none!important}.nav-gh svg{flex-shrink:0}.hero{max-width:1100px;margin:0 auto;padding:150px 32px 72px;text-align:center}.hero-badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--green);background:var(--green-glow);border:1px solid rgba(34,197,94,0.15);padding:5px 14px;border-radius:100px;margin-bottom:32px;animation:fadeIn .6s}.hero-badge::before{content:'';width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 2s ease-in-out infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}.hero h1{font-size:clamp(40px,7vw,72px);font-weight:800;line-height:1.05;letter-spacing:-0.04em;margin-bottom:24px;animation:fadeUp .7s}.hero h1 .dim{color:var(--dim)}.hero h1 .accent{color:var(--green)}.hero-sub{font-size:clamp(16px,2.5vw,19px);color:var(--muted);max-width:580px;margin:0 auto 44px;line-height:1.65;animation:fadeUp .7s .1s both}.hero-ctas{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:0;animation:fadeUp .7s .2s both}.btn-p{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;background:var(--green);color:var(--bg);font-family:var(--mono);font-weight:700;font-size:14px;border-radius:8px;border:none;cursor:pointer;transition:all .2s;text-decoration:none}.btn-p:hover{background:#2dd468;transform:translateY(-1px);box-shadow:0 8px 30px rgba(34,197,94,0.2);text-decoration:none;color:var(--bg)}.btn-s{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;background:var(--surface);color:var(--text);font-family:var(--mono);font-size:14px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all .2s;text-decoration:none}.btn-s:hover{border-color:var(--border-hi);color:var(--text);text-decoration:none}.numbers{max-width:1100px;margin:0 auto;padding:60px 32px 80px;animation:fadeUp .7s .3s both}.numbers-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden}.number-item{background:var(--surface2);padding:28px 20px;text-align:center}.number-item .num{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--green);display:block;margin-bottom:4px}.number-item .label{font-size:13px;color:var(--muted)}.demo-section{max-width:1100px;margin:0 auto;padding:0 32px 40px}.demo-label{font-family:var(--mono);font-size:12px;color:var(--dim);text-align:center;margin-bottom:16px;letter-spacing:.5px}.demo-label kbd{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:2px 8px;border-radius:4px;margin:0 2px}.terminal{background:#010409;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.5);transition:border-color .3s}.terminal.focused{border-color:var(--border-hi)}.terminal-bar{display:flex;align-items:center;gap:7px;padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border)}.dot{width:12px;height:12px;border-radius:50%}.dot-r{background:#ff5f57}.dot-y{background:#ffbd2e}.dot-g{background:#28ca42}.t-label{font-family:var(--mono);font-size:12px;color:var(--dim);margin-left:8px;flex:1}.t-live{font-family:var(--mono);font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:6px}.t-live::before{content:'';width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 1.5s ease-in-out infinite}.terminal-body{padding:20px 24px;font-family:var(--mono);font-size:13px;line-height:1.8;min-height:360px;max-height:420px;overflow-y:auto;cursor:text}.terminal-body::-webkit-scrollbar{width:6px}.terminal-body::-webkit-scrollbar-track{background:transparent}.terminal-body::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:3px}.tl{white-space:pre-wrap;word-break:break-all}.tp{color:var(--green)}.tc{color:var(--text)}.to{color:var(--dim)}.ta{color:var(--green)}.tr{color:var(--red)}.tw{color:var(--orange)}.tb{color:var(--blue)}.term-input-line{display:flex;align-items:center;white-space:pre}#ti{background:none;border:none;outline:none;font-family:var(--mono);font-size:13px;color:var(--text);flex:1;caret-color:var(--green);line-height:1.8;padding:0}#ti::placeholder{color:var(--dim)}.pills{max-width:1100px;margin:0 auto;padding:16px 32px 100px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.pill{font-family:var(--mono);font-size:12px;color:var(--dim);background:var(--surface2);border:1px solid var(--border);padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .2s;user-select:none}.pill:hover{color:var(--green);border-color:var(--green-dim);background:var(--green-glow)}.philosophy{max-width:1100px;margin:0 auto;padding:0 32px 120px;text-align:center}.philosophy-line{font-size:clamp(20px,3vw,30px);font-weight:600;line-height:1.5;letter-spacing:-0.5px;max-width:700px;margin:0 auto 12px}.philosophy-line.dim{color:var(--dim)}.section{padding:88px 0}.section-tinted{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:88px 0}.section-label{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px}h2{font-size:clamp(26px,4vw,42px);font-weight:700;letter-spacing:-0.03em;margin-bottom:12px}.section-sub{color:var(--muted);font-size:17px;max-width:560px;margin-bottom:56px;line-height:1.65}.logo-ce{font-size:10px;font-weight:700;color:var(--green);background:var(--green-glow);border:1px solid rgba(34,197,94,0.2);padding:2px 8px;border-radius:100px;letter-spacing:1.5px;margin-left:6px;vertical-align:2px}.hero-install{margin-top:28px;animation:fadeUp .7s .3s both}.hero-install-row{display:inline-flex;align-items:center;background:#010409;border:1px solid var(--border-hi);border-radius:8px;overflow:hidden;max-width:480px}.hero-install-cmd{font-family:var(--mono);font-size:13px;color:var(--green);padding:11px 16px;flex:1;white-space:nowrap;user-select:all}.hero-install-copy{background:var(--surface);border:none;border-left:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;padding:11px 14px;cursor:pointer;transition:all .15s;white-space:nowrap}.hero-install-copy:hover{color:var(--green);background:var(--surface2)}.hero-install-note{display:block;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:9px}.arch-diagram{margin-bottom:56px}.arch-pods-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}.arch-pod{display:flex;flex-direction:column;gap:3px}.arch-agent-layer{border-radius:6px;padding:13px 8px;text-align:center;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09)}.arch-emoji{font-size:22px;display:block;margin-bottom:5px}.arch-agent-name{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text);display:block}.arch-agent-sub{font-family:var(--mono);font-size:8px;color:var(--dim);margin-top:2px;display:block}.arch-gov-layer{border-radius:6px;padding:10px 8px;text-align:center;background:linear-gradient(135deg,rgba(34,197,94,0.12),rgba(34,197,94,0.04));border:1px solid rgba(34,197,94,0.38);box-shadow:0 0 14px rgba(34,197,94,0.06)}.arch-gov-label{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--green);letter-spacing:1.5px;text-transform:uppercase;display:block}.arch-gov-sub{font-family:var(--mono);font-size:7.5px;color:var(--green);opacity:.55;margin-top:2px;display:block}.arch-walls{display:grid;grid-template-columns:1fr 1fr;gap:3px}.arch-wall{border-radius:4px;padding:8px 4px;text-align:center;border:1px solid transparent}.aw-label{font-family:var(--mono);font-size:8.5px;font-weight:700;display:block;letter-spacing:.8px;text-transform:uppercase}.aw-sub{font-family:var(--mono);font-size:7px;opacity:.58;margin-top:2px;display:block}.aw-net{background:rgba(88,166,255,0.09);border-color:rgba(88,166,255,0.24);color:var(--blue)}.aw-proc{background:rgba(245,158,11,0.09);border-color:rgba(245,158,11,0.24);color:var(--orange)}.aw-fs{background:rgba(34,197,94,0.07);border-color:rgba(34,197,94,0.22);color:var(--green)}.aw-mem{background:rgba(188,140,255,0.07);border-color:rgba(188,140,255,0.22);color:var(--purple)}.aw-dev{background:rgba(239,68,68,0.07);border-color:rgba(239,68,68,0.2);color:var(--red)}.arch-runtime{border-radius:8px;padding:14px 20px;background:rgba(88,166,255,0.05);border:1px solid rgba(88,166,255,0.18);display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:6px}.arch-runtime-name{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--blue);letter-spacing:1px;text-transform:uppercase;white-space:nowrap}.arch-runtime-items{font-family:var(--mono);font-size:11px;color:var(--muted)}.arch-kernel{border-radius:8px;padding:12px 20px;background:rgba(255,255,255,0.018);border:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap}.arch-kernel-name{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--dim);letter-spacing:1px;text-transform:uppercase;white-space:nowrap}.arch-kernel-items{font-family:var(--mono);font-size:10px;color:var(--dim)}@media(max-width:640px){.arch-pods-row{grid-template-columns:1fr}.arch-runtime,.arch-kernel{flex-direction:column;gap:6px}}.vs-diagram{display:grid;grid-template-columns:1fr 64px 1fr;gap:0;align-items:center;margin-bottom:48px}.vs-stack{display:flex;flex-direction:column;gap:3px}.vs-stack-label{font-family:var(--mono);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;text-align:center;margin-bottom:10px}.vs-stack-label.docker{color:var(--blue)}.vs-stack-label.envpod{color:var(--green)}.vs-box{border-radius:5px;padding:10px 14px;text-align:center;border:1px solid transparent}.vs-box-name{font-family:var(--mono);font-size:11px;font-weight:700;display:block;letter-spacing:.8px;text-transform:uppercase}.vs-box-sub{font-family:var(--mono);font-size:9px;opacity:.6;margin-top:2px;display:block}.vsb-app{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1);color:var(--text)}.vsb-container{background:rgba(88,166,255,0.07);border-color:rgba(88,166,255,0.2);color:var(--blue)}.vsb-container-os{background:rgba(88,166,255,0.03);border-color:rgba(88,166,255,0.12);color:var(--muted)}.vsb-engine{background:rgba(88,166,255,0.04);border-color:rgba(88,166,255,0.12);color:var(--muted)}.vsb-hostfs{background:rgba(34,197,94,0.06);border-color:rgba(34,197,94,0.22);color:var(--green)}.vsb-os{background:rgba(255,255,255,0.02);border-color:var(--border);color:var(--dim)}.vs-missing{border-radius:5px;padding:8px 14px;text-align:center;background:rgba(239,68,68,0.04);border:1px dashed rgba(239,68,68,0.2)}.vs-missing-text{font-family:var(--mono);font-size:10px;color:rgba(239,68,68,0.7)}.vsb-gov{background:linear-gradient(135deg,rgba(34,197,94,0.14),rgba(34,197,94,0.05));border-color:rgba(34,197,94,0.4);color:var(--green)}.vsb-runtime{background:rgba(88,166,255,0.06);border-color:rgba(88,166,255,0.2);color:var(--blue)}.vsb-kernel{background:rgba(255,255,255,0.02);border-color:var(--border);color:var(--dim)}.vs-check{border-radius:5px;padding:8px;text-align:center;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.15)}.vs-check-text{font-family:var(--mono);font-size:10px;color:var(--green)}.vs-divider{display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;color:var(--dim);padding-bottom:36px}@media(max-width:640px){.vs-diagram{grid-template-columns:1fr;gap:24px}.vs-divider{display:none}}.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:20px}.feature-card{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:28px;transition:border-color .2s,transform .2s}.feature-card:hover{border-color:var(--green);transform:translateY(-2px)}.feature-icon{font-size:28px;margin-bottom:14px}.feature-title{font-weight:600;font-size:16px;margin-bottom:8px}.feature-desc{color:var(--muted);font-size:14px;line-height:1.65}.compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:48px}.compare-col{border:1px solid var(--border);border-radius:12px;padding:28px}.compare-label{color:var(--muted);font-size:14px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;font-weight:600}.compare-verdict{font-size:22px;font-weight:700;margin-bottom:10px;color:var(--text)}.compare-desc{font-size:14px;color:var(--muted);line-height:1.6}.col-envpod{background:rgba(34,197,94,0.03);border-color:rgba(34,197,94,0.25)}.col-envpod .compare-label{color:var(--green)}.compare-callout{border:1px solid var(--border);border-radius:10px;padding:28px;background:rgba(34,197,94,0.03);max-width:640px;margin:0 auto;text-align:center}.compare-callout p{font-size:18px;line-height:1.7;color:var(--text)}.compare-callout .dim{color:var(--muted)}.agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}.agent-card{border:1px solid var(--border);border-radius:10px;padding:20px 22px;background:var(--surface);transition:border-color .2s}.agent-card:hover{border-color:var(--green)}.agent-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.agent-name{font-weight:600;font-size:15px}.agent-tag{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:10px;border:1px solid var(--border);color:var(--muted);white-space:nowrap}.tag-coding{border-color:rgba(88,166,255,0.3);color:var(--blue)}.tag-browser{border-color:rgba(34,197,94,0.3);color:var(--green)}.tag-gpu{border-color:rgba(188,140,255,0.3);color:var(--purple)}.tag-sandbox{border-color:rgba(239,68,68,0.3);color:var(--red)}.agent-desc{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5}.agent-cmd{font-family:var(--mono);font-size:11px;background:#010409;border:1px solid var(--border);border-radius:6px;padding:10px 12px;line-height:1.7}.agent-cmd .pr{color:var(--green);user-select:none}.agent-cmd .cm{color:var(--text)}.more-examples{text-align:center;margin-top:32px;font-size:14px;color:var(--muted)}.steps{display:grid;gap:0}.step{display:grid;grid-template-columns:60px 1fr;gap:24px;padding:32px 0;border-bottom:1px solid var(--border)}.step:last-child{border-bottom:none}.step-num{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--green);padding-top:2px}.step-content h3{font-size:18px;font-weight:600;margin-bottom:6px;letter-spacing:-0.3px}.step-content p{font-size:15px;color:var(--muted);line-height:1.6}.install-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}.itab{padding:6px 16px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-family:var(--mono);font-size:13px;cursor:pointer;transition:all .15s}.itab.active{background:var(--surface);border-color:var(--green);color:var(--text)}.itab:hover:not(.active){border-color:var(--muted);color:var(--text)}.code-block{background:#010409;border:1px solid var(--border);border-radius:10px;padding:20px 24px;font-family:var(--mono);font-size:13px;line-height:1.8;position:relative;overflow-x:auto}.code-block .cp{color:#6e7681}.yk{color:var(--blue)}.yv{color:var(--green)}.yc{color:#6e7681;font-style:italic}.code-block .cl{color:var(--text);white-space:pre}.code-block .pr{color:var(--green);user-select:none}.copy-btn{position:absolute;top:12px;right:12px;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--muted);padding:4px 10px;font-size:11px;cursor:pointer;transition:all .15s;font-family:var(--mono)}.copy-btn:hover{color:var(--text);border-color:var(--green)}.req-box{margin-top:28px;padding:20px 24px;border:1px solid var(--border);border-radius:10px;font-size:14px;color:var(--muted)}.req-box strong{color:var(--text)}.req-box a{margin:0 4px}.audit-strip{position:relative;overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:14px 0;background:var(--surface)}.audit-track{display:flex;gap:48px;animation:scroll-left 40s linear infinite;white-space:nowrap;width:max-content}.audit-track:hover{animation-play-state:paused}.audit-entry{font-family:var(--mono);font-size:11px;color:var(--dim);display:flex;align-items:center;gap:8px}.a-time{color:var(--dim)}.a-action{color:var(--muted)}.a-allow{color:var(--green)}.a-deny{color:var(--red)}.a-pod{color:var(--blue)}@keyframes scroll-left{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}.cta-section{max-width:1100px;margin:0 auto;padding:88px 32px}.cta-box{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:72px 48px;text-align:center;position:relative;overflow:hidden}.cta-box::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:400px;height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent)}.cta-box h2{font-size:clamp(26px,4vw,36px);font-weight:700;letter-spacing:-1px;margin-bottom:16px}.cta-box p{font-size:16px;color:var(--muted);margin-bottom:36px;max-width:500px;margin-left:auto;margin-right:auto}.cta-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}footer{border-top:1px solid var(--border);padding:44px 0}.footer-inner{max-width:1100px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}.footer-logo{font-family:var(--mono);font-weight:700;font-size:16px;letter-spacing:-0.02em}.footer-logo em{color:var(--green);font-style:normal}.footer-copy{color:var(--dim);font-size:12px;margin-top:4px}.footer-links{display:flex;gap:6px;flex-wrap:wrap}.footer-links a{color:var(--muted);font-size:13px;padding:4px 10px;border-radius:4px;transition:color .15s,background .15s}.footer-links a:hover{color:var(--text);background:var(--surface);text-decoration:none}.bench-table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface2)}.bench-table th,.bench-table td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--border);font-size:14px;color:var(--muted)}.bench-table th{color:var(--text);font-weight:600;background:rgba(255,255,255,0.02);font-size:13px}.bench-table tr:last-child td{border-bottom:none}.bench-table .bnum{color:var(--text);font-weight:700;font-family:var(--mono);font-size:13px}.bench-table .bwin{color:var(--green);font-weight:700;font-family:var(--mono);font-size:13px}.bench-table .bnote{font-size:12px;color:var(--dim)}.bench-table tbody tr{transition:background .2s}.bench-table tbody tr:hover{background:rgba(255,255,255,0.02)}.bench-callout{border:1px solid rgba(34,197,94,0.18);background:rgba(34,197,94,0.04);border-radius:12px;padding:16px 20px;margin-top:20px;font-size:14px;color:var(--muted);text-align:center}.bench-callout b{color:var(--text)}.bench-table-label{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--dim);margin-bottom:10px}.bench-env{font-size:13px;color:var(--dim);margin-bottom:20px}.usecase-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.usecase-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color .2s,transform .2s}.usecase-card:hover{border-color:var(--green);transform:translateY(-2px)}.usecase-badge{font-family:var(--mono);font-size:11px;color:var(--muted);background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);padding:3px 10px;border-radius:100px;display:inline-block;margin-bottom:10px}.usecase-card h3{font-size:15px;font-weight:600;margin-bottom:8px;letter-spacing:-0.2px}.usecase-card p{font-size:14px;color:var(--muted);line-height:1.5;margin:0}.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:860px;margin:0 auto}.pricing-card{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:40px;display:flex;flex-direction:column;gap:0}.pricing-card-pro{background:rgba(34,197,94,0.03);border-color:rgba(34,197,94,0.2);position:relative}.pricing-badge{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--green);background:var(--green-glow);border:1px solid rgba(34,197,94,0.2);padding:4px 12px;border-radius:100px;display:inline-block;margin-bottom:20px;align-self:flex-start}.pricing-tier{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}.pricing-price{font-size:48px;font-weight:800;letter-spacing:-0.04em;color:var(--text);line-height:1;margin-bottom:8px}.pricing-price span{font-size:20px;font-weight:500;color:var(--muted);letter-spacing:0}.pricing-period{font-size:14px;color:var(--muted);margin-bottom:6px}.pricing-desc{font-size:14px;color:var(--muted);margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid var(--border)}.pricing-features{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:32px;flex:1}.pricing-features li{font-size:14px;color:var(--text);display:flex;align-items:flex-start;gap:10px;line-height:1.4}.pricing-features li::before{content:'✓';font-family:var(--mono);font-weight:700;color:var(--green);flex-shrink:0;margin-top:1px}.pricing-features li.pro-feature{color:var(--text)}.pricing-features li.pro-feature::before{color:var(--green)}.pricing-cta{margin-top:auto}@media(max-width:700px){.pricing-grid{grid-template-columns:1fr}}.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.contact-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:28px}.contact-card h3{font-size:18px;font-weight:600;margin-bottom:10px}.contact-card p{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:16px}.contact-badge{font-family:var(--mono);font-size:11px;color:var(--green);background:var(--green-glow);border:1px solid rgba(34,197,94,0.15);padding:3px 10px;border-radius:100px;display:inline-block;margin-bottom:14px}.contact-actions{display:flex;gap:10px;flex-wrap:wrap}@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}.reveal{opacity:0;transform:translateY(30px);transition:all .7s ease}.reveal.vis{opacity:1;transform:translateY(0)}
+.swipe-hint{display:none;text-align:center;font-family:var(--mono);font-size:10px;color:var(--dim);padding:4px 0;margin:0 auto;max-width:1100px}.nav-toggle{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:8px;z-index:101}.nav-toggle span{display:block;width:20px;height:2px;background:var(--text,#e8e8ed);border-radius:2px;transition:all 0.2s}@media (max-width:1024px){.arch-pods,.pod-grid,[class*="arch-grid"]{grid-template-columns:repeat(2,1fr) !important}.compare-visual,.docker-vs-envpod,.comparison-visual{gap:16px !important}}@media (max-width:768px){.nav-toggle{display:flex}.nav-links,.navlinks,[class*="nav-links"]{position:fixed;top:0;right:-100%;width:280px;height:100vh;flex-direction:column;background:var(--bg,#0a0a0b);border-left:1px solid var(--border,#1e1e24);padding:80px 24px 32px;gap:4px;transition:right 0.3s ease;z-index:100}.nav-links.open,.navlinks.open{right:0}.nav-links a,.navlinks a{padding:12px 16px !important;font-size:15px !important;display:block;width:100%}.nav-gh{margin-left:0 !important;margin-top:12px;justify-content:center}.wrap,.container,[class*="container"]{padding-left:16px !important;padding-right:16px !important}section,.section,.section-tinted{padding-top:56px !important;padding-bottom:56px !important}.hero{padding-top:100px !important;padding-bottom:48px !important}h1{font-size:32px !important;letter-spacing:-0.03em !important}.hero-sub,.sub{font-size:16px !important}.hero-ctas,.cta-row{flex-direction:column;align-items:stretch !important}.hero-ctas a,.cta-row a,.btn-p,.btn-s,.btn,.btn.primary{text-align:center;justify-content:center}.hero-install-row{max-width:100%!important;overflow:visible!important;flex-wrap:wrap}.hero-install-cmd{white-space:normal!important;word-break:break-all;font-size:11px!important}.hero-install-copy{flex-shrink:0}.install-cmd,.install-bar .code-block,.hero .code-block{font-size:11px !important;padding:10px 14px !important;overflow-x:auto}.numbers-grid{grid-template-columns:repeat(3,1fr) !important}.number-item{padding:16px 8px !important}.number-item .num{font-size:20px !important}.number-item .label{font-size:11px !important}.terminal-body,.terminal .terminal-body{font-size:11px !important;padding:14px 12px !important;min-height:260px !important;max-height:350px !important}#ti,#term-input{font-size:11px !important}.demo-label{font-size:11px !important;padding:0 8px}.demo-label kbd{display:none}.pills,.term-suggestions{flex-wrap:nowrap!important;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:80px!important;justify-content:flex-start!important;gap:6px!important;scrollbar-width:none;position:relative}.pills::-webkit-scrollbar,.term-suggestions::-webkit-scrollbar{display:none}.swipe-hint{display:block!important}.pills::-webkit-scrollbar,.term-suggestions::-webkit-scrollbar{display:none}.swipe-hint{display:block!important}.pill,.term-pill{flex-shrink:0;font-size:11px !important;padding:5px 10px !important}.philosophy-line{font-size:18px !important}.philosophy-line.dim + .philosophy-line.dim{font-size:14px !important}h2{font-size:24px !important}.section-sub{font-size:15px !important}.arch-pods,.pod-grid,[class*="arch-grid"]{grid-template-columns:1fr !important;gap:12px !important}.infra-bar,.platform-bar{font-size:11px !important;padding:12px !important}.walls-box{padding:28px 16px !important}.walls-grid{gap:6px !important}.wall-tag{font-size:10px !important;padding:6px 10px !important}.ceiling-tag{font-size:11px !important}.feature-grid{grid-template-columns:1fr !important;gap:12px !important}.feature-card{padding:20px !important}.agent-grid{grid-template-columns:1fr !important;gap:12px !important}.agent-cmd{font-size:10px !important;overflow-x:auto}.usecase-grid,.grid3{grid-template-columns:1fr !important;gap:12px !important}.step{grid-template-columns:40px 1fr !important;gap:14px !important;padding:20px 0 !important}.step-content h3{font-size:16px !important}.compare-visual,.docker-vs-envpod,.comparison-visual,.split-compare{grid-template-columns:1fr !important;gap:16px !important}.vs-divider,.compare-vs{margin:0 auto}.compare-grid{grid-template-columns:1fr 1fr !important;gap:10px !important}.compare-col{padding:18px !important}.compare-verdict{font-size:18px !important}.compare-desc{font-size:13px !important}.compare-callout{padding:20px 16px !important}.compare-callout p{font-size:15px !important}.bench-wrap,.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px}.bench-table,table.table,table[class*="bench"]{min-width:580px;font-size:12px !important}.bench-table th,.bench-table td,.table th,.table td{padding:10px 10px !important;font-size:12px !important;white-space:nowrap}.bench-callout,.callout{font-size:13px !important;padding:12px 14px !important}.bench-env{font-size:11px !important}.bench-table::after,.table::after{content:'← swipe →';display:block;text-align:center;font-size:11px;color:var(--dim,#5a5a66);padding:8px 0 0;font-family:var(--mono)}.install-tabs{gap:4px !important}.itab{padding:6px 12px !important;font-size:12px !important}.code-block{font-size:11px !important;padding:14px 12px !important;overflow-x:auto}.req-box{font-size:12px !important;padding:16px !important}.yaml-body,.code,pre{font-size:11px !important;overflow-x:auto;-webkit-overflow-scrolling:touch}.pricing-grid,.price-grid,[class*="pricing-grid"]{grid-template-columns:1fr !important;gap:16px !important}.price-card,.pricing-card,[class*="price-card"]{padding:24px 20px !important}.price-card h3,.pricing-card h3{font-size:20px !important}.price-amount,.price-tag{font-size:32px !important}.contact-grid,.split{grid-template-columns:1fr !important;gap:12px !important}.cta-box{padding:40px 20px !important}.cta-box h2{font-size:22px !important}.cta-actions{flex-direction:column;align-items:stretch}.cta-actions a{text-align:center;justify-content:center}.aarm-inner{flex-direction:column !important;text-align:center !important;padding:18px !important}.aarm-text{font-size:13px !important}.audit-strip{padding:10px 0 !important}.audit-entry{font-size:9px !important;gap:6px !important}.footer-inner,.foot{flex-direction:column !important;text-align:center;gap:20px !important}.footer-links,.right{justify-content:center}}@media (max-width:480px){h1{font-size:28px !important}.numbers-grid{grid-template-columns:repeat(2,1fr) !important}.number-item:nth-child(5){grid-column:1 / -1}.compare-grid{grid-template-columns:1fr !important}.terminal-body{font-size:10px !important;min-height:220px !important}.price-card .cta-actions,.pricing-card .btn-group{flex-direction:column}.kpi{grid-template-columns:1fr !important;gap:8px !important}}@media (hover:none) and (pointer:coarse){.pill,.term-pill{padding:8px 14px !important;min-height:36px}.itab{min-height:40px}.nav-links a,.navlinks a{min-height:44px;display:flex;align-items:center}.btn-p,.btn-s,.btn{min-height:44px}.feature-card:hover,.agent-card:hover,.usecase-card:hover,.arch-card:hover{transform:none !important}#ti,#term-input{font-size:16px !important}}@media (max-height:500px) and (max-width:900px){.hero{padding-top:80px !important;padding-bottom:24px !important}.terminal-body{max-height:200px !important;min-height:160px !important}}.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;border:1px solid var(--border,#1e1e24)}.table-scroll table{border:none;border-radius:0}.table-scroll::-webkit-scrollbar{height:4px}.table-scroll::-webkit-scrollbar-thumb{background:var(--border-hi,#2a2a32);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="logo"><span>env</span>pod<span class="logo-ce">CE</span></a>
+<button class="nav-toggle" onclick="this.classList.toggle('active');document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">
+  <span></span><span></span><span></span>
+</button>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#agents">Agents</a>
+      <a href="#compare">Compare</a>
+      <a href="#benchmarks">Benchmarks</a>
+      <a href="#install">Quick Start</a>
+      <a href="#pricing">Pricing</a>
+      <a href="https://github.com/markamo/envpod-ce" class="nav-gh">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-badge">Open Source · BSL 1.1 · Linux x86_64 &amp; ARM64</div>
+  <h1><span class="dim">Docker isolates.</span><br><span class="accent">Envpod governs.</span></h1>
+  <p class="hero-sub">The agent thinks it's on your real system — but every write is captured, diffable, and reversible. Nothing reaches your filesystem until you approve it. One 12&thinsp;MB static binary. Zero dependencies.</p>
+  <div class="hero-ctas">
+    <a href="#install" class="btn-p">Get started ↓</a>
+    <a href="https://github.com/markamo/envpod-ce" class="btn-s">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      View on GitHub
+    </a>
+  </div>
+  <div class="hero-install">
+    <div class="hero-install-row">
+      <span class="hero-install-cmd">curl -fsSL https://envpod.dev/install.sh | sh</span>
+      <button class="hero-install-copy" onclick="copyHeroInstall(this)">Copy</button>
+    </div>
+    <span class="hero-install-note">Linux · x86_64 or ARM64 · requires root · ~12 MB</span>
+  </div>
+</section>
+
+<!-- ═══ NUMBERS ═══ -->
+<div class="numbers">
+  <div class="numbers-grid">
+    <div class="number-item"><span class="num">32</span><span class="label">CLI commands</span></div>
+    <div class="number-item"><span class="num">20</span><span class="label">built-in action types</span></div>
+    <div class="number-item"><span class="num">130ms</span><span class="label">pod clone time</span></div>
+    <div class="number-item"><span class="num">0</span><span class="label">dependencies</span></div>
+    <div class="number-item"><span class="num">12MB</span><span class="label">static binary</span></div>
+  </div>
+</div>
+
+<!-- ═══ INTERACTIVE TERMINAL ═══ -->
+<section class="demo-section">
+  <div class="demo-label">Try it — type a command or click below. <kbd>Tab</kbd> autocomplete. <kbd>↑</kbd><kbd>↓</kbd> history.</div>
+  <div class="terminal" id="terminal">
+    <div class="terminal-bar">
+      <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+      <span class="t-label">envpod — interactive demo</span>
+      <span class="t-live">live</span>
+    </div>
+    <div class="terminal-body" id="tb">
+      <div class="tl"><span class="to">Welcome to envpod interactive demo.</span></div>
+      <div class="tl"><span class="to">Type </span><span class="ta">help</span><span class="to"> or try a command below.</span></div>
+      <div class="tl">&nbsp;</div>
+      <div class="term-input-line"><span class="tp">$ </span><input type="text" id="ti" placeholder="envpod init demo ..." autocomplete="off" spellcheck="false"></div>
+    </div>
+  </div>
+</section>
+<div class="swipe-hint">← swipe →</div>
+<div class="pills" id="pills">
+  <div class="pill" data-c="envpod init demo -c examples/claude-code.yaml">envpod init</div>
+  <div class="pill" data-c="envpod vault demo set ANTHROPIC_API_KEY">envpod vault</div>
+  <div class="pill" data-c="envpod run demo -d -a -- claude">envpod run</div>
+  <div class="pill" data-c="envpod diff demo">envpod diff</div>
+  <div class="pill" data-c="envpod queue demo">envpod queue</div>
+  <div class="pill" data-c="envpod approve demo a7f3c1">envpod approve</div>
+  <div class="pill" data-c="envpod commit demo src/auth/oauth.rs">envpod commit</div>
+  <div class="pill" data-c="envpod rollback demo">envpod rollback</div>
+  <div class="pill" data-c="envpod audit demo --security">envpod audit</div>
+  <div class="pill" data-c="envpod clone demo demo-copy">envpod clone</div>
+  <div class="pill" data-c="envpod lock demo">envpod lock</div>
+  <div class="pill" data-c="envpod ls">envpod ls</div>
+  <div class="pill" data-c="envpod destroy demo">envpod destroy</div>
+</div>
+
+<!-- ═══ PHILOSOPHY ═══ -->
+<section class="philosophy reveal">
+  <p class="philosophy-line dim">Containers isolate processes.</p>
+  <p class="philosophy-line" style="color:var(--text)">Envpod governs autonomous side effects.</p>
+  <p class="philosophy-line dim" style="font-size:clamp(15px,2vw,18px);margin-top:24px;max-width:600px">No volume mounts. No path remapping. No container brain. Your agent runs on your real filesystem layout — but every write is captured in the overlay.</p>
+</section>
+
+<!-- ═══ FIVE WALLS + FEATURES ═══ -->
+<section class="section-tinted reveal" id="features">
+  <div class="wrap">
+    <h2>One YAML file. Five walls. A governance ceiling.</h2>
+    <p class="section-sub">You write <code>pod.yaml</code>. The agent runs with kernel-level isolation on all sides and a governance layer that intercepts every significant action.</p>
+
+    <div class="arch-diagram">
+      <!-- Three pods side by side -->
+      <div class="arch-pods-row">
+        <!-- Pod 1: Claude Code -->
+        <div class="arch-pod">
+          <div class="arch-agent-layer">
+            <span class="arch-emoji">🤖</span>
+            <span class="arch-agent-name">Claude Code</span>
+            <span class="arch-agent-sub">coding agent</span>
+          </div>
+          <div class="arch-gov-layer">
+            <span class="arch-gov-label">Governance ▲</span>
+            <span class="arch-gov-sub">policy · audit · vault · queue</span>
+          </div>
+          <div class="arch-walls">
+            <div class="arch-wall aw-net"><span class="aw-label">Network</span><span class="aw-sub">DNS filter</span></div>
+            <div class="arch-wall aw-proc"><span class="aw-label">Processor</span><span class="aw-sub">cgroups v2</span></div>
+            <div class="arch-wall aw-fs"><span class="aw-label">Filesystem</span><span class="aw-sub">OverlayFS COW</span></div>
+            <div class="arch-wall aw-mem"><span class="aw-label">Memory</span><span class="aw-sub">namespace</span></div>
+          </div>
+        </div>
+        <!-- Pod 2: browser-use + Wayland -->
+        <div class="arch-pod">
+          <div class="arch-agent-layer">
+            <span class="arch-emoji">🌐</span>
+            <span class="arch-agent-name">Chrome + Wayland</span>
+            <span class="arch-agent-sub">browser agent</span>
+          </div>
+          <div class="arch-gov-layer">
+            <span class="arch-gov-label">Governance ▲</span>
+            <span class="arch-gov-sub">policy · audit · vault · queue</span>
+          </div>
+          <div class="arch-walls">
+            <div class="arch-wall aw-net"><span class="aw-label">Network</span><span class="aw-sub">DNS filter</span></div>
+            <div class="arch-wall aw-proc"><span class="aw-label">Processor</span><span class="aw-sub">cgroups v2</span></div>
+            <div class="arch-wall aw-fs"><span class="aw-label">Filesystem</span><span class="aw-sub">OverlayFS COW</span></div>
+            <div class="arch-wall aw-dev"><span class="aw-label">Devices</span><span class="aw-sub">Wayland · GPU</span></div>
+          </div>
+        </div>
+        <!-- Pod 3: ML training -->
+        <div class="arch-pod">
+          <div class="arch-agent-layer">
+            <span class="arch-emoji">⚡</span>
+            <span class="arch-agent-name">ML Training</span>
+            <span class="arch-agent-sub">GPU agent</span>
+          </div>
+          <div class="arch-gov-layer">
+            <span class="arch-gov-label">Governance ▲</span>
+            <span class="arch-gov-sub">policy · audit · vault · queue</span>
+          </div>
+          <div class="arch-walls">
+            <div class="arch-wall aw-net"><span class="aw-label">Network</span><span class="aw-sub">DNS filter</span></div>
+            <div class="arch-wall aw-proc"><span class="aw-label">Processor</span><span class="aw-sub">cgroups v2</span></div>
+            <div class="arch-wall aw-fs"><span class="aw-label">Filesystem</span><span class="aw-sub">OverlayFS COW</span></div>
+            <div class="arch-wall aw-dev"><span class="aw-label">Devices</span><span class="aw-sub">NVIDIA GPU</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- Shared runtime -->
+      <div class="arch-runtime">
+        <span class="arch-runtime-name">envpod CE</span>
+        <span class="arch-runtime-items">Vault · Action Queue · Audit log · DNS daemon · Port forwarding · Pod discovery · seccomp-BPF</span>
+      </div>
+      <!-- Linux kernel -->
+      <div class="arch-kernel">
+        <span class="arch-kernel-name">Linux Kernel</span>
+        <span class="arch-kernel-items">Namespaces (PID, net, mount, UTS, user) · cgroups v2 · OverlayFS · Network namespaces · veth pairs</span>
+      </div>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-card"><div class="feature-icon">🗂️</div><div class="feature-title">Copy-on-Write Filesystem</div><div class="feature-desc">Every write goes to an OverlayFS overlay. Host untouched until you explicitly approve. <code>envpod diff</code> shows the changeset. <code>envpod commit</code> or <code>envpod rollback</code> in one command. Named snapshots to restore any point.</div></div>
+      <div class="feature-card"><div class="feature-icon">🔐</div><div class="feature-title">Encrypted Credential Vault</div><div class="feature-desc">ChaCha20-Poly1305 encrypted at rest. Injected as env vars at runtime — never in <code>pod.yaml</code>, CLI args, shell history, or logs. <code>envpod vault import .env</code> to bulk-load. Bind credentials to specific domains.</div></div>
+      <div class="feature-card"><div class="feature-icon">📋</div><div class="feature-title">Action Queue &amp; Approval</div><div class="feature-desc">20 built-in action types: HTTP (6), filesystem (7), git (6), custom (1). Four tiers: <code>immediate</code>, <code>delayed</code>, <code>staged</code> (human approval), <code>blocked</code>. MCP-style tool discovery. Hot-reload without restart.</div></div>
+      <div class="feature-card"><div class="feature-icon">🌐</div><div class="feature-title">DNS Filtering</div><div class="feature-desc">Each pod runs its own embedded DNS resolver. Exact allow-list of reachable domains. Anti-DNS-tunneling protection. Live mutation — add or remove domains on a running pod with no restart.</div></div>
+      <div class="feature-card"><div class="feature-icon">📊</div><div class="feature-title">Audit Log &amp; Security Scan</div><div class="feature-desc">Append-only JSONL. Every action, approval, vault access, DNS query — timestamped. <code>envpod audit --security</code> runs static analysis on <code>pod.yaml</code> before you ever run. Runtime monitoring with auto-freeze on alerts.</div></div>
+      <div class="feature-card"><div class="feature-icon">🖥️</div><div class="feature-title">Web Dashboard</div><div class="feature-desc"><code>envpod dashboard</code> — local web UI on port 9090. Fleet overview, live cgroup stats, filterable audit timeline, diff viewer with commit/rollback buttons. No database, no dependencies.</div></div>
+      <div class="feature-card"><div class="feature-icon">🔒</div><div class="feature-title">Process Isolation</div><div class="feature-desc">PID + UTS + user namespace. cgroups v2 CPU/memory/IO/PID limits. Seccomp-BPF syscall filtering. A runaway agent cannot starve the host. A compromised agent cannot see host processes.</div></div>
+      <div class="feature-card"><div class="feature-icon">⚡</div><div class="feature-title">Base Pods &amp; Fast Cloning</div><div class="feature-desc">Run <code>envpod init</code> once. That becomes a base. Clone from it in ~130ms — 10× faster. Spin up 50 identical agents in seconds, each with its own isolated overlay.</div></div>
+      <div class="feature-card"><div class="feature-icon">📡</div><div class="feature-title">Display, Audio &amp; GPU</div><div class="feature-desc">Governed Wayland forwarding with per-window isolation. PipeWire/PulseAudio support. NVIDIA and AMD GPUs work out of the box — no toolkit, no drivers. ARM64: Raspberry Pi, Jetson Orin.</div></div>
+      <div class="feature-card"><div class="feature-icon">🖥️</div><div class="feature-title">Web Display (noVNC)</div><div class="feature-desc">Access a pod's graphical desktop from any browser. No X11 or Wayland forwarding needed — the display stack runs inside the pod. Open <code>localhost:6080</code> and you're in.</div></div>
+      <div class="feature-card"><div class="feature-icon">📦</div><div class="feature-title">Host App Auto-Mount</div><div class="feature-desc">List apps in <code>pod.yaml</code> — envpod resolves binaries, shared libraries, and data dirs via <code>which</code> + <code>ldd</code>, then bind-mounts them read-only. No reinstalling Chrome, Python, or Node inside the pod.</div></div>
+      <div class="feature-card"><div class="feature-icon">👤</div><div class="feature-title">Clone Host User</div><div class="feature-desc">Your username, shell, dotfiles, and workspace directories — cloned into the pod with COW isolation. The agent works in your real environment, but every change is staged for human review. <code>.ssh</code>, <code>.gnupg</code>, <code>.aws</code> excluded by default.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ AGENTS ═══ -->
+<section class="section reveal" id="agents">
+  <div class="wrap">
+    <h2>Works with every major AI agent</h2>
+    <p class="section-sub">25 ready-made pod configs in <code>examples/</code>. Three commands to go from zero to governed.</p>
+
+    <div class="agent-grid">
+      <div class="agent-card"><div class="agent-header"><span class="agent-name">Claude Code</span><span class="agent-tag tag-coding">Coding</span></div><div class="agent-desc">Anthropic's CLI coding agent. DNS-locked to api.anthropic.com, GitHub, and package registries.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init claude-code -c examples/claude-code.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run claude-code -- claude</span></div></div></div>
+      <div class="agent-card"><div class="agent-header"><span class="agent-name">OpenAI Codex</span><span class="agent-tag tag-coding">Coding</span></div><div class="agent-desc">OpenAI's CLI coding agent. Envpod wraps Codex's own sandbox as the outer governance layer.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init codex -c examples/codex.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run codex -- codex</span></div></div></div>
+      <div class="agent-card"><div class="agent-header"><span class="agent-name">Aider</span><span class="agent-tag tag-coding">Coding</span></div><div class="agent-desc">Open-source AI pair programmer. Supports Anthropic, OpenAI, DeepSeek, Google via litellm.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init aider -c examples/aider.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run aider -- aider --model sonnet</span></div></div></div>
+      <div class="agent-card"><div class="agent-header"><span class="agent-name">SWE-agent</span><span class="agent-tag tag-coding">Coding</span></div><div class="agent-desc">Princeton's autonomous software engineering agent. Clones repos, analyzes code, submits patches.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init swe-agent -c examples/swe-agent.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run swe-agent -- python -m swe_agent.run</span></div></div></div>
+      <div class="agent-card"><div class="agent-header"><span class="agent-name">browser-use</span><span class="agent-tag tag-browser">Browser</span></div><div class="agent-desc">Python agent controlling headless Chromium. Browser seccomp profile, 256 MB /dev/shm.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init browser-use -c examples/browser-use.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run browser-use -d -- python run_agent.py</span></div></div></div>
+      <div class="agent-card"><div class="agent-header"><span class="agent-name">OpenCode</span><span class="agent-tag tag-coding">Coding</span></div><div class="agent-desc">Go-based TUI coding agent. 75+ LLM providers including local Ollama.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init opencode -c examples/opencode.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run opencode -- opencode</span></div></div></div>
+      <div class="agent-card"><div class="agent-header"><span class="agent-name">ML Training</span><span class="agent-tag tag-gpu">GPU</span></div><div class="agent-desc">PyTorch / TensorFlow with full NVIDIA GPU passthrough. 16 GB memory, 8-hour budget.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init ml-trainer -c examples/ml-training.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run ml-trainer -- python train.py</span></div></div></div>
+      <div class="agent-card"><div class="agent-header"><span class="agent-name">Hardened Sandbox</span><span class="agent-tag tag-sandbox">Sandbox</span></div><div class="agent-desc">Maximum isolation. No network. No GPU. 256 MB memory. 64 PID cap. For untrusted code.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init sandbox -c examples/hardened-sandbox.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run sandbox -- /bin/sh</span></div></div></div>
+      <div class="agent-card"><div class="agent-header"><span class="agent-name">Chrome + Wayland</span><span class="agent-tag tag-browser">Display + Audio</span></div><div class="agent-desc">Full graphical Chrome with Wayland display and PipeWire audio forwarded into the pod. The agent browses with real rendering and sound — API keys injected by vault, never visible.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init chrome -c examples/browser-use.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run chrome -d -a -- google-chrome \</span></div><div><span class="pr">  </span><span class="cm">  --ozone-platform=wayland https://claude.ai</span></div></div></div>
+    </div>
+    <div class="more-examples">25 configs total — <a href="https://github.com/markamo/envpod-ce/tree/main/examples">browse all examples →</a></div>
+  </div>
+</section>
+
+<!-- ═══ USE CASES ═══ -->
+<section class="section-tinted reveal" id="usecases">
+  <div class="wrap">
+    <h2>Where governed execution wins</h2>
+    <p class="section-sub">Strictly better than "just run it in a container" when the agent has real-world side effects.</p>
+    <div class="usecase-grid">
+      <div class="usecase-card"><div class="usecase-badge">local coding agents</div><h3>Safe code generation</h3><p>Let an agent refactor your repo. Review every diff. Approve only what you want. Roll back the rest. No files lost, no surprise commits.</p></div>
+      <div class="usecase-card"><div class="usecase-badge">security-first automation</div><h3>Controlled tool use</h3><p>Restrict DNS egress, scope secrets to specific domains, and keep a tamper-evident audit trail for sensitive workflows and regulated environments.</p></div>
+      <div class="usecase-card"><div class="usecase-badge">GPU workloads</div><h3>GPU-enabled agents</h3><p>Run local inference or training with native NVIDIA/AMD passthrough — without giving the agent full host access. No toolkit configuration.</p></div>
+      <div class="usecase-card"><div class="usecase-badge">agent swarms</div><h3>Fast fan-out</h3><p>Clone governed environments in ~8ms each. Spin up 50 parallel agents with consistent policies. Each gets its own isolated overlay.</p></div>
+      <div class="usecase-card"><div class="usecase-badge">incident response</div><h3>Kill switch</h3><p>Freeze or kill misbehaving pods immediately. Restrict resources and network mid-flight. No restart required. Resume when ready.</p></div>
+      <div class="usecase-card"><div class="usecase-badge">regulated environments</div><h3>Auditability</h3><p>Action-level JSONL logs and pre-run security scans support compliance requirements and forensic reconstruction of agent behavior.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="section reveal" id="workflow">
+  <div class="wrap">
+    <h2>The governance workflow</h2>
+    <p class="section-sub">Complete agent lifecycle — sandboxed, governed, auditable, reversible.</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">01</div><div class="step-content"><h3>Define the pod</h3><p>One YAML: network policy, resource limits, device access, action catalog, vault keys. <code>envpod audit --security</code> checks for misconfigurations before you deploy.</p></div></div>
+      <div class="step"><div class="step-num">02</div><div class="step-content"><h3>Agent runs inside the overlay</h3><p>Host filesystem is read-only base. Agent reads your codebase, installs packages — all writes go to the overlay. Sub-second start.</p></div></div>
+      <div class="step"><div class="step-num">03</div><div class="step-content"><h3>Every action goes through the queue</h3><p>Push code, send email, call API — each hits the four-tier queue. Immediate actions execute. Staged actions wait for <code>envpod approve</code>. Blocked actions denied.</p></div></div>
+      <div class="step"><div class="step-num">04</div><div class="step-content"><h3>Credentials stay invisible</h3><p>API keys live in the encrypted vault. Envpod injects them at execution time. The agent never sees the real secret.</p></div></div>
+      <div class="step"><div class="step-num">05</div><div class="step-content"><h3>You review the diff</h3><p><code>envpod diff</code> shows every file changed. Commit individual files. Export to staging first with <code>--output</code>.</p></div></div>
+      <div class="step"><div class="step-num">06</div><div class="step-content"><h3>Nothing persists without your approval</h3><p><code>envpod rollback</code> discards everything. <code>envpod snapshot restore</code> returns to any checkpoint. <code>envpod destroy</code> — no traces.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMPARE ═══ -->
+<section class="section-tinted reveal" id="compare">
+  <div class="wrap">
+    <h2>Nothing else does both</h2>
+    <p class="section-sub">No other tool combines OS-level isolation with governance. The intersection is where envpod lives.</p>
+
+    <div class="vs-diagram">
+      <!-- Docker stack -->
+      <div class="vs-stack">
+        <div class="vs-stack-label docker">Docker</div>
+        <div class="vs-box vsb-app">
+          <span class="vs-box-name">🤖 AI Agent</span>
+          <span class="vs-box-sub">your application</span>
+        </div>
+        <div class="vs-missing">
+          <span class="vs-missing-text">✗ no governance layer</span>
+        </div>
+        <div class="vs-box vsb-container">
+          <span class="vs-box-name">Container</span>
+          <span class="vs-box-sub">process isolation only</span>
+        </div>
+        <div class="vs-box vsb-container-os">
+          <span class="vs-box-name">Container OS</span>
+          <span class="vs-box-sub">ubuntu / alpine base image</span>
+        </div>
+        <div class="vs-box vsb-engine">
+          <span class="vs-box-name">Docker Engine</span>
+          <span class="vs-box-sub">daemon · 35 MB overhead</span>
+        </div>
+        <div class="vs-box vsb-os">
+          <span class="vs-box-name">Linux Kernel</span>
+          <span class="vs-box-sub">namespaces · cgroups</span>
+        </div>
+      </div>
+      <!-- vs -->
+      <div class="vs-divider">vs</div>
+      <!-- envpod stack -->
+      <div class="vs-stack">
+        <div class="vs-stack-label envpod">envpod CE</div>
+        <div class="vs-box vsb-app">
+          <span class="vs-box-name">🤖 AI Agent</span>
+          <span class="vs-box-sub">your application</span>
+        </div>
+        <div class="vs-box vsb-gov">
+          <span class="vs-box-name">Governance ▲</span>
+          <span class="vs-box-sub">vault · audit · queue · diff · rollback</span>
+        </div>
+        <div class="arch-walls">
+          <div class="arch-wall aw-net"><span class="aw-label">Network</span><span class="aw-sub">DNS filter</span></div>
+          <div class="arch-wall aw-proc"><span class="aw-label">Processor</span><span class="aw-sub">cgroups</span></div>
+          <div class="arch-wall aw-fs"><span class="aw-label">Filesystem</span><span class="aw-sub">OverlayFS</span></div>
+          <div class="arch-wall aw-mem"><span class="aw-label">Memory</span><span class="aw-sub">namespace</span></div>
+        </div>
+        <div class="vs-box vsb-hostfs">
+          <span class="vs-box-name">Host Filesystem</span>
+          <span class="vs-box-sub">your real files · no base image</span>
+        </div>
+        <div class="vs-box vsb-runtime">
+          <span class="vs-box-name">envpod CE</span>
+          <span class="vs-box-sub">single binary · no daemon</span>
+        </div>
+        <div class="vs-box vsb-kernel">
+          <span class="vs-box-name">Linux Kernel</span>
+          <span class="vs-box-sub">namespaces · cgroups v2</span>
+        </div>
+        <div class="vs-check">
+          <span class="vs-check-text">✓ isolated + governed</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-col"><div class="compare-label">Docker</div><div class="compare-verdict">Isolates.</div><div class="compare-desc">Draws a box around the process. Doesn't govern what happens inside it. Container writes are permanent. No action approval. No credential interception. No audit trail.</div></div>
+      <div class="compare-col"><div class="compare-label">E2B / Daytona</div><div class="compare-verdict">Governs.</div><div class="compare-desc">Managed sandboxes in the cloud. Your agent's code runs on their infrastructure. Requires network, account, and trust in a third party.</div></div>
+      <div class="compare-col"><div class="compare-label">Firejail</div><div class="compare-verdict">Sandboxes.</div><div class="compare-desc">Syscall filtering and filesystem restrictions. No action queue. No credential vault. No overlay-as-review-gate. No way to approve what the process did.</div></div>
+      <div class="compare-col col-envpod"><div class="compare-label">envpod</div><div class="compare-verdict">Isolates <em style="font-style:normal;color:var(--green)">and</em> governs.</div><div class="compare-desc">OS-level isolation on your own machine. Every write captured in overlay, every action queued, every secret protected, every decision audited. On-premise. No third party.</div></div>
+    </div>
+
+    <div class="compare-callout">
+      <p>The agent thinks it's on your real system —<br>but every write is captured, diffable, and reversible.<br><span class="dim">Nobody else has this model.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BENCHMARKS ═══ -->
+<section class="section reveal" id="benchmarks">
+  <div class="wrap">
+    <h2>Benchmarks</h2>
+    <p class="section-sub">Faster than Docker and Podman on every test. Native namespaces with no container runtime overhead.</p>
+    <div class="bench-env">Ubuntu 24.04 · NVIDIA TITAN RTX ×2 · 10 iterations averaged. Fresh = create → run → destroy. Warm = run in existing pod.</div>
+
+    <p class="bench-table-label">Startup latency</p>
+    <div class="table-scroll">
+<table class="bench-table">
+      <thead><tr><th>Test</th><th>Docker</th><th>Podman</th><th>envpod</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Fresh: run <code>/bin/true</code></td><td class="bnum">552 ms</td><td class="bnum">560 ms</td><td class="bwin">401 ms</td><td class="bnote">clone+run+destroy vs run --rm</td></tr>
+        <tr><td>Warm: run <code>/bin/true</code></td><td class="bnum">95 ms</td><td class="bnum">270 ms</td><td class="bwin">32 ms</td><td class="bnote">envpod run vs docker exec</td></tr>
+        <tr><td>Fresh: file I/O (1 MB write)</td><td class="bnum">604 ms</td><td class="bnum">573 ms</td><td class="bwin">413 ms</td><td class="bnote">includes full lifecycle overhead</td></tr>
+        <tr><td>Fresh: GPU <code>nvidia-smi</code></td><td class="bnum">755 ms</td><td class="bnum">745 ms</td><td class="bwin">447 ms</td><td class="bnote">native device passthrough</td></tr>
+        <tr><td>Warm: GPU <code>nvidia-smi</code></td><td class="bnum">137 ms</td><td class="bnum">244 ms</td><td class="bwin">76 ms</td><td class="bnote">namespace entry dominates</td></tr>
+      </tbody>
+    </table>
+</div>
+
+    <p class="bench-table-label" style="margin-top:40px">Scale-out — parallel pod creation</p>
+    <div class="table-scroll">
+<table class="bench-table">
+      <thead><tr><th>Pods</th><th>Docker (run --rm)</th><th>envpod clone</th><th>Speedup</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>10 pods</td><td class="bnum">~4.8 s</td><td class="bwin">~94 ms</td><td class="bwin">51×</td><td class="bnote">no image pull, no layer decompression</td></tr>
+        <tr><td>25 pods</td><td class="bnum">~12.1 s</td><td class="bwin">~213 ms</td><td class="bwin">57×</td><td class="bnote">OverlayFS COW — shared lower layer</td></tr>
+        <tr><td>50 pods</td><td class="bnum">~24.6 s</td><td class="bwin">~408 ms</td><td class="bwin">60×</td><td class="bnote">symlinked rootfs, each clone ~8 ms</td></tr>
+        <tr><td>100 pods</td><td class="bnum">~49.3 s</td><td class="bwin">~890 ms</td><td class="bwin">55×</td><td class="bnote">linear scaling — no coordination overhead</td></tr>
+      </tbody>
+    </table>
+</div>
+
+    <p class="bench-table-label" style="margin-top:40px">Resource overhead per instance</p>
+    <div class="table-scroll">
+<table class="bench-table">
+      <thead><tr><th>Metric</th><th>Docker</th><th>envpod</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Daemon / runtime overhead</td><td class="bnum">~35 MB RSS</td><td class="bwin">0 MB</td><td class="bnote">no daemon process — runs in init process</td></tr>
+        <tr><td>Per-pod memory (idle)</td><td class="bnum">~12 MB</td><td class="bwin">~4 MB</td><td class="bnote">namespace + cgroup metadata only</td></tr>
+        <tr><td>50-pod total overhead</td><td class="bnum">~635 MB</td><td class="bwin">~200 MB</td><td class="bnote">3× lower total footprint at fleet scale</td></tr>
+        <tr><td>Disk per clone (COW)</td><td class="bnum">~240 MB (layer copy)</td><td class="bwin">~1 MB (COW diff)</td><td class="bnote">only writes are stored per-pod</td></tr>
+      </tbody>
+    </table>
+</div>
+
+    <div class="bench-callout"><b>Fleet scale:</b> 100 envpod clones spin up in under 1 second — no image registry, no layer pulls, no build step. Each clone shares the base rootfs via OverlayFS; only per-pod writes use additional disk. Docker requires a full layer copy per container, making parallel agent swarms 50–60× slower to provision.</div>
+  </div>
+</section>
+
+
+<!-- ═══ QUICK START ═══ -->
+<section class="section reveal" id="install">
+  <div class="wrap" style="max-width:740px">
+    <h2>Quick Start</h2>
+    <p class="section-sub" style="margin-bottom:36px">Single static binary. No daemon, no runtime dependencies. Requires Linux with cgroups&nbsp;v2.</p>
+
+    <div class="install-tabs">
+      <button class="itab active" onclick="showTab('x86')">x86_64</button>
+      <button class="itab" onclick="showTab('arm64')">ARM64</button>
+      <button class="itab" onclick="showTab('src')">Build from source</button>
+    </div>
+
+    <div id="tab-x86">
+      <div class="code-block"><button class="copy-btn" onclick="copyBlock(this)">Copy</button><div class="cp"># Auto-detects architecture — prompts for sudo after download</div><div><span class="pr">$ </span><span class="cl">curl -fsSL https://envpod.dev/install.sh | sh</span></div></div>
+    </div>
+    <div id="tab-arm64" style="display:none">
+      <div class="code-block"><button class="copy-btn" onclick="copyBlock(this)">Copy</button><div class="cp"># Raspberry Pi 4/5 (64-bit OS) or NVIDIA Jetson Orin</div><div><span class="pr">$ </span><span class="cl">curl -fsSL https://envpod.dev/install.sh | sh</span></div></div>
+    </div>
+    <div id="tab-src" style="display:none">
+      <div class="code-block"><button class="copy-btn" onclick="copyBlock(this)">Copy</button><div class="cp"># Requires Rust toolchain — rustup.rs</div><div><span class="pr">$ </span><span class="cl">git clone https://github.com/markamo/envpod-ce</span></div><div><span class="pr">$ </span><span class="cl">cd envpod-ce && cargo build --release</span></div><div><span class="pr">$ </span><span class="cl">sudo cp target/release/envpod /usr/local/bin/</span></div></div>
+    </div>
+
+    <div style="margin-top:32px">
+      <p style="font-size:14px;color:var(--muted);margin-bottom:14px">Try it in 30 seconds:</p>
+      <div class="code-block"><div><span class="pr">$ </span><span class="cl">sudo envpod init hello</span></div><div><span class="pr">$ </span><span class="cl">sudo envpod run hello -- bash -c "echo 'governed' > /home/agent/hello.txt"</span></div><div><span class="pr">$ </span><span class="cl">sudo envpod diff hello</span></div><div><span class="pr">$ </span><span class="cl">sudo envpod commit hello   # or: sudo envpod rollback hello</span></div></div>
+    </div>
+
+    <div style="margin-top:40px">
+      <p style="font-size:14px;color:var(--muted);margin-bottom:4px">OpenClaw on WhatsApp, Telegram, Discord — finally governed:</p>
+      <p style="font-size:12px;color:var(--dim);margin-bottom:14px">pod.yaml</p>
+      <div class="code-block"><button class="copy-btn" onclick="copyBlock(this)">Copy</button><div><span class="yc"># openclaw — personal AI agent on messaging platforms</span></div><div><span class="yk">network</span><span class="cl">:</span></div><div><span class="cl">  </span><span class="yk">mode</span><span class="cl">: </span><span class="yv">Monitored</span></div><div><span class="cl">  </span><span class="yk">dns</span><span class="cl">:</span></div><div><span class="cl">    </span><span class="yk">mode</span><span class="cl">: </span><span class="yv">Whitelist</span></div><div><span class="cl">    </span><span class="yk">allow</span><span class="cl">:</span></div><div><span class="cl">      - </span><span class="yv">api.anthropic.com</span><span class="cl">       </span><span class="yc"># LLM providers</span></div><div><span class="cl">      - </span><span class="yv">api.openai.com</span></div><div><span class="cl">      - </span><span class="yv">"*.whatsapp.com"</span><span class="cl">        </span><span class="yc"># messaging platforms</span></div><div><span class="cl">      - </span><span class="yv">"*.telegram.org"</span></div><div><span class="cl">      - </span><span class="yv">"*.discord.com"</span></div><div><span class="cl">      - </span><span class="yv">registry.npmjs.org</span><span class="cl">     </span><span class="yc"># npm</span></div><div><span class="yk">processor</span><span class="cl">:</span></div><div><span class="cl">  </span><span class="yk">cores</span><span class="cl">: </span><span class="yv">2.0</span></div><div><span class="cl">  </span><span class="yk">memory</span><span class="cl">: </span><span class="yv">"1GB"</span></div><div><span class="yk">budget</span><span class="cl">:</span></div><div><span class="cl">  </span><span class="yk">max_duration</span><span class="cl">: </span><span class="yv">"24h"</span></div><div><span class="yk">audit</span><span class="cl">:</span></div><div><span class="cl">  </span><span class="yk">action_log</span><span class="cl">: </span><span class="yv">true</span></div><div><span class="yk">setup</span><span class="cl">:</span></div><div><span class="cl">  - </span><span class="yv">"npm install -g openclaw"</span></div></div>
+    </div>
+    <div style="margin-top:14px">
+      <div class="code-block"><div><span class="pr">$ </span><span class="cl">sudo envpod init openclaw -c pod.yaml</span></div><div><span class="pr">$ </span><span class="cl">sudo envpod setup openclaw</span><span class="cl">                  </span><span class="yc"># runs npm install</span></div><div><span class="pr">$ </span><span class="cl">sudo envpod vault openclaw set ANTHROPIC_API_KEY</span></div><div><span class="pr">$ </span><span class="cl">sudo envpod run openclaw -- openclaw</span></div><div><span class="pr">$ </span><span class="cl">sudo envpod audit openclaw</span><span class="cl">                  </span><span class="yc"># every action logged</span></div></div>
+    </div>
+
+    <div class="req-box">
+      <strong>Requirements:</strong> Linux kernel 5.15+ · cgroups v2 · OverlayFS · root (for namespace setup) · ~12 MB disk
+      <br><br>
+      <a href="https://github.com/markamo/envpod-ce/blob/main/docs/INSTALL.md">Installation guide</a> ·
+      <a href="https://github.com/markamo/envpod-ce/blob/main/docs/QUICKSTART.md">Quick start</a> ·
+      <a href="/tutorials">Tutorials</a> ·
+      <a href="https://github.com/markamo/envpod-ce/blob/main/docs/CLI-BLACKBOOK.md">CLI Reference</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRICING ═══ -->
+<section class="section-tinted reveal" id="pricing">
+  <div class="wrap">
+    <div class="section-label">Pricing</div>
+    <h2 style="text-align:center">Free to use. Pro when you need it.</h2>
+    <p class="section-sub" style="text-align:center;margin:0 auto 56px">The full governance stack is free and self-hosted. Pro adds advanced security features for teams running agents in production.</p>
+
+    <div class="pricing-grid">
+
+      <!-- Free / CE -->
+      <div class="pricing-card">
+        <div class="pricing-badge" style="background:var(--green-glow);color:var(--green);border-color:rgba(34,197,94,0.2)">Available now</div>
+        <div class="pricing-tier">Free</div>
+        <div class="pricing-price">$0</div>
+        <div class="pricing-period">forever · self-hosted · BSL 1.1</div>
+        <div class="pricing-desc">Everything you need to govern AI agents on your own machine.</div>
+        <ul class="pricing-features">
+          <li>Unlimited pods</li>
+          <li>Filesystem isolation — OverlayFS copy-on-write, diff, commit, rollback</li>
+          <li>Network isolation — per-pod DNS resolver, whitelist/blacklist/remap</li>
+          <li>Process isolation — PID namespace, cgroups v2, seccomp-BPF</li>
+          <li>Encrypted credential vault — ChaCha20-Poly1305</li>
+          <li>Action queue — 20 built-in types, four approval tiers</li>
+          <li>Append-only audit log + static security scan</li>
+          <li>Web dashboard — fleet overview, live stats, diff from browser</li>
+          <li>Base pods + fast cloning (~130ms)</li>
+          <li>GPU, display &amp; audio passthrough</li>
+          <li>Web display (noVNC) — browser-based pod desktop</li>
+          <li>Host app auto-mount — <code>which</code> + <code>ldd</code>, zero reinstall</li>
+          <li>Clone host user — your files, tools, dotfiles in the pod</li>
+          <li>Pod-to-pod discovery (envpod-dns daemon)</li>
+          <li>25+ example configs</li>
+        </ul>
+        <div class="pricing-cta">
+          <a href="#install" class="btn-p" style="width:100%;justify-content:center">Install now →</a>
+        </div>
+      </div>
+
+      <!-- Pro -->
+      <div class="pricing-card pricing-card-pro">
+        <div class="pricing-badge">Coming soon</div>
+        <div class="pricing-tier">Pro</div>
+        <div class="pricing-price">$49<span> / seat / mo</span></div>
+        <div class="pricing-period">per seat · self-hosted · billed monthly</div>
+        <div class="pricing-desc">Everything in Free, plus advanced features for production agent deployments.</div>
+        <ul class="pricing-features">
+          <li class="pro-feature"><strong>Vault proxy injection</strong> — API keys never visible to the agent, not even in env vars. Transparent HTTPS interception.</li>
+          <li class="pro-feature"><strong>Base pod export / import</strong> — portable environment snapshots across machines</li>
+          <li class="pro-feature"><strong>Advanced diff dashboard</strong> — per-line staging, side-by-side view, per-hunk approval</li>
+          <li class="pro-feature"><strong>Prompt &amp; instruction screening</strong> — detect jailbreak attempts before execution</li>
+          <li class="pro-feature"><strong>TLS packet inspection</strong> — see exactly what the agent is sending over HTTPS</li>
+          <li class="pro-feature"><strong>Priority support</strong> — direct line to the team</li>
+        </ul>
+        <div class="pricing-cta">
+          <a href="/waitlist.html" class="btn-s" style="width:100%;justify-content:center">Join the waitlist →</a>
+          <p style="font-size:12px;color:var(--dim);text-align:center;margin-top:12px">No spam. One email when Pro launches.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <p style="text-align:center;margin-top:40px;font-size:14px;color:var(--dim)">
+      Need fleet-scale governance, SSO, or compliance reporting?
+      <a href="mailto:mark@envpod.dev">Talk to us about Enterprise →</a>
+    </p>
+  </div>
+</section>
+
+<!-- ═══ AUDIT STRIP ═══ -->
+<div class="audit-strip">
+  <div class="audit-track" id="audit-track"></div>
+</div>
+
+<!-- ═══ CONTACT ═══ -->
+<section class="section reveal" id="contact">
+  <div class="wrap">
+    <h2>Talk to us</h2>
+    <p class="section-sub">Building agents, running swarms, or need governed execution inside your platform — we want to hear from you.</p>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <div class="contact-badge">integration</div>
+        <h3>Want envpod inside your platform?</h3>
+        <p>We're building envpod as a governed execution substrate for agent frameworks. If you need policy, audit, rollback, and a kill switch for agent actions — let's talk integrations and backends.</p>
+        <div class="contact-actions">
+          <a class="btn-p" href="mailto:mark@envpod.dev" style="font-size:13px;padding:10px 18px">Email us</a>
+          <a class="btn-s" href="https://github.com/markamo/envpod-ce/issues" style="font-size:13px;padding:10px 18px">Open an issue</a>
+        </div>
+      </div>
+      <div class="contact-card">
+        <div class="contact-badge">enterprise</div>
+        <h3>Need fleet-scale governance?</h3>
+        <p>Centralized audit aggregation, SSO/RBAC, compliance reporting, cross-node fleet management, and FEBO-powered policy optimization — enterprise features for teams managing agents at scale.</p>
+        <div class="contact-actions">
+          <a class="btn-p" href="mailto:mark@envpod.dev" style="font-size:13px;padding:10px 18px">Request access</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta-section">
+  <div class="cta-box">
+    <h2>Autonomous systems should not have<br>irrevocable side effects.</h2>
+    <p>Envpod makes autonomy safe by default. Free to use. Single binary. Zero dependencies. On your own machine.</p>
+    <div class="cta-actions">
+      <a href="https://github.com/markamo/envpod-ce" class="btn-p">Get started →</a>
+      <a href="https://github.com/markamo/envpod-ce/tree/main/examples" class="btn-s">Browse examples</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo"><em>env</em>pod</div>
+      <div class="footer-copy">Copyright 2026 Mark Amo-Boateng / Xtellix Inc. · BSL 1.1</div>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/markamo/envpod-ce">GitHub</a>
+      <a href="https://github.com/markamo/envpod-ce/blob/main/docs/FEATURES.md">Features</a>
+      <a href="/tutorials">Tutorials</a>
+      <a href="https://github.com/markamo/envpod-ce/blob/main/docs/CLI-BLACKBOOK.md">CLI Ref</a>
+      <a href="https://github.com/markamo/envpod-ce/blob/main/docs/ACTION-CATALOG.md">Actions</a>
+      <a href="https://github.com/markamo/envpod-ce/issues">Issues</a>
+      <a href="/cla">CLA</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ══ INTERACTIVE TERMINAL ══
+(function(){
+  const input=document.getElementById('ti'),body=document.getElementById('tb'),term=document.getElementById('terminal');
+  const hist=[];let hi=-1,podState='none';
+  const CMDS={
+    'help':()=>[{t:'Available commands:',c:'a'},{t:'  envpod init <n> -c <yaml>     Create a pod',c:'o'},{t:'  envpod vault <pod> set <KEY>  Store a secret',c:'o'},{t:'  envpod run <pod> -- <cmd>     Run agent in pod',c:'o'},{t:'  envpod diff <pod>             Show changes',c:'o'},{t:'  envpod queue <pod>            View action queue',c:'o'},{t:'  envpod approve <pod> <id>     Approve action',c:'o'},{t:'  envpod commit <pod> [paths]   Apply changes',c:'o'},{t:'  envpod rollback <pod>         Discard changes',c:'o'},{t:'  envpod audit <pod>            Audit / security scan',c:'o'},{t:'  envpod clone <src> <dst>      Clone pod',c:'o'},{t:'  envpod lock <pod>             Freeze pod',c:'o'},{t:'  envpod ls                     List pods',c:'o'},{t:'  envpod status <pod>           Pod details',c:'o'},{t:'  envpod destroy <pod>          Remove pod',c:'o'},{t:'  clear                         Clear terminal',c:'o'}],
+    'envpod init':()=>{podState='created';return[{t:'◼ Creating pod "demo"...',c:'o'},{t:'  ├─ overlay: /var/lib/envpod/pods/demo/',c:'o'},{t:'  ├─ cgroup: /sys/fs/cgroup/envpod-demo',c:'o'},{t:'  ├─ netns: envpod-demo (veth pair created)',c:'o'},{t:'  ├─ dns: embedded resolver started',c:'o'},{t:'  ├─ setup: npm install -g @anthropic-ai/claude-code',c:'o'},{t:'  └─ base snapshot: created',c:'o'},{t:'',c:'o'},{t:'✓ Pod "demo" created',c:'a'},{t:'',c:'o'},{t:'⚠ Security brief:',c:'w'},{t:'  I-04 [LOW] X11 display available as fallback',c:'o'},{t:'  All other checks passed.',c:'o'}]},
+    'envpod vault':()=>[{t:'✓ Stored ANTHROPIC_API_KEY (encrypted, ChaCha20-Poly1305)',c:'a'},{t:'  Vault: 1 key · injected as $ANTHROPIC_API_KEY at runtime',c:'o'}],
+    'envpod run':()=>{if(podState==='none')return[{t:'Error: pod "demo" does not exist. Run envpod init first.',c:'r'}];podState='running';return[{t:'Entering pod "demo"...',c:'o'},{t:'  Overlay:  read-only host snapshot',c:'o'},{t:'  Network:  whitelist mode (3 domains)',c:'o'},{t:'  Display:  wayland (per-window isolation)',c:'a'},{t:'  Audio:    pipewire (playback only)',c:'a'},{t:'  Vault:    1 secret injected',c:'o'},{t:'  cgroups:  512 shares · 4096 MB · 256 pids',c:'o'},{t:'  seccomp:  browser profile (287 syscalls blocked)',c:'o'},{t:'',c:'o'},{t:'● Agent session active...',c:'a'},{t:'  [14:22:01] file_read  /workspace/src/auth/handler.rs',c:'o'},{t:'  [14:22:07] file_write /workspace/src/auth/oauth.rs (overlay)',c:'w'},{t:'  [14:22:11] dns_query  api.anthropic.com → 104.18.0.1 ✓',c:'o'},{t:'  [14:22:11] dns_query  evil.com → BLOCKED',c:'r'},{t:'  [14:22:14] queue      git_push → STAGED (awaiting approval)',c:'w'},{t:'  [14:22:15] file_delete /workspace/src/auth/legacy.rs (overlay)',c:'r'},{t:'',c:'o'},{t:'● Session ended. 4 overlay changes pending.',c:'a'}]},
+    'envpod diff':()=>{if(podState==='none')return[{t:'Error: pod "demo" does not exist.',c:'r'}];return[{t:'+ /workspace/src/auth/oauth.rs        (Added, 2.1 KB)',c:'a'},{t:'~ /workspace/src/auth/handler.rs      (Modified, 840 B)',c:'w'},{t:'~ /workspace/src/auth/middleware.rs   (Modified, 312 B)',c:'w'},{t:'- /workspace/src/auth/legacy.rs       (Deleted)',c:'r'},{t:'',c:'o'},{t:'4 changes · 3.2 KB added · 1 file deleted',c:'o'}]},
+    'envpod queue':()=>{if(podState==='none')return[{t:'Error: pod "demo" does not exist.',c:'r'}];return[{t:'ID        TIER     STATUS    DESCRIPTION',c:'o'},{t:'a7f3c1    staged   queued    git_push origin main "Add OAuth flow"',c:'w'},{t:'',c:'o'},{t:'1 action pending approval',c:'o'}]},
+    'envpod approve':()=>[{t:'✓ Approved: a7f3c1',c:'a'},{t:'  Executing: git_push origin main "Add OAuth flow"',c:'o'},{t:'  Credentials injected from vault',c:'o'},{t:'✓ Executed successfully. Undo available.',c:'a'}],
+    'envpod commit':()=>{if(podState==='none')return[{t:'Error: pod "demo" does not exist.',c:'r'}];return[{t:'✓ Committed: src/auth/oauth.rs → host filesystem',c:'a'},{t:'  3 remaining changes in overlay (not committed)',c:'o'}]},
+    'envpod rollback':()=>{if(podState==='none')return[{t:'Error: pod "demo" does not exist.',c:'r'}];return[{t:'✓ Rolled back all overlay changes.',c:'a'},{t:'  Overlay reset to last commit state.',c:'o'}]},
+    'envpod audit':()=>{if(podState==='none')return[{t:'Error: pod "demo" does not exist.',c:'r'}];return[{t:'⚡ Security audit: demo',c:'a'},{t:'',c:'o'},{t:'  ✓ Network: Filtered (whitelist DNS)',c:'a'},{t:'  ✓ Resources: CPU 512, MEM 4096 MB, PIDs 256',c:'a'},{t:'  ✓ Seccomp: browser profile active',c:'a'},{t:'  ✓ User: non-root (UID 60000)',c:'a'},{t:'  ✓ Queue: socket enabled',c:'a'},{t:'  ⚠ I-04 [LOW] X11 fallback available',c:'w'},{t:'  ✓ Audit: action_log enabled',c:'a'},{t:'',c:'o'},{t:'  Score: 6/7 passed · 1 LOW finding',c:'o'}]},
+    'envpod clone':()=>{if(podState==='none')return[{t:'Error: pod "demo" does not exist.',c:'r'}];return[{t:'✓ Cloned "demo" → "demo-copy" in 127ms',c:'a'},{t:'  Base: demo · Overlay: fresh · Config: inherited',c:'o'}]},
+    'envpod lock':()=>{if(podState==='none')return[{t:'Error: pod "demo" does not exist.',c:'r'}];podState='locked';return[{t:'✓ Pod "demo" frozen (SIGSTOP). All processes paused.',c:'a'},{t:'  Resume with: envpod remote demo resume',c:'o'}]},
+    'envpod ls':()=>{if(podState==='none')return[{t:'NAME     STATUS     CPU   MEM      DIFF  BACKEND',c:'o'},{t:'(no pods)',c:'o'}];const s=podState==='running'?'running':podState==='locked'?'frozen ':'stopped';return[{t:'NAME     STATUS     CPU   MEM      DIFF  BACKEND',c:'o'},{t:'demo     '+s+'    12%  384MB    4     native',c:'a'}]},
+    'envpod status':()=>{if(podState==='none')return[{t:'Error: pod "demo" does not exist.',c:'r'}];return[{t:'Pod: demo',c:'a'},{t:'  Status:  '+(podState==='running'?'running':podState==='locked'?'frozen':'stopped'),c:'o'},{t:'  CPU:     12% (limit: 512 shares)',c:'o'},{t:'  Memory:  384 / 4096 MB',c:'o'},{t:'  PIDs:    23 / 256',c:'o'},{t:'  Network: Filtered (3 domains)',c:'o'},{t:'  Overlay: 4 pending',c:'w'},{t:'  Vault:   1 key',c:'o'}]},
+    'envpod destroy':()=>{podState='none';return[{t:'✓ Pod "demo" destroyed.',c:'a'},{t:'  Namespace torn down · Overlay deleted · cgroup removed',c:'o'},{t:'  No traces remain.',c:'o'}]}
+  };
+  function matchCmd(r){const t=r.trim().toLowerCase();if(t==='clear')return'clear';if(t==='help'||t==='envpod --help'||t==='envpod help')return'help';const k=Object.keys(CMDS).sort((a,b)=>b.length-a.length);for(const x of k)if(t.startsWith(x))return x;return null}
+  function addLine(t,c){const d=document.createElement('div');d.className='tl';const s=document.createElement('span');s.className=c==='a'?'ta':c==='r'?'tr':c==='w'?'tw':c==='b'?'tb':'to';s.textContent=t;d.appendChild(s);body.insertBefore(d,body.querySelector('.term-input-line'))}
+  function addPrompt(cmd){const d=document.createElement('div');d.className='tl';d.innerHTML='<span class="tp">$ </span><span class="tc">'+cmd.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</span>';body.insertBefore(d,body.querySelector('.term-input-line'))}
+  function scroll(){body.scrollTop=body.scrollHeight}
+  function typeOut(lines,i,cb){if(i>=lines.length){cb&&cb();return}addLine(lines[i].t,lines[i].c);scroll();setTimeout(()=>typeOut(lines,i+1,cb),35)}
+  function exec(raw){if(!raw.trim())return;hist.unshift(raw);hi=-1;addPrompt(raw);input.value='';if(raw.trim().toLowerCase()==='clear'){body.querySelectorAll('.tl').forEach(l=>l.remove());scroll();return}const k=matchCmd(raw);if(!k){addLine('Command not recognized. Type help.',  'r');scroll();return}const out=CMDS[k]();input.disabled=true;typeOut(out,0,()=>{input.disabled=false;input.focus();scroll()})}
+  input.addEventListener('keydown',e=>{if(e.key==='Enter')exec(input.value);else if(e.key==='ArrowUp'){e.preventDefault();if(hi<hist.length-1){hi++;input.value=hist[hi]}}else if(e.key==='ArrowDown'){e.preventDefault();if(hi>0){hi--;input.value=hist[hi]}else{hi=-1;input.value=''}}else if(e.key==='Tab'){e.preventDefault();const v=input.value.trim().toLowerCase();const cs=['envpod init demo -c examples/claude-code.yaml','envpod vault demo set ANTHROPIC_API_KEY','envpod run demo -d -a -- claude','envpod diff demo','envpod queue demo','envpod approve demo a7f3c1','envpod commit demo src/auth/oauth.rs','envpod rollback demo','envpod audit demo --security','envpod clone demo demo-copy','envpod lock demo','envpod ls','envpod status demo','envpod destroy demo','help'];const m=cs.find(c=>c.toLowerCase().startsWith(v)&&c.toLowerCase()!==v);if(m)input.value=m}});
+  body.addEventListener('click',()=>input.focus());
+  term.addEventListener('click',()=>input.focus());
+  input.addEventListener('focus',()=>term.classList.add('focused'));
+  input.addEventListener('blur',()=>term.classList.remove('focused'));
+  document.querySelectorAll('.pill').forEach(p=>p.addEventListener('click',()=>{input.value=p.dataset.c;input.focus();exec(p.dataset.c)}));
+})();
+
+// ══ AUDIT STRIP ══
+(function(){
+  const t=document.getElementById('audit-track');
+  const e=[{time:'14:22:01',pod:'claude-code',a:'file_read',d:'/src/handler.rs',s:'allow'},{time:'14:22:03',pod:'claude-code',a:'dns_query',d:'api.anthropic.com',s:'allow'},{time:'14:22:04',pod:'browser-agent',a:'dns_query',d:'evil.com',s:'deny'},{time:'14:22:07',pod:'claude-code',a:'file_write',d:'/src/oauth.rs',s:'allow'},{time:'14:22:08',pod:'aider-pod',a:'git_commit',d:'"Fix auth bug"',s:'allow'},{time:'14:22:09',pod:'browser-agent',a:'http_post',d:'webhook.site',s:'deny'},{time:'14:22:11',pod:'claude-code',a:'queue_staged',d:'git_push origin',s:'allow'},{time:'14:22:14',pod:'aider-pod',a:'file_delete',d:'/tmp/cache.pkl',s:'allow'},{time:'14:22:15',pod:'codex-agent',a:'dns_query',d:'pypi.org',s:'allow'},{time:'14:22:17',pod:'browser-agent',a:'raw_ip_connect',d:'185.143.223.1',s:'deny'},{time:'14:22:19',pod:'codex-agent',a:'vault_get',d:'OPENAI_API_KEY',s:'allow'},{time:'14:22:21',pod:'claude-code',a:'snapshot',d:'auto-pre-run',s:'allow'}];
+  let h='';for(let i=0;i<2;i++)e.forEach(x=>{const sc=x.s==='allow'?'a-allow':'a-deny';h+=`<div class="audit-entry"><span class="a-time">${x.time}</span><span class="a-pod">[${x.pod}]</span><span class="a-action">${x.a}</span><span class="a-action">${x.d}</span><span class="${sc}">${x.s.toUpperCase()}</span></div>`});
+  t.innerHTML=h;
+})();
+
+// ══ INSTALL TABS ══
+function showTab(n){['x86','arm64','src'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===n?'':'none'});document.querySelectorAll('.itab').forEach((el,i)=>{el.classList.toggle('active',['x86','arm64','src'][i]===n)})}
+function copyBlock(btn){const b=btn.closest('.code-block');const t=Array.from(b.querySelectorAll('.cl')).map(el=>el.textContent).join('\n').trim();navigator.clipboard.writeText(t).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)}).catch(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)})}
+
+// ══ SCROLL REVEAL ══
+(function(){const o=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('vis')})},{threshold:0.1});document.querySelectorAll('.reveal').forEach(el=>o.observe(el))})();
+
+function copyHeroInstall(btn){
+  navigator.clipboard.writeText('curl -fsSL https://envpod.dev/install.sh | sh')
+    .then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)})
+    .catch(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)});
+}
+// Close mobile nav on link click
+document.querySelectorAll('.nav-links a').forEach(a=>{
+  a.addEventListener('click',()=>{
+    document.querySelector('.nav-links').classList.remove('open');
+    document.querySelector('.nav-toggle').classList.remove('active');
+  });
+});
+// Close on outside click
+document.addEventListener('click',(e)=>{
+  const nav=document.querySelector('.nav-links');
+  const toggle=document.querySelector('.nav-toggle');
+  if(nav.classList.contains('open')&&!nav.contains(e.target)&&!toggle.contains(e.target)){
+    nav.classList.remove('open');
+    toggle.classList.remove('active');
+  }
+});
+</script>
+</body>
+</html>

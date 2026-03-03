@@ -1,0 +1,4 @@
+{"version": 2, "width": 110, "height": 8, "title": "Install", "timestamp": 1772864286, "env": {"TERM": "xterm-256color", "THEME": "monokai", "FONT_FAMILY": "JetBrains Mono, Fira Code, Menlo, monospace", "FONT_SIZE": "16"}, "idle_time_limit": 3}
+[0.3, "o", "\u001b[0menvpod v0.1.0 installed to /usr/local/bin/envpod\u001b[0m\r\n"]
+[1.8, "o", "\u001b[8;1H"]
+[1.8, "o", "\u001b[2m                                                                                                      md2cast\u001b[0m"]

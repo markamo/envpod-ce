@@ -1,0 +1,104 @@
+
+envpod GPU benchmark
+  binary:     /home/mymark/apps/envpod-oss/target/release/envpod
+  iterations: 10
+  GPU:        NVIDIA TITAN RTX (24576 MiB)
+  GPUs:       2
+  driver:     590.48.01
+  CUDA:       not found
+  PyTorch:    not found
+  state dir:  /tmp/envpod-gpu-bench-WYBXuT
+
+Warmup run...
+
+Benchmarking 'nvidia-smi' on host (10 iterations)...
+  [1/10] 48ms
+  [2/10] 48ms
+  [3/10] 49ms
+  [4/10] 49ms
+  [5/10] 51ms
+  [6/10] 51ms
+  [7/10] 50ms
+  [8/10] 48ms
+  [9/10] 52ms
+  [10/10] 52ms
+
+Benchmarking 'nvidia-smi' inside pod (10 iterations)...
+  [1/10] 94ms
+  [2/10] 91ms
+  [3/10] 83ms
+  [4/10] 86ms
+  [5/10] 84ms
+  [6/10] 89ms
+  [7/10] 89ms
+  [8/10] 89ms
+  [9/10] 84ms
+  [10/10] 88ms
+
+Benchmarking 'nvidia-smi --list-gpus' inside pod (10 iterations)...
+  [1/10] 83ms
+  [2/10] 84ms
+  [3/10] 69ms
+  [4/10] 84ms
+  [5/10] 68ms
+  [6/10] 68ms
+  [7/10] 72ms
+  [8/10] 77ms
+  [9/10] 76ms
+  [10/10] 79ms
+
+Benchmarking 'envpod init' with GPU (10 iterations)...
+  [1/10] 1070ms
+  [2/10] 1086ms
+  [3/10] 1070ms
+  [4/10] 1052ms
+  [5/10] 1073ms
+  [6/10] 1060ms
+  [7/10] 1068ms
+  [8/10] 1080ms
+  [9/10] 1084ms
+  [10/10] 1065ms
+
+Benchmarking 'envpod init' without GPU (10 iterations)...
+  [1/10] 1070ms
+  [2/10] 1071ms
+  [3/10] 1084ms
+  [4/10] 1076ms
+  [5/10] 1108ms
+  [6/10] 1060ms
+  [7/10] 1064ms
+  [8/10] 1075ms
+  [9/10] 1068ms
+  [10/10] 1079ms
+
+Benchmarking 'envpod run' with GPU vs without (10 iterations)...
+  GPU pod:    done
+  no-GPU pod: done
+
+Results (10 iterations)
+  GPU: NVIDIA TITAN RTX x2 (24576 MiB, driver 590.48.01)
+
+  nvidia-smi (host vs pod)
+  COMMAND                           AVG   MEDIAN      MIN      MAX      P95
+  ──────────────────────────── ──────── ──────── ──────── ──────── ────────
+  nvidia-smi (host)                49ms     49ms     48ms     52ms     52ms
+  nvidia-smi (pod)                 87ms     88ms     83ms     94ms     94ms
+  nvidia-smi --list-gpus           76ms     76ms     68ms     84ms     84ms
+
+  overhead: 39ms (envpod namespace entry, not GPU)
+
+  envpod init (GPU vs no-GPU)
+  COMMAND                           AVG   MEDIAN      MIN      MAX      P95
+  ──────────────────────────── ──────── ──────── ──────── ──────── ────────
+  init (gpu: true)               1.070s   1.070s   1.052s   1.086s   1.086s
+  init (gpu: false)              1.075s   1.073s   1.060s   1.108s   1.108s
+
+  envpod run /bin/true (GPU vs no-GPU)
+  COMMAND                           AVG   MEDIAN      MIN      MAX      P95
+  ──────────────────────────── ──────── ──────── ──────── ──────── ────────
+  run (gpu: true)                  36ms     35ms     22ms     54ms     54ms
+  run (gpu: false)                 35ms     38ms     22ms     49ms     49ms
+
+  Note: pod overhead is namespace entry (~20ms), not GPU latency.
+  GPU device access is zero-copy bind-mount — no virtualization layer.
+

@@ -1,0 +1,43 @@
+# Basic CLI pod — minimal sandbox for command-line tasks
+#
+# Default seccomp profile, no network access, small resource limits.
+# Good for: scripting, file processing, untrusted code execution.
+#
+# Usage:
+#   sudo envpod init basic-cli -c examples/basic-cli.yaml
+#   sudo envpod run basic-cli -- /bin/bash
+
+name: basic-cli
+type: standard
+backend: native
+
+filesystem:
+  tracking:
+    watch:
+      - /home
+      - /opt
+      - /root
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+network:
+  mode: Isolated
+  dns:
+    mode: Whitelist
+    allow: []
+
+processor:
+  cores: 1.0
+  memory: "512MB"
+  max_pids: 512
+
+budget:
+  max_duration: "15m"
+
+audit:
+  action_log: true
