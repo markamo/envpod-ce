@@ -1,0 +1,84 @@
+# Workstation pod — Chrome + GIMP + VS Code in an XFCE desktop
+#
+# A full desktop workstation with three apps pre-installed, accessible
+# via noVNC. All writes go to the COW overlay — `envpod diff` shows
+# every change, `envpod commit` applies them to the host.
+#
+# Installs ~800MB during setup. First init takes 4-6 min.
+# After first setup, use `envpod clone` for instant copies.
+#
+# Usage:
+#   sudo envpod init workstation -c examples/workstation.yaml
+#   sudo envpod setup workstation
+#   sudo envpod run workstation -b -- startxfce4
+#   # Open the noVNC URL from `envpod ls` in your browser
+#   # Launch Chrome, GIMP, or VS Code from the Applications menu or terminal
+#
+# Lock/unlock:
+#   sudo envpod lock workstation     # freeze everything — noVNC stays connected
+#   sudo envpod unlock workstation   # resume where you left off
+
+name: workstation
+type: standard
+user: root
+
+web_display:
+  type: novnc
+  port: 6080
+  resolution: "1920x1080"
+
+devices:
+  desktop_env: xfce
+  gpu: true
+
+filesystem:
+  system_access: advanced
+  mount_cwd: true
+
+network:
+  mode: Monitored
+  dns:
+    mode: Blacklist
+    deny:
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+
+processor:
+  cores: 4.0
+  memory: "8GB"
+  max_pids: 4096
+
+security:
+  seccomp_profile: browser
+  shm_size: "512MB"
+
+budget:
+  max_duration: "12h"
+
+audit:
+  action_log: true
+
+setup:
+  # Chrome
+  - |
+    if command -v google-chrome >/dev/null 2>&1; then
+      echo "Chrome already available"
+    else
+      apt-get install -y wget gnupg
+      wget -qO- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+      apt-get update && apt-get install -y google-chrome-stable
+    fi
+  # GIMP
+  - "apt-get install -y --no-install-recommends gimp"
+  # VS Code
+  - |
+    if command -v code >/dev/null 2>&1; then
+      echo "VS Code already available"
+    else
+      apt-get install -y wget gpg apt-transport-https
+      wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/packages.microsoft.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list
+      apt-get update && apt-get install -y code
+    fi
