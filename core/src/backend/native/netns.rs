@@ -750,10 +750,16 @@ pub fn setup_port_forwards(pod_dir: &Path, host_veth: &str, pod_ip: &str, ports:
         return Ok(());
     }
 
-    // Enable route_localnet on host veth so that localhost OUTPUT DNAT works.
-    let rl_path = format!("/proc/sys/net/ipv4/conf/{host_veth}/route_localnet");
-    if let Err(e) = std::fs::write(&rl_path, "1") {
-        tracing::warn!("route_localnet write failed ({rl_path}): {e}");
+    // Enable route_localnet on host veth AND lo so that localhost OUTPUT DNAT works.
+    // lo: packets originate with src 127.0.0.1 — kernel needs route_localnet to
+    //     allow routing a 127.x source to a non-local destination after DNAT.
+    // host veth: packets exit through the veth toward the pod — kernel needs
+    //     route_localnet to accept forwarding packets with 127.x addresses.
+    for iface in &["lo", host_veth] {
+        let rl_path = format!("/proc/sys/net/ipv4/conf/{iface}/route_localnet");
+        if let Err(e) = std::fs::write(&rl_path, "1") {
+            tracing::warn!("route_localnet write failed ({rl_path}): {e}");
+        }
     }
 
     let mut records = Vec::new();
@@ -986,11 +992,13 @@ pub fn add_port_forward(pod_dir: &Path, host_veth: &str, pod_ip: &str, spec: &st
         anyhow::bail!("port forward {proto}/{host_port} is already active");
     }
 
-    // Enable route_localnet on the host veth (idempotent)
-    std::fs::write(
-        format!("/proc/sys/net/ipv4/conf/{host_veth}/route_localnet"),
-        "1",
-    ).ok();
+    // Enable route_localnet on lo + host veth (idempotent)
+    for iface in &["lo", host_veth] {
+        std::fs::write(
+            format!("/proc/sys/net/ipv4/conf/{iface}/route_localnet"),
+            "1",
+        ).ok();
+    }
 
     if !host_only {
         iptables_cmd(&[

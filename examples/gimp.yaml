@@ -1,0 +1,59 @@
+# GIMP pod — image editor in an isolated desktop via noVNC
+#
+# Runs GIMP inside a sandboxed pod with a full XFCE desktop accessible
+# via noVNC. Your ~/Pictures directory is mounted read-only with COW —
+# edits stay in the overlay until you `envpod commit`.
+#
+# GIMP is installed via apt during setup (~150MB). First init takes 2-3 min.
+# After first setup, use `envpod clone` for instant copies.
+#
+# Usage:
+#   sudo envpod init gimp -c examples/gimp.yaml
+#   sudo envpod setup gimp
+#   sudo envpod run gimp -- gimp
+#   # noVNC URL shown at startup — open http://<pod-ip>:6080/vnc.html
+
+name: gimp
+type: standard
+user: root
+
+web_display:
+  type: novnc
+  port: 6080
+  resolution: "1920x1080"
+
+devices:
+  desktop_env: xfce
+
+filesystem:
+  system_access: advanced
+  mounts:
+    - path: ~/Pictures
+      permissions: ReadOnly
+
+network:
+  mode: Monitored
+  dns:
+    mode: Blacklist
+    deny:
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+
+processor:
+  cores: 4.0
+  memory: "4GB"
+  max_pids: 2048
+
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"
+
+budget:
+  max_duration: "8h"
+
+audit:
+  action_log: true
+
+setup:
+  - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gimp"
