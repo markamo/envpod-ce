@@ -1,0 +1,90 @@
+# GPU Workstation — Chrome + GIMP + VS Code + NVIDIA GPU in XFCE desktop
+#
+# Full desktop workstation with GPU passthrough. Use for ML notebooks,
+# CUDA development, GPU-accelerated rendering, or AI agent monitoring.
+# NVIDIA drivers are mounted read-only from the host — no install needed.
+#
+# Installs ~800MB during setup. First init takes 4-6 min.
+# After first setup, use `envpod clone` for instant copies.
+#
+# Prerequisites:
+#   - NVIDIA drivers installed on the host
+#   - nvidia-smi working on the host
+#
+# Usage:
+#   sudo envpod init gpu-ws -c examples/workstation-gpu.yaml
+#   sudo envpod setup gpu-ws
+#   sudo envpod run gpu-ws -b -- startxfce4
+#   # Open the noVNC URL from `envpod ls` in your browser
+#   # Run `nvidia-smi` in the desktop terminal to verify GPU access
+#
+# Lock/unlock:
+#   sudo envpod lock gpu-ws       # freeze — noVNC stays connected
+#   sudo envpod unlock gpu-ws     # resume
+
+name: gpu-ws
+type: standard
+user: root
+
+web_display:
+  type: novnc
+  port: 6080
+  resolution: "1920x1080"
+
+devices:
+  desktop_env: xfce
+  gpu: true
+
+filesystem:
+  system_access: advanced
+  mount_cwd: true
+
+network:
+  mode: Monitored
+  dns:
+    mode: Blacklist
+    deny:
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+
+processor:
+  cores: 4.0
+  memory: "16GB"
+  max_pids: 4096
+
+security:
+  seccomp_profile: browser
+  shm_size: "512MB"
+
+budget:
+  max_duration: "24h"
+
+audit:
+  action_log: true
+
+setup:
+  # Chrome
+  - |
+    if command -v google-chrome >/dev/null 2>&1; then
+      echo "Chrome already available"
+    else
+      apt-get install -y wget gnupg
+      wget -qO- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+      apt-get update && apt-get install -y google-chrome-stable
+    fi
+  # GIMP
+  - "apt-get install -y --no-install-recommends gimp"
+  # VS Code
+  - |
+    if command -v code >/dev/null 2>&1; then
+      echo "VS Code already available"
+    else
+      apt-get install -y wget gpg apt-transport-https
+      wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/packages.microsoft.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list
+      apt-get update && apt-get install -y code
+    fi
+  # Python + CUDA tools
+  - "apt-get install -y --no-install-recommends python3-pip python3-venv"
