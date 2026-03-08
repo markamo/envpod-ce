@@ -35,6 +35,7 @@ web_display:
   type: novnc
   port: 6080
   resolution: "1920x1080"
+  audio: true
 
 devices:
   desktop_env: xfce

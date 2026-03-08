@@ -39,6 +39,7 @@ web_display:
   type: novnc
   port: 6080
   resolution: "1920x1080"
+  # audio: true          # Opus/WebM audio streaming on port 6081
 
 devices:
   desktop_env: xfce
