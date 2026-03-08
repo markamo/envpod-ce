@@ -211,4 +211,4 @@ These features are designed but not shipped:
 
 ---
 
-Copyright 2026 Xtellix Inc. All rights reserved. Licensed under the Apache License, Version 2.0.
+Copyright 2026 Xtellix Inc. All rights reserved. Licensed under BSL 1.1.

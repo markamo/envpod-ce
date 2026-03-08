@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 #
+# Copyright 2026 Mark Amo-Boateng / Xtellix Inc.
+# SPDX-License-Identifier: BSL-1.1
 # envpod container installer
 # Sets up envpod inside a Docker container for testing/evaluation.
 # Handles Docker-specific workarounds automatically.

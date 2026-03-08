@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # Copyright 2026 Mark Amo-Boateng / Xtellix Inc.
-# SPDX-License-Identifier: BSL 1.1-3.0-only
+# SPDX-License-Identifier: BSL-1.1
 
 #
 # envpod installer — https://envpod.dev/install.sh
