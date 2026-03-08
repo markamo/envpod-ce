@@ -10,8 +10,24 @@
 # Usage:
 #   sudo envpod init gimp -c examples/gimp.yaml
 #   sudo envpod setup gimp
+#
+#   # Desktop mode (recommended) — launches full XFCE desktop in background,
+#   # terminal stays free for envpod commands. Open GIMP from the desktop menu.
+#   sudo envpod run gimp -b -- startxfce4
+#   # Open the noVNC URL shown by `envpod ls` in your browser
+#
+#   # Direct mode — launches GIMP only (blocks terminal, Ctrl+Z to detach):
 #   sudo envpod run gimp -- gimp
-#   # noVNC URL shown at startup — open http://<pod-ip>:6080/vnc.html
+#
+# Lock/unlock (freeze/thaw):
+#   sudo envpod lock gimp     # freezes pod instantly — noVNC stays connected
+#   sudo envpod unlock gimp   # resumes exactly where you left off
+#   Display services run in a guardian cgroup that survives freeze/thaw.
+#
+# Governance:
+#   sudo envpod diff gimp     # see what changed in the overlay
+#   sudo envpod commit gimp   # apply changes to host
+#   sudo envpod rollback gimp # discard all changes
 
 name: gimp
 type: standard

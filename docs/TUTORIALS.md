@@ -2019,6 +2019,47 @@ setup:
 sudo envpod run my-desktop -- openbox-session
 ```
 
+### Example: GIMP in a Sandboxed Desktop
+
+A full image editor running in an isolated pod with a desktop environment:
+
+<!-- no-exec -->
+```bash
+sudo envpod init gimp -c examples/gimp.yaml
+sudo envpod setup gimp              # installs XFCE + GIMP (~3 min first time)
+sudo envpod run gimp -b -- startxfce4   # desktop in background, terminal stays free
+sudo envpod ls                       # shows pod IP and noVNC URL
+```
+
+Open the noVNC URL from `envpod ls` in your browser — you get a full XFCE
+desktop. Launch GIMP from the Applications menu or open xfce4-terminal and
+type `gimp`. Your `~/Pictures` directory is mounted read-only with COW, so
+edits stay in the overlay.
+
+**Lock and unlock (freeze/thaw):**
+
+The display stack (Xvfb, x11vnc, websockify) runs in a guardian cgroup that
+survives freeze/thaw. This means the browser noVNC connection stays alive even
+when the pod is frozen:
+
+<!-- no-exec -->
+```bash
+sudo envpod lock gimp       # GIMP freezes instantly — noVNC stays connected
+sudo envpod unlock gimp     # resumes exactly where you left off
+```
+
+This works with any desktop pod — freeze a running agent, inspect its state with
+`envpod diff` and `envpod audit`, then resume or rollback.
+
+**Review and commit:**
+
+<!-- no-exec -->
+```bash
+sudo envpod diff gimp       # see what GIMP changed (saved files, config, etc.)
+sudo envpod commit gimp     # apply changes to the host
+sudo envpod rollback gimp   # or discard everything
+```
+
 ### Web Display vs Display Passthrough
 
 <!-- output -->

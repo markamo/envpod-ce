@@ -583,10 +583,16 @@ sudo envpod dns my-agent --allow a.com --allow b.com --deny c.com
 
 Freeze a pod (pause all processes, preserve state). Use `--all` for building-wide lockdown.
 
+For desktop pods with noVNC, the display stack (Xvfb, x11vnc, websockify) runs
+in a guardian cgroup that survives freeze — the browser connection stays alive
+while the app is frozen. Resume with `envpod unlock` to continue exactly where
+you left off.
+
 <!-- no-exec -->
 ```bash
 sudo envpod lock my-agent       # freeze one pod
 sudo envpod lock --all           # freeze all pods
+sudo envpod unlock my-agent     # resume a frozen pod
 ```
 
 #### `envpod kill <name>`

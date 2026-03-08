@@ -10,7 +10,8 @@
 # Usage:
 #   sudo envpod init desktop-ob -c examples/desktop-openbox.yaml
 #   sudo envpod setup desktop-ob
-#   sudo envpod run desktop-ob -p 6080:6080
+#   sudo envpod run desktop-ob -b -- openbox-session
+#   # Open the noVNC URL from `envpod ls` in your browser
 
 name: desktop-ob
 type: standard
