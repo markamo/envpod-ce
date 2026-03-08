@@ -23,8 +23,15 @@ pub fn cgroup_exists(cgroup: &Path) -> bool {
     cgroup.join("cgroup.procs").exists()
 }
 
-/// Check if a cgroup has any live processes.
+/// Check if a cgroup has any live processes (including in subcgroups).
 pub fn has_processes(cgroup: &Path) -> bool {
+    has_processes_direct(cgroup)
+        || cgroup.join("app").exists() && has_processes_direct(&cgroup.join("app"))
+        || cgroup.join("guardian").exists() && has_processes_direct(&cgroup.join("guardian"))
+}
+
+/// Check if a cgroup has any live processes (this level only, not subcgroups).
+fn has_processes_direct(cgroup: &Path) -> bool {
     fs::read_to_string(procs_path(cgroup))
         .map(|s| s.trim().lines().any(|l| l.trim().parse::<i32>().is_ok_and(|p| p > 0)))
         .unwrap_or(false)
@@ -124,13 +131,22 @@ pub fn thaw(cgroup: &Path) -> Result<()> {
 
 /// Send a signal to all processes in the cgroup.
 pub fn kill_all(cgroup: &Path, signal: nix::sys::signal::Signal) -> Result<()> {
-    let contents = fs::read_to_string(procs_path(cgroup)).unwrap_or_default();
+    // Use cgroup.kill (kernel 5.14+) if available — kills ALL descendants atomically.
+    let kill_file = cgroup.join("cgroup.kill");
+    if kill_file.exists() {
+        fs::write(&kill_file, "1").ok();
+        return Ok(());
+    }
 
-    for line in contents.lines() {
-        if let Ok(pid) = line.trim().parse::<i32>() {
-            if pid > 0 {
-                let pid = nix::unistd::Pid::from_raw(pid);
-                nix::sys::signal::kill(pid, signal).ok(); // best effort
+    // Fallback: signal processes manually, including in subcgroups (guardian mode).
+    for dir in [cgroup.to_path_buf(), cgroup.join("app"), cgroup.join("guardian")] {
+        let contents = fs::read_to_string(dir.join("cgroup.procs")).unwrap_or_default();
+        for line in contents.lines() {
+            if let Ok(pid) = line.trim().parse::<i32>() {
+                if pid > 0 {
+                    let pid = nix::unistd::Pid::from_raw(pid);
+                    nix::sys::signal::kill(pid, signal).ok();
+                }
             }
         }
     }
@@ -274,14 +290,22 @@ pub fn destroy_guardian(cgroup: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Destroy the cgroup. All processes must already be dead.
+/// Destroy the cgroup and any subcgroups. All processes must already be dead.
 pub fn destroy(cgroup: &Path) -> Result<()> {
-    if cgroup.exists() {
-        // cgroup directories can only be removed with rmdir (no contents),
-        // kernel removes the control files automatically.
-        fs::remove_dir(cgroup)
-            .with_context(|| format!("remove cgroup: {}", cgroup.display()))?;
+    if !cgroup.exists() {
+        return Ok(());
     }
+    // Remove subcgroups first (guardian mode)
+    for sub in ["app", "guardian"] {
+        let sub_path = cgroup.join(sub);
+        if sub_path.exists() {
+            fs::remove_dir(&sub_path).ok();
+        }
+    }
+    // cgroup directories can only be removed with rmdir (no contents),
+    // kernel removes the control files automatically.
+    fs::remove_dir(cgroup)
+        .with_context(|| format!("remove cgroup: {}", cgroup.display()))?;
     Ok(())
 }
 

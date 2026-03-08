@@ -70,12 +70,39 @@ fn generate_novnc_script(config: &WebDisplayConfig) -> String {
         format!(r#"
 # --- Audio streaming (PulseAudio + Opus/WebM → WebSocket) ---
 
-# Start PulseAudio with virtual sink and raw TCP output
-pulseaudio --system --daemonize --no-cpu-limit \
-    --load="module-null-sink sink_name=envpod format=s16le channels=2 rate=48000 sink_properties=device.description=envpod" \
-    --load="module-simple-protocol-tcp listen=127.0.0.1 port=4711 format=s16le rate=48000 channels=2 record=true source=envpod.monitor" \
-    2>/dev/null
-pactl set-default-sink envpod 2>/dev/null
+# Ensure pulse user/group exists (PulseAudio system mode requires it)
+id pulse >/dev/null 2>&1 || useradd --system --no-create-home -s /usr/sbin/nologin pulse 2>/dev/null
+getent group pulse-access >/dev/null 2>&1 || groupadd --system pulse-access 2>/dev/null
+usermod -aG pulse-access root 2>/dev/null
+mkdir -p /var/run/pulse /var/lib/pulse
+chown pulse:pulse /var/run/pulse /var/lib/pulse 2>/dev/null
+
+# Configure PulseAudio: allow anonymous access (pod is already isolated)
+mkdir -p /etc/pulse/system.pa.d
+cat > /etc/pulse/system.pa.d/envpod.pa << 'PACONF'
+load-module module-native-protocol-unix auth-anonymous=1
+PACONF
+
+# Start PulseAudio in system mode (required for running as root)
+pulseaudio --system --daemonize --no-cpu-limit --log-target=file:/tmp/pulseaudio.log
+sleep 1
+
+# Set PULSE_SERVER so all child processes (Chrome, Firefox, etc.) can find PulseAudio
+export PULSE_SERVER=unix:/var/run/pulse/native
+
+# Load virtual sink + raw TCP output via pactl
+pactl load-module module-null-sink sink_name=envpod format=s16le channels=2 rate=48000 sink_properties=device.description=envpod
+pactl set-default-sink envpod
+pactl load-module module-simple-protocol-tcp listen=127.0.0.1 port=4711 format=s16le rate=48000 channels=2 record=true source=envpod.monitor
+
+# Lock monitor source at 100% — only the speaker slider controls audio volume.
+# The XFCE mixer shows both a speaker and mic slider; both independently
+# affect the stream. The watchdog below re-locks the monitor instantly
+# whenever the user touches the mic slider, making it a no-op.
+pactl set-source-volume envpod.monitor 65536
+(pactl subscribe 2>/dev/null | while read -r line; do
+    case "$line" in *source*) pactl set-source-volume envpod.monitor 65536 2>/dev/null;; esac
+done) &
 
 # Start audio proxy (GStreamer: raw PCM → Opus/WebM)
 /usr/local/bin/envpod-audio-proxy.sh -l 5711 &
@@ -404,7 +431,7 @@ const AudioProxy = {
 };
 
 const EnvpodAudio = {
-    msp: null, ws: null, audioEl: null, enabled: false,
+    msp: null, ws: null, audioEl: null, enabled: false, btn: null,
     audioPort: __ENVPOD_AUDIO_PORT__,
 
     init() {
@@ -412,78 +439,102 @@ const EnvpodAudio = {
         this.audioEl.id = 'envpod_audio';
         document.body.appendChild(this.audioEl);
         this.addControls();
+        console.log('[envpod-audio] initialized, audio port:', this.audioPort);
     },
 
     addControls() {
         const bar = document.getElementById('noVNC_control_bar_anchor');
-        if (!bar) return;
+        if (!bar) { console.warn('[envpod-audio] control bar not found'); return; }
 
-        const btn = document.createElement('input');
-        btn.type = 'image';
+        const btn = document.createElement('img');
         btn.id = 'envpod_audio_btn';
         btn.alt = 'Audio';
-        btn.title = 'Toggle audio';
-        btn.style.cssText = 'width:24px;height:24px;padding:4px;cursor:pointer;filter:grayscale(1) brightness(2);';
+        btn.title = 'Enable audio';
+        btn.style.cssText = 'width:24px;height:24px;padding:4px;cursor:pointer;opacity:0.5;';
         btn.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>');
+        this.btn = btn;
 
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('[envpod-audio] toggle clicked, enabled:', this.enabled);
             if (this.enabled) {
                 await this.stop();
-                btn.style.filter = 'grayscale(1) brightness(2)';
-                btn.title = 'Enable audio';
             } else {
                 await this.start();
-                btn.style.filter = 'none';
-                btn.title = 'Disable audio';
             }
         });
 
         bar.insertBefore(btn, bar.firstChild);
     },
 
+    updateBtn(on) {
+        if (!this.btn) return;
+        this.btn.style.opacity = on ? '1' : '0.5';
+        this.btn.title = on ? 'Disable audio' : 'Enable audio';
+    },
+
     async start() {
         if (this.msp) return;
         this.enabled = true;
+        this.updateBtn(true);
 
         const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsHost = location.hostname;
+        const url = `${wsProto}//${wsHost}:${this.audioPort}/`;
+        console.log('[envpod-audio] connecting to', url);
 
-        this.ws = new WebSocket(`${wsProto}//${wsHost}:${this.audioPort}/`);
+        try {
+            this.ws = new WebSocket(url);
+        } catch (err) {
+            console.error('[envpod-audio] WebSocket create failed:', err);
+            await this.stop();
+            return;
+        }
         this.ws.binaryType = 'arraybuffer';
 
-        this.ws.addEventListener('error', async () => { await this.stop(); });
-        this.ws.addEventListener('close', async () => { if (this.msp) await this.stop(); });
+        this.ws.addEventListener('error', async (e) => {
+            console.error('[envpod-audio] WebSocket error', e);
+            await this.stop();
+        });
+        this.ws.addEventListener('close', async () => {
+            if (this.msp) await this.stop();
+        });
 
         this.ws.addEventListener('open', async () => {
+            console.log('[envpod-audio] WebSocket connected');
             try {
                 this.msp = new MediaSourcePlayer('audio/webm; codecs="opus"');
                 await this.msp.attach(this.audioEl);
                 await AudioProxy.handshake(this.ws, 'opus', 96000);
+                console.log('[envpod-audio] handshake complete, streaming');
             } catch (err) {
-                console.error('Audio setup failed:', err);
+                console.error('[envpod-audio] setup failed:', err);
                 await this.stop();
                 return;
             }
 
             this.ws.addEventListener('message', async (msg) => {
                 try { this.msp.feed(msg.data); }
-                catch (err) { console.error('Audio feed error:', err); await this.stop(); }
+                catch (err) { console.error('[envpod-audio] feed error:', err); await this.stop(); }
             });
 
             // Browsers require user interaction before playing audio
-            document.body.addEventListener('click', async () => {
-                try { await this.audioEl.play(); } catch (e) { /* AbortError is fine */ }
-            }, { capture: true, once: true });
-
-            // Try autoplay (works if user already interacted with page)
+            const playOnClick = async () => {
+                try { await this.audioEl.play(); console.log('[envpod-audio] playback started'); }
+                catch (e) { /* AbortError is fine */ }
+            };
+            document.body.addEventListener('click', playOnClick, { capture: true, once: true });
             try { await this.audioEl.play(); } catch (e) { /* will play on next click */ }
         });
     },
 
     async stop() {
         this.enabled = false;
+        this.updateBtn(false);
         if (this.msp) { await this.msp.detach(); this.msp = null; }
         if (this.ws) { this.ws.close(); this.ws = null; }
+        console.log('[envpod-audio] stopped');
     }
 };
 

@@ -71,7 +71,7 @@ const DEFAULT_BASE_DIR: &str = "/var/lib/envpod";
 #[derive(Parser)]
 #[command(name = "envpod")]
 #[command(about = "Zero-trust governance environments for AI agents (CE)")]
-#[command(version = concat!(env!("CARGO_PKG_VERSION"), " (CE)"))]
+#[command(version = concat!(env!("CARGO_PKG_VERSION"), " (CE) ", env!("ENVPOD_BUILD_HASH"), " ", env!("ENVPOD_BUILD_TIME")))]
 struct Cli {
     /// Base directory for envpod state and pod data
     #[arg(long, env = "ENVPOD_DIR", default_value = DEFAULT_BASE_DIR, global = true)]
@@ -1290,6 +1290,11 @@ fn run_setup_script(
 fn snapshot_base_quiet(handle: &envpod_core::types::PodHandle, base_dir: &std::path::Path) {
     if let Ok(state) = NativeState::from_handle(handle) {
         let bases_dir = base_dir.join("bases");
+        let base_path = bases_dir.join(&handle.name);
+        if base_path.exists() {
+            eprintln!("  {} Overwriting existing base '{}' (existing clones still work)",
+                color::yellow("⚠"), handle.name);
+        }
         if let Err(e) = snapshot_base(&state.pod_dir, &bases_dir, &handle.name) {
             tracing::warn!(error = %e, "base pod save failed");
         }
@@ -1985,7 +1990,7 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
         eprintln!("  {}  {} → http://{}:{}/vnc.html", color::dim("Display "), display_label, pod_ip, web_display_port);
         if let Some(ref cfg) = pod_config {
             if cfg.web_display.audio {
-                eprintln!("  {}  Opus/WebM → port {} (click speaker icon in noVNC)", color::dim("Audio   "), cfg.web_display.audio_port);
+                eprintln!("  {}  Opus/WebM → port {} (click speaker icon in noVNC) {}", color::dim("Audio   "), cfg.web_display.audio_port, color::dim("[beta]"));
             }
         }
     }
@@ -3754,14 +3759,23 @@ async fn cmd_destroy(store: &PodStore, base_dir: &std::path::Path, name: &str, r
     // Best-effort stop before destroying
     backend.stop(&handle).ok();
 
-    if full {
+    let destroy_result = if full {
         // Full cleanup: also remove iptables rules for this pod immediately
         let native = NativeBackend::new(base_dir)?;
-        native.destroy_full(&handle)?;
+        native.destroy_full(&handle)
     } else {
-        backend.destroy(&handle)?;
-    }
+        backend.destroy(&handle)
+    };
+
+    // Always remove the handle file, even if destroy_impl failed (e.g. busy mount).
+    // This prevents "pod already exists" on re-init. The leftover pod directory
+    // will be cleaned up by `envpod gc`.
     store.remove(name)?;
+
+    if let Err(e) = destroy_result {
+        eprintln!("warning: cleanup incomplete for '{name}': {e}");
+        eprintln!("  Run `sudo envpod gc` to clean up leftover resources");
+    }
 
     println!("Destroyed pod '{name}'");
 

@@ -411,7 +411,6 @@ pub fn mount_overlay(
 }
 
 /// Unmount the overlay (lazy detach so open file handles drain).
-#[allow(dead_code)]
 pub fn unmount_overlay(merged: &Path) -> Result<()> {
     nix::mount::umount2(merged, nix::mount::MntFlags::MNT_DETACH)
         .context("unmount overlayfs")?;
@@ -917,6 +916,9 @@ pub fn filter_diff(diffs: Vec<FileDiff>, tracking: &TrackingConfig) -> Vec<FileD
 /// The base lives independently and can outlive any individual pod.
 pub fn snapshot_base(pod_dir: &Path, bases_dir: &Path, base_name: &str) -> Result<()> {
     let base_pod_dir = bases_dir.join(base_name);
+    if base_pod_dir.exists() {
+        tracing::warn!("overwriting existing base '{base_name}' (clones from the old base still work)");
+    }
     fs::create_dir_all(&base_pod_dir)
         .with_context(|| format!("create base dir: {}", base_pod_dir.display()))?;
 

@@ -213,6 +213,12 @@ impl NativeBackend {
             }
         }
 
+        // Unmount overlay if still mounted (stale mount from crashed process)
+        let merged = state.pod_dir.join("merged");
+        if merged.exists() {
+            overlay::unmount_overlay(&merged).ok();
+        }
+
         // Remove all overlay directories
         overlay::destroy(&state.pod_dir)
     }
@@ -1020,6 +1026,13 @@ impl IsolationBackend for NativeBackend {
                 // Brief grace period for clean shutdown
                 std::thread::sleep(std::time::Duration::from_millis(100));
                 cgroup::kill_all(cg, nix::sys::signal::Signal::SIGKILL)?;
+                // Wait for processes to actually exit (up to 2 seconds)
+                for _ in 0..20 {
+                    if !cgroup::has_processes(cg) {
+                        break;
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+                }
             }
         }
         Self::emit_audit(&state.pod_dir, &handle.name, AuditAction::Stop, String::new(), true);
