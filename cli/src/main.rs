@@ -133,6 +133,12 @@ enum Commands {
         /// Open port to other pods only: container_port[/proto] (e.g. -i 3000)
         #[arg(short = 'i', long = "internal")]
         internal_ports: Vec<String>,
+        /// Mount the init-time working directory into the pod (overrides pod.yaml mount_cwd)
+        #[arg(short = 'w', long)]
+        mount_cwd: bool,
+        /// Do not mount the working directory even if pod.yaml has mount_cwd: true
+        #[arg(long, conflicts_with = "mount_cwd")]
+        no_mount_cwd: bool,
         /// Command and arguments to execute
         #[arg(last = true)]
         command: Vec<String>,
@@ -631,11 +637,11 @@ async fn run(cli: Cli) -> Result<()> {
             eprint!("{}", presets::format_table());
             Ok(())
         }
-        Commands::Run { name, root, user, env_vars, enable_display, enable_audio, background, ports, public_ports, internal_ports, command } => {
+        Commands::Run { name, root, user, env_vars, enable_display, enable_audio, background, ports, public_ports, internal_ports, mount_cwd, no_mount_cwd, command } => {
             if background {
                 cmd_run_background(base_dir, &name, &command, root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports)
             } else {
-                cmd_run(&store, base_dir, &name, &command, root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports).await
+                cmd_run(&store, base_dir, &name, &command, root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports, mount_cwd, no_mount_cwd).await
             }
         }
         Commands::Fg { name } => cmd_fg(&store, base_dir, &name).await,
@@ -779,6 +785,13 @@ async fn cmd_init(
     };
     config.name = name.to_string();
     config.backend = backend_name.to_string();
+
+    // Capture CWD at init time when mount_cwd is enabled
+    if config.filesystem.mount_cwd && config.filesystem.cwd_path.is_none() {
+        if let Ok(cwd) = std::env::current_dir() {
+            config.filesystem.cwd_path = Some(cwd);
+        }
+    }
 
     let init_start = std::time::Instant::now();
     let divider = color::dim("  ────────────────────────────────────────");
@@ -1658,7 +1671,7 @@ fn cmd_run_background(base_dir: &std::path::Path, name: &str, command: &[String]
 // run
 // ---------------------------------------------------------------------------
 
-async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, command: &[String], root: bool, user: Option<&str>, env_vars: &[String], enable_display: bool, enable_audio: bool, cli_ports: &[String], cli_public_ports: &[String], cli_internal_ports: &[String]) -> Result<()> {
+async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, command: &[String], root: bool, user: Option<&str>, env_vars: &[String], enable_display: bool, enable_audio: bool, cli_ports: &[String], cli_public_ports: &[String], cli_internal_ports: &[String], cli_mount_cwd: bool, cli_no_mount_cwd: bool) -> Result<()> {
     if command.is_empty() {
         anyhow::bail!("no command specified — usage: envpod run {name} -- <command>");
     }
@@ -1816,6 +1829,19 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
     } else {
         None
     };
+
+    // CLI --mount-cwd / --no-mount-cwd override pod.yaml mount_cwd setting
+    if let Some(ref mut cfg) = pod_config {
+        if cli_mount_cwd {
+            cfg.filesystem.mount_cwd = true;
+            // If no cwd_path was captured at init time, use current CWD
+            if cfg.filesystem.cwd_path.is_none() {
+                cfg.filesystem.cwd_path = std::env::current_dir().ok();
+            }
+        } else if cli_no_mount_cwd {
+            cfg.filesystem.mount_cwd = false;
+        }
+    }
 
     // Override user with cloned host user when clone_host is true
     if let Some(ref mut cfg) = pod_config {

@@ -193,6 +193,14 @@ pub struct FilesystemConfig {
     pub system_access: SystemAccess,
     #[serde(default)]
     pub apps: Vec<String>,
+    /// Mount the caller's working directory into the pod (read-only, COW overlay).
+    /// When true in pod.yaml, the CWD at `envpod init` time is captured and
+    /// mounted on every `envpod run`. Override at runtime with --mount-cwd / --no-mount-cwd.
+    #[serde(default)]
+    pub mount_cwd: bool,
+    /// The captured CWD path (set automatically during `envpod init` when mount_cwd is true).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cwd_path: Option<PathBuf>,
 }
 
 /// Controls which paths appear in `envpod diff` and `envpod commit` by default.

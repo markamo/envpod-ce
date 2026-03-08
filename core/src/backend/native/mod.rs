@@ -566,6 +566,18 @@ impl NativeBackend {
             })
             .unwrap_or_default();
 
+        // Mount CWD (filesystem.mount_cwd + cwd_path)
+        if let Some(config) = pod_config {
+            if config.filesystem.mount_cwd {
+                if let Some(ref cwd) = config.filesystem.cwd_path {
+                    if cwd.exists() && !mount_entries.iter().any(|(h, _, _)| h == cwd) {
+                        mount_entries.push((cwd.clone(), cwd.clone(), true)); // read-only, COW
+                        tracing::info!(path = %cwd.display(), "mounting CWD");
+                    }
+                }
+            }
+        }
+
         // Auto-mount host apps (filesystem.apps)
         if let Some(config) = pod_config {
             for app_name in &config.filesystem.apps {
