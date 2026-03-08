@@ -23,6 +23,9 @@
 # Lock/unlock:
 #   sudo envpod lock workstation     # freeze everything — noVNC stays connected
 #   sudo envpod unlock workstation   # resume where you left off
+#   Note: GIMP survives freeze/thaw. Chrome and VS Code may crash on resume
+#   (multi-process apps with internal watchdogs don't handle cgroup freeze well).
+#   Relaunch them from the terminal after unlock — your desktop session persists.
 
 name: workstation
 type: standard

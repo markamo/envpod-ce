@@ -19,10 +19,12 @@
 #   # Direct mode — launches GIMP only (blocks terminal, Ctrl+Z to detach):
 #   sudo envpod run gimp -- gimp
 #
-# Lock/unlock (freeze/thaw):
+# Lock/unlock (freeze/thaw) — GIMP survives perfectly:
 #   sudo envpod lock gimp     # freezes pod instantly — noVNC stays connected
 #   sudo envpod unlock gimp   # resumes exactly where you left off
+#   GIMP is a single-process app so it handles freeze/thaw cleanly.
 #   Display services run in a guardian cgroup that survives freeze/thaw.
+#   (Multi-process apps like Chrome/VS Code may crash on resume.)
 #
 # Governance:
 #   sudo envpod diff gimp     # see what changed in the overlay

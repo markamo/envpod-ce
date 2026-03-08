@@ -26,6 +26,9 @@
 # Lock/unlock:
 #   sudo envpod lock gpu-ws       # freeze — noVNC stays connected
 #   sudo envpod unlock gpu-ws     # resume
+#   Note: GIMP survives freeze/thaw. Chrome and VS Code may crash on resume
+#   (multi-process apps with internal watchdogs don't handle cgroup freeze well).
+#   Relaunch them from the terminal after unlock — your desktop session persists.
 
 name: gpu-ws
 type: standard

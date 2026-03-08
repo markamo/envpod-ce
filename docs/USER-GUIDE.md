@@ -586,7 +586,9 @@ Freeze a pod (pause all processes, preserve state). Use `--all` for building-wid
 For desktop pods with noVNC, the display stack (Xvfb, x11vnc, websockify) runs
 in a guardian cgroup that survives freeze — the browser connection stays alive
 while the app is frozen. Resume with `envpod unlock` to continue exactly where
-you left off.
+you left off. Single-process apps (GIMP, xterm, etc.) survive freeze/thaw
+cleanly. Multi-process apps (Chrome, VS Code/Electron) may crash on resume
+due to internal watchdog timeouts — relaunch them from the desktop terminal.
 
 <!-- no-exec -->
 ```bash

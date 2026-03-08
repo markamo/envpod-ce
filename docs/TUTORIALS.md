@@ -2048,6 +2048,10 @@ sudo envpod lock gimp       # GIMP freezes instantly — noVNC stays connected
 sudo envpod unlock gimp     # resumes exactly where you left off
 ```
 
+GIMP is a single-process app so it survives freeze/thaw perfectly. Multi-process
+apps (Chrome, VS Code/Electron) may crash on resume due to internal watchdog
+timeouts — relaunch them from the desktop terminal after unlock.
+
 This works with any desktop pod — freeze a running agent, inspect its state with
 `envpod diff` and `envpod audit`, then resume or rollback.
 
