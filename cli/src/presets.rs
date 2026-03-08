@@ -116,7 +116,7 @@ const PRESETS: &[Preset] = &[
     },
     Preset {
         name: "desktop",
-        description: "XFCE desktop via noVNC",
+        description: "XFCE desktop via noVNC (desktop_env: xfce)",
         category: "Environments",
         yaml: include_str!("../../examples/desktop.yaml"),
     },

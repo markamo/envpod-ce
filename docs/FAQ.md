@@ -410,6 +410,7 @@ Yes. Envpod supports display and audio forwarding with automatic protocol detect
 
 - **Display**: Wayland (preferred, secure) or X11 (fallback)
 - **Audio**: PipeWire (preferred, finer permissions) or PulseAudio (fallback)
+- **Desktop environment**: Auto-install xfce, openbox, or sway during `envpod init`
 
 **Configuration (pod.yaml):**
 
@@ -418,6 +419,7 @@ devices:
   gpu: true       # GPU rendering (WebGL, hardware acceleration)
   display: true   # Auto-mount display socket (Wayland or X11)
   audio: true     # Auto-mount audio socket + /dev/snd (PipeWire or PulseAudio)
+  desktop_env: xfce  # Auto-install desktop: none | xfce | openbox | sway
 
   # Optional: force a specific protocol
   # display_protocol: wayland   # wayland | x11 | auto (default)

@@ -7,6 +7,7 @@ pub mod app_resolver;
 pub mod audit;
 pub mod backend;
 pub mod config;
+pub mod desktop;
 pub mod dns_daemon;
 pub mod error;
 pub mod monitor;

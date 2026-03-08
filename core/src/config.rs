@@ -397,6 +397,22 @@ pub enum AudioProtocol {
     Pulseaudio,
 }
 
+/// Desktop environment to install inside the pod.
+///
+/// - **None** (default): no desktop — CLI only.
+/// - **Xfce**: XFCE4 + xfce4-terminal + dbus-x11 (~200MB). Familiar, lightweight.
+/// - **Openbox**: Openbox + tint2 + xterm (~50MB). Ultra-minimal window manager.
+/// - **Sway**: Sway + foot terminal (~150MB). Wayland-native compositor.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum DesktopEnv {
+    #[default]
+    None,
+    Xfce,
+    Openbox,
+    Sway,
+}
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct DevicesConfig {
@@ -412,6 +428,10 @@ pub struct DevicesConfig {
     /// Audio protocol override (auto/pipewire/pulseaudio). Default: auto.
     #[serde(default)]
     pub audio_protocol: AudioProtocol,
+    /// Install a desktop environment during setup. Default: none (CLI only).
+    /// Pairs with web_display (noVNC/WebRTC) or devices.display (host passthrough).
+    #[serde(default)]
+    pub desktop_env: DesktopEnv,
     /// Additional device paths to passthrough (e.g., "/dev/fuse").
     #[serde(default)]
     pub extra: Vec<String>,
@@ -1087,6 +1107,48 @@ devices:
 "#;
         let config = PodConfig::from_yaml(yaml).unwrap();
         assert_eq!(config.devices.audio_protocol, AudioProtocol::Pulseaudio);
+    }
+
+    // -- DesktopEnv ----------------------------------------------------------
+
+    #[test]
+    fn desktop_env_defaults_to_none() {
+        let yaml = "name: test\n";
+        let config = PodConfig::from_yaml(yaml).unwrap();
+        assert_eq!(config.devices.desktop_env, DesktopEnv::None);
+    }
+
+    #[test]
+    fn parse_desktop_env_xfce() {
+        let yaml = r#"
+name: desktop-agent
+devices:
+  desktop_env: xfce
+"#;
+        let config = PodConfig::from_yaml(yaml).unwrap();
+        assert_eq!(config.devices.desktop_env, DesktopEnv::Xfce);
+    }
+
+    #[test]
+    fn parse_desktop_env_openbox() {
+        let yaml = r#"
+name: desktop-agent
+devices:
+  desktop_env: openbox
+"#;
+        let config = PodConfig::from_yaml(yaml).unwrap();
+        assert_eq!(config.devices.desktop_env, DesktopEnv::Openbox);
+    }
+
+    #[test]
+    fn parse_desktop_env_sway() {
+        let yaml = r#"
+name: desktop-agent
+devices:
+  desktop_env: sway
+"#;
+        let config = PodConfig::from_yaml(yaml).unwrap();
+        assert_eq!(config.devices.desktop_env, DesktopEnv::Sway);
     }
 
     #[test]

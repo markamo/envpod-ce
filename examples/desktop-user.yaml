@@ -1,22 +1,18 @@
-# Desktop pod — lightweight XFCE desktop via noVNC
+# Desktop pod with host user environment cloned in.
 #
-# A full graphical desktop environment (XFCE4) accessible via browser
-# at http://localhost:6080. Uses Xvfb + x11vnc + websockify (noVNC).
-# Lightweight — XFCE uses ~200MB RAM. Good for GUI apps, browser testing,
-# or any workflow that needs a desktop.
+# Combines clone_host (your dotfiles, shell, workspace dirs) with a
+# full XFCE desktop via noVNC. Open http://localhost:6080 and you get
+# a familiar desktop with your files — all isolated with COW.
 #
-# The `desktop_env: xfce` option auto-installs XFCE during setup.
-# Other options: openbox (~50MB, ultra-minimal), sway (Wayland-native).
-# Chrome install (~300MB) is in setup commands. First init takes 2-4 min.
-# After first setup, use `envpod clone` for instant copies.
+# Change desktop_env to openbox (~50MB) or sway (~150MB) for lighter options.
 #
 # Usage:
-#   sudo envpod init desktop -c examples/desktop.yaml
-#   sudo envpod setup desktop
-#   sudo envpod run desktop -p 6080:6080
+#   sudo envpod init my-desktop -c examples/desktop-user.yaml
+#   sudo envpod setup my-desktop
+#   sudo envpod run my-desktop -p 6080:6080
 #   # Open http://localhost:6080
 
-name: desktop
+name: my-desktop
 type: standard
 user: root
 
@@ -28,8 +24,20 @@ web_display:
 devices:
   desktop_env: xfce
 
+host_user:
+  clone_host: true
+  dirs:
+    - Documents
+    - Projects
+    - src
+  # include_dotfiles:
+  #   - .bashrc
+  #   - .gitconfig
+  #   - .vimrc
+
 filesystem:
   system_access: advanced
+  mount_cwd: true
 
 network:
   mode: Monitored
@@ -42,7 +50,7 @@ network:
 
 processor:
   cores: 2.0
-  memory: "2GB"
+  memory: "4GB"
   max_pids: 2048
 
 security:

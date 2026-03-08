@@ -282,7 +282,7 @@ All 18 presets include auto-setup commands — dependencies install automaticall
 | `browser` | Headless Chrome | Chrome (check host, else install) |
 | `python-env` | Python environment | numpy, pandas, matplotlib, scipy, scikit-learn |
 | `nodejs` | Node.js environment | nvm + Node.js 22 |
-| `desktop` | XFCE desktop via noVNC | XFCE4 + Chrome (~550MB) |
+| `desktop` | XFCE desktop via noVNC | `desktop_env: xfce` + Chrome (~550MB) |
 | `vscode` | VS Code in browser | code-server |
 
 You can also use config files directly for full control: `sudo envpod init my-agent -c examples/browser-wayland.yaml`

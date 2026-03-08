@@ -38,6 +38,7 @@ What envpod can do today (v0.1.0). For how-to guides, see [Quickstart](QUICKSTAR
 | **Devices** | NVIDIA GPU passthrough (zero-copy bind-mount) | Shipped |
 | | Display forwarding (Wayland / X11 / auto-detect) | Shipped |
 | | Audio forwarding (PipeWire / PulseAudio / auto-detect) | Shipped |
+| | Desktop environment auto-install (`desktop_env`: xfce / openbox / sway) | Shipped v0.2 |
 | | Custom device passthrough (`/dev/fuse`, `/dev/kvm`, etc.) | Shipped |
 | **Discovery** | Pod-to-pod resolution (`<name>.pods.local`) via central daemon | Shipped v0.2 |
 | | Live discovery mutations (`envpod discover`) | Shipped v0.2 |

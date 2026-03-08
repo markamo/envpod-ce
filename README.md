@@ -45,7 +45,7 @@ Existing sandboxes (Docker, E2B, Firecrackers) provide isolation but zero govern
 
 **Undo Registry** — Every executed action records its undo mechanism. `envpod undo` reverses any reversible action.
 
-**Display + Audio Forwarding** — GPU passthrough, Wayland/X11 display forwarding, PipeWire/PulseAudio audio forwarding for GUI agents.
+**Display + Audio Forwarding** — GPU passthrough, Wayland/X11 display forwarding, PipeWire/PulseAudio audio forwarding for GUI agents. Auto-install desktop environments (xfce, openbox, sway) via `devices.desktop_env`.
 
 **Host App Auto-Mount** — List apps in `pod.yaml` and envpod resolves binaries, shared libraries, and data directories via `which` + `ldd`, then bind-mounts them read-only. No reinstalling Chrome, Python, or Node inside every pod — instant, zero disk overhead.
 
@@ -203,6 +203,7 @@ devices:
   audio: true               # auto-mount audio socket
   display_protocol: auto    # auto, wayland, x11
   audio_protocol: auto      # auto, pipewire, pulseaudio
+  desktop_env: none         # auto-install desktop: none, xfce, openbox, sway
   extra: ["/dev/fuse"]      # additional devices
 
 vault:                       # v0.2 — vault proxy injection
@@ -268,7 +269,7 @@ sudo envpod init my-agent                          # interactive wizard
 | `python-env` | Python environment | numpy, pandas, matplotlib, scipy, scikit-learn |
 | `nodejs` | Node.js environment | nvm + Node.js 22 |
 | `web-display` | noVNC desktop | Supervisor-managed |
-| `desktop` | XFCE desktop via noVNC | XFCE4 + Chrome (~550MB, 2-4 min) |
+| `desktop` | XFCE desktop via noVNC | `desktop_env: xfce` + Chrome (~550MB, 2-4 min) |
 | `vscode` | VS Code in the browser | code-server |
 
 The interactive wizard also lets you customize CPU cores, memory, and GPU after selecting a preset.

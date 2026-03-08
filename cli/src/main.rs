@@ -848,8 +848,19 @@ async fn cmd_init(
         }
     }
 
+    // Prepend desktop environment setup commands (xfce, openbox, sway)
+    if config.devices.desktop_env != envpod_core::config::DesktopEnv::None {
+        let desktop_cmds = envpod_core::desktop::generate_setup_commands(config.devices.desktop_env);
+        let mut new_setup = desktop_cmds;
+        new_setup.extend(config.setup.clone());
+        config.setup = new_setup;
+        eprintln!("  Desktop environment: {:?}", config.devices.desktop_env);
+    }
+
     // Re-persist pod.yaml if setup commands were modified
-    if config.web_display.display_type != envpod_core::config::WebDisplayType::None {
+    if config.web_display.display_type != envpod_core::config::WebDisplayType::None
+        || config.devices.desktop_env != envpod_core::config::DesktopEnv::None
+    {
         if let Ok(state) = NativeState::from_handle(&handle) {
             let yaml = serde_yaml::to_string(&config).context("serialize updated pod config")?;
             std::fs::write(state.config_path(), yaml).context("persist updated pod.yaml")?;

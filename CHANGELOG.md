@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- `devices.desktop_env` — auto-install a desktop environment during `envpod init`. Options: `none` (default), `xfce` (xfce4 + xfce4-terminal + dbus-x11, ~200 MB), `openbox` (openbox + tint2 + xterm, ~50 MB), `sway` (sway + foot, ~150 MB, Wayland-native). Pairs with `web_display` or `devices.display` for browser-based or host display access.
 - `filesystem.mount_cwd` — mount the working directory into the pod with COW isolation. `envpod init` captures `$PWD`; `envpod run` bind-mounts it read-only. Agent sees real files, writes go to overlay. CLI: `-w`/`--mount-cwd` to force, `--no-mount-cwd` to skip.
 
 ## [0.1.0] - 2026-03-03

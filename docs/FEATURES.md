@@ -283,10 +283,15 @@ Selectively forward host devices into the pod.
 
 ```yaml
 devices:
-  gpu: true       # NVIDIA / AMD GPU (CUDA, ROCm)
-  display: true   # Wayland or X11 (auto-detected)
-  audio: true     # PipeWire or PulseAudio (auto-detected)
+  gpu: true           # NVIDIA / AMD GPU (CUDA, ROCm)
+  display: true       # Wayland or X11 (auto-detected)
+  audio: true         # PipeWire or PulseAudio (auto-detected)
+  desktop_env: xfce   # Auto-install desktop: none | xfce | openbox | sway
 ```
+
+Use `desktop_env` to auto-install a desktop environment during `envpod init` —
+xfce (~200 MB), openbox (~50 MB), or sway (~150 MB, Wayland-native). Pairs
+with `web_display` (noVNC/WebRTC) for browser-based access.
 
 **Impact:** run GUI applications and GPU workloads inside governed pods.
 Agents that manipulate images, video, or use ML inference get hardware access

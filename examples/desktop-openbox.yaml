@@ -1,0 +1,52 @@
+# Desktop pod (Openbox) — ultra-minimal window manager via noVNC
+#
+# Openbox + tint2 panel + xterm — only ~50MB installed. The lightest
+# desktop option. Good for running a single GUI app (browser, IDE)
+# without the overhead of a full DE.
+#
+# Access via browser at http://localhost:6080 (noVNC).
+# Use `envpod clone` after first setup for instant copies.
+#
+# Usage:
+#   sudo envpod init desktop-ob -c examples/desktop-openbox.yaml
+#   sudo envpod setup desktop-ob
+#   sudo envpod run desktop-ob -p 6080:6080
+
+name: desktop-ob
+type: standard
+user: root
+
+web_display:
+  type: novnc
+  port: 6080
+  resolution: "1280x720"
+
+devices:
+  desktop_env: openbox
+
+filesystem:
+  system_access: advanced
+
+network:
+  mode: Monitored
+  dns:
+    mode: Blacklist
+    deny:
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+
+processor:
+  cores: 2.0
+  memory: "1GB"
+  max_pids: 1024
+
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"
+
+budget:
+  max_duration: "8h"
+
+audit:
+  action_log: true

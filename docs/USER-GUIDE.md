@@ -832,6 +832,7 @@ devices:
   audio: false            # Audio forwarding (auto-detects PipeWire or PulseAudio)
   display_protocol: auto  # auto | wayland | x11
   audio_protocol: auto    # auto | pipewire | pulseaudio
+  desktop_env: none       # Auto-install desktop env: none | xfce | openbox | sway
   extra:                                 # Additional device passthrough
     - "/dev/fuse"
     - "/dev/kvm"
@@ -1380,6 +1381,24 @@ devices:
 ```
 
 Extra devices are optional — if they don't exist on the host, they are silently skipped.
+
+### Desktop Environment
+
+Auto-install a desktop environment into the pod during `envpod init`:
+
+<!-- output -->
+```yaml
+devices:
+  desktop_env: xfce    # none (default) | xfce | openbox | sway
+```
+
+| Value | Packages | Size |
+|-------|----------|------|
+| `xfce` | xfce4, xfce4-terminal, dbus-x11 | ~200 MB |
+| `openbox` | openbox, tint2, xterm | ~50 MB |
+| `sway` | sway, foot terminal | ~150 MB (Wayland-native) |
+
+Pairs with `web_display` (noVNC/WebRTC) for browser-based access, or `devices.display: true` for host display passthrough. The `desktop` preset uses `desktop_env: xfce` with noVNC — see `examples/desktop.yaml`.
 
 ### Why This Matters
 
