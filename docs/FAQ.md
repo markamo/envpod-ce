@@ -230,18 +230,27 @@ This enables workflows like progressive trust (grant more access as the agent ea
 
 ## Can I save or export an envpod?
 
-Not currently. Envpod v0.1 does not have an export or snapshot command. The pod's state lives on disk under `/var/lib/envpod/pods/{uuid}/` and includes the overlay layers, audit log, vault, and state files, but there's no built-in way to package it into a portable archive.
+Yes. Envpod has built-in snapshots — named checkpoints of the pod's overlay state:
 
-Your current options for preserving work:
+```bash
+sudo envpod snapshot my-agent create -n "before-refactor"   # Create a named snapshot
+sudo envpod snapshot my-agent ls                             # List all snapshots
+sudo envpod snapshot my-agent restore <id>                   # Restore to a snapshot
+sudo envpod snapshot my-agent destroy <id>                   # Delete a snapshot
+sudo envpod snapshot my-agent prune                          # Remove old auto-snapshots
+sudo envpod snapshot my-agent promote <id> my-base           # Promote snapshot to a clonable base
+```
+
+Other options for preserving work:
 
 | Method | What It Does |
 |--------|-------------|
+| `envpod snapshot` | Create/restore named checkpoints of pod state |
 | `envpod commit` | Apply overlay changes to the host filesystem (permanent) |
 | `envpod diff --json` | Export the list of changes as JSON |
 | `envpod audit --json` | Export the full audit trail as JSON |
-| Manual backup | Copy `/var/lib/envpod/pods/{uuid}/` to another location |
 
-Export/snapshot functionality is planned for a future release.
+Portable export/import of snapshots is planned for a future Pro release.
 
 ---
 
@@ -639,7 +648,14 @@ sudo envpod audit my-agent --json
 sudo envpod status my-agent --json
 ```
 
-A web dashboard is planned for a future release.
+The built-in web dashboard provides a browser-based UI for fleet management:
+
+```bash
+sudo envpod dashboard              # Opens localhost:9090
+sudo envpod dashboard --port 8080  # Custom port
+```
+
+The dashboard shows fleet overview, pod detail with tabs (audit, diff, resources, snapshots), and action buttons (commit, rollback, freeze, resume).
 
 ---
 

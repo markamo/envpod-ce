@@ -269,3 +269,7 @@ Boot with cgroup v2 enabled. Raspberry Pi: add `systemd.unified_cgroup_hierarchy
 | AlmaLinux | 9 | ✓ | ✓ | ✓ |
 | openSUSE Leap | 15.6 | ✓ | ✓ | ✓ |
 | Amazon Linux | 2023 | ✓ | ✓ | ✓ |
+
+---
+
+Copyright 2026 Xtellix Inc. All rights reserved. Licensed under BSL 1.1.

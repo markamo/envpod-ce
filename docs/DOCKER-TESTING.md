@@ -186,3 +186,7 @@ docker run -it --privileged --cgroupns=host \
 ```
 
 One command. No install. Full governance demo.
+
+---
+
+Copyright 2026 Xtellix Inc. All rights reserved. Licensed under BSL 1.1.
