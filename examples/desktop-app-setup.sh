@@ -33,7 +33,7 @@ install_chrome() {
 exec google-chrome --no-sandbox "$@"
 EOF
     chmod +x /usr/local/bin/chrome
-    cat > /usr/share/applications/chrome.desktop << 'EOF'
+    cat > /usr/share/applications/google-chrome.desktop << 'EOF'
 [Desktop Entry]
 Name=Chrome
 Exec=google-chrome --no-sandbox %U
@@ -94,7 +94,7 @@ install_vscode() {
 exec code --no-sandbox "$@"
 EOF
     chmod +x /usr/local/bin/vscode
-    cat > /usr/share/applications/vscode.desktop << 'EOF'
+    cat > /usr/share/applications/code.desktop << 'EOF'
 [Desktop Entry]
 Name=VS Code
 Exec=code --no-sandbox %F

@@ -543,8 +543,10 @@ pub struct WebDisplayConfig {
     pub port: u16,
     /// Virtual display resolution (e.g. "1280x720"). Default: "1280x720".
     pub resolution: String,
-    /// Enable audio capture (WebRTC only). Default: true.
+    /// Enable audio streaming. noVNC: PulseAudio + Opus/WebM via WebSocket. WebRTC: GStreamer.
     pub audio: bool,
+    /// Host port for audio WebSocket (noVNC audio only). Default: 6081.
+    pub audio_port: u16,
     /// Video codec (WebRTC only): vp8 or h264. Default: "vp8".
     pub codec: String,
 }
@@ -555,7 +557,8 @@ impl Default for WebDisplayConfig {
             display_type: WebDisplayType::None,
             port: 6080,
             resolution: "1280x720".into(),
-            audio: true,
+            audio: false,
+            audio_port: 6081,
             codec: "vp8".into(),
         }
     }

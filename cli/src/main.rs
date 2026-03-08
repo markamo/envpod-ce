@@ -838,6 +838,34 @@ async fn cmd_init(
             std::fs::write(&script_path, &script).context("write display supervisor script")?;
             use std::os::unix::fs::PermissionsExt;
             std::fs::set_permissions(&script_path, std::fs::Permissions::from_mode(0o755))?;
+
+            // Inject audio overlay files (audio-proxy.sh, audio-plugin.js)
+            for (pod_path, content, executable) in envpod_core::web_display::audio_overlay_files(&config.web_display) {
+                let rel = pod_path.trim_start_matches('/');
+                // For advanced/dangerous, /usr paths go to sys_upper
+                let dest = if rel.starts_with("usr/") && matches!(config.filesystem.system_access, envpod_core::config::SystemAccess::Advanced | envpod_core::config::SystemAccess::Dangerous) {
+                    state.sys_upper_dir().join(rel)
+                } else {
+                    state.upper_dir().join(rel)
+                };
+                if let Some(parent) = dest.parent() {
+                    std::fs::create_dir_all(parent).ok();
+                }
+                std::fs::write(&dest, &content)
+                    .with_context(|| format!("write audio file: {pod_path}"))?;
+                if executable {
+                    std::fs::set_permissions(&dest, std::fs::Permissions::from_mode(0o755))?;
+                }
+            }
+
+            // Patch vnc.html to load audio plugin (adds script tag if not present)
+            if config.web_display.audio && config.web_display.display_type == envpod_core::config::WebDisplayType::Novnc {
+                // vnc.html is installed by apt (novnc package) during setup,
+                // so we inject a setup command to patch it after installation
+                let patch_cmd = r#"sed -i 's|</head>|<script src="audio-plugin.js"></script></head>|' /usr/share/novnc/vnc.html 2>/dev/null; true"#;
+                config.setup.push(patch_cmd.to_string());
+            }
+
             eprintln!("  Web display supervisor script installed");
 
             // Prepend web display setup commands to config.setup
@@ -1955,6 +1983,11 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
         };
         let pod_ip = state.network.as_ref().map(|n| n.pod_ip.as_str()).unwrap_or("localhost");
         eprintln!("  {}  {} → http://{}:{}/vnc.html", color::dim("Display "), display_label, pod_ip, web_display_port);
+        if let Some(ref cfg) = pod_config {
+            if cfg.web_display.audio {
+                eprintln!("  {}  Opus/WebM → port {} (click speaker icon in noVNC)", color::dim("Audio   "), cfg.web_display.audio_port);
+            }
+        }
     }
     if is_root {
         eprintln!();
@@ -2025,6 +2058,12 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
         // Auto-add web display port forward (localhost only)
         if web_display_type != envpod_core::config::WebDisplayType::None {
             all_ports.push(format!("127.0.0.1:{}:6080", web_display_port));
+            // Auto-add audio WebSocket port forward if audio enabled
+            if let Some(ref cfg) = pod_config {
+                if cfg.web_display.audio {
+                    all_ports.push(format!("127.0.0.1:{}:{}", cfg.web_display.audio_port, cfg.web_display.audio_port));
+                }
+            }
         }
 
         if !all_ports.is_empty() {

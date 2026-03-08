@@ -14,14 +14,30 @@ use crate::config::{WebDisplayConfig, WebDisplayType};
 
 /// Generate apt-get install commands for the selected web display type.
 pub fn generate_setup_commands(config: &WebDisplayConfig) -> Vec<String> {
+    let apt_cleanup = "cd /etc/apt/sources.list.d && for f in *.list *.sources; do case \"$f\" in ubuntu*) ;; *) rm -f \"$f\" ;; esac; done 2>/dev/null; dpkg --configure -a 2>/dev/null; apt-get update -qq";
     match config.display_type {
         WebDisplayType::None => Vec::new(),
-        WebDisplayType::Novnc => vec![
-            "cd /etc/apt/sources.list.d && for f in *.list *.sources; do case \"$f\" in ubuntu*) ;; *) rm -f \"$f\" ;; esac; done 2>/dev/null; dpkg --configure -a 2>/dev/null; apt-get update -qq".into(),
-            "DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb x11vnc novnc websockify".into(),
-        ],
+        WebDisplayType::Novnc => {
+            let mut cmds = vec![
+                apt_cleanup.into(),
+            ];
+            if config.audio {
+                cmds.push(concat!(
+                    "DEBIAN_FRONTEND=noninteractive apt-get install -y ",
+                    "xvfb x11vnc novnc websockify ",
+                    "pulseaudio socat ",
+                    "gstreamer1.0-tools gstreamer1.0-plugins-base ",
+                    "gstreamer1.0-plugins-good gstreamer1.0-plugins-bad"
+                ).into());
+            } else {
+                cmds.push(
+                    "DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb x11vnc novnc websockify".into()
+                );
+            }
+            cmds
+        }
         WebDisplayType::Webrtc => vec![
-            "cd /etc/apt/sources.list.d && for f in *.list *.sources; do case \"$f\" in ubuntu*) ;; *) rm -f \"$f\" ;; esac; done 2>/dev/null; dpkg --configure -a 2>/dev/null; apt-get update -qq".into(),
+            apt_cleanup.into(),
             concat!(
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ",
                 "xvfb xdotool ",
@@ -48,6 +64,38 @@ pub fn generate_supervisor_script(config: &WebDisplayConfig) -> String {
 
 fn generate_novnc_script(config: &WebDisplayConfig) -> String {
     let resolution = &config.resolution;
+    let audio_port = config.audio_port;
+
+    let audio_block = if config.audio {
+        format!(r#"
+# --- Audio streaming (PulseAudio + Opus/WebM → WebSocket) ---
+
+# Start PulseAudio with virtual sink and raw TCP output
+pulseaudio --system --daemonize --no-cpu-limit \
+    --load="module-null-sink sink_name=envpod format=s16le channels=2 rate=48000 sink_properties=device.description=envpod" \
+    --load="module-simple-protocol-tcp listen=127.0.0.1 port=4711 format=s16le rate=48000 channels=2 record=true source=envpod.monitor" \
+    2>/dev/null
+pactl set-default-sink envpod 2>/dev/null
+
+# Start audio proxy (GStreamer: raw PCM → Opus/WebM)
+/usr/local/bin/envpod-audio-proxy.sh -l 5711 &
+AUDIO_PROXY_PID=$!
+sleep 0.5
+
+# Start websockify for audio WebSocket on port {audio_port}
+websockify 0.0.0.0:{audio_port} localhost:5711 &
+AUDIO_WS_PID=$!
+"#)
+    } else {
+        "\nAUDIO_PROXY_PID=\nAUDIO_WS_PID=\n".to_string()
+    };
+
+    let audio_cleanup = if config.audio {
+        "$AUDIO_WS_PID $AUDIO_PROXY_PID "
+    } else {
+        ""
+    };
+
     format!(
         r#"#!/bin/bash
 # envpod web display supervisor (noVNC)
@@ -59,7 +107,7 @@ export DISPLAY=:99
 
 # Cleanup on exit
 cleanup() {{
-    kill $WEBSOCKIFY_PID $X11VNC_PID $XVFB_PID 2>/dev/null || true
+    kill {audio_cleanup}$WEBSOCKIFY_PID $X11VNC_PID $XVFB_PID 2>/dev/null || true
 }}
 trap cleanup EXIT
 
@@ -81,7 +129,7 @@ sleep 1
 # Start websockify to bridge VNC to WebSocket
 websockify --web /usr/share/novnc 0.0.0.0:6080 localhost:5900 &
 WEBSOCKIFY_PID=$!
-
+{audio_block}
 # Execute the user command, redirecting its output to a log file
 # so GUI app noise (Chrome, Firefox, etc.) doesn't flood the terminal.
 exec "$@" >/tmp/envpod-display-app.log 2>&1
@@ -138,6 +186,310 @@ exec "$@" >/tmp/envpod-display-app.log 2>&1
     )
 }
 
+/// Returns files to inject into the pod overlay for audio support.
+/// Each tuple is (path_inside_pod, content, executable).
+pub fn audio_overlay_files(config: &WebDisplayConfig) -> Vec<(&'static str, String, bool)> {
+    if config.display_type != WebDisplayType::Novnc || !config.audio {
+        return Vec::new();
+    }
+    vec![
+        ("/usr/local/bin/envpod-audio-proxy.sh", AUDIO_PROXY_SCRIPT.to_string(), true),
+        ("/usr/share/novnc/audio-plugin.js", generate_audio_plugin_js(config), false),
+    ]
+}
+
+/// Generate audio-plugin.js with the correct default port baked in.
+fn generate_audio_plugin_js(config: &WebDisplayConfig) -> String {
+    AUDIO_PLUGIN_JS.replace("__ENVPOD_AUDIO_PORT__", &config.audio_port.to_string())
+}
+
+/// Embedded audio-proxy.sh — GStreamer pipeline that encodes PulseAudio raw PCM
+/// to Opus/WebM for streaming via WebSocket. Inspired by noVNC-audio-plugin.
+const AUDIO_PROXY_SCRIPT: &str = r##"#!/bin/sh
+# Audio proxy: raw PCM from PulseAudio → Opus/WebM via GStreamer
+# Inspired by noVNC-audio-plugin by Mehrzad Asri
+
+readonly SCRIPT="$0"
+readonly PULSE_PORT='4711'
+readonly PULSE_FORMAT='s16le'
+readonly PULSE_SAMPLE_RATE='48000'
+readonly PULSE_CHANNELS='2'
+readonly TCP_BIND='127.0.0.1'
+
+error() { echo "$1" >&2; exit 1; }
+
+proto_ready() { echo "READY"; }
+proto_error() { echo "ERR:$1"; exit 1; }
+
+opus_proxy() {
+    local pulse_port="$1" pulse_format="$2" pulse_sample_rate="$3" pulse_channels="$4" bitrate="$5"
+    proto_ready
+    exec gst-launch-1.0 -q webmmux name=mux streamable=true min-cluster-duration=50000000 ! fdsink fd=1 \
+        tcpclientsrc port="${pulse_port}" ! rawaudioparse use-sink-caps=false format=pcm pcm-format="${pulse_format}" sample-rate="${pulse_sample_rate}" num-channels="${pulse_channels}" \
+        ! audioconvert ! audioresample ! opusenc audio-type=restricted-lowdelay bitrate="${bitrate}" bitrate-type=0 complexity=0 frame-size=10 ! mux.audio_0
+}
+
+proxy() {
+    local pulse_port="$1" pulse_format="$2" pulse_sample_rate="$3" pulse_channels="$4"
+    local codec='opus' bitrate='96000'
+
+    local line
+    while IFS= read -r line; do
+        [ -z "${line}" ] && break
+        case "${line}" in *':'*) ;; *) proto_error 'bad handshake' ;; esac
+        local opt val
+        opt="$(echo "${line}" | cut -d ':' -f 1)"
+        val="$(echo "${line}" | cut -d ':' -f 2-)"
+        case "${opt}" in
+            'CD') codec="${val}" ;; 'BR') bitrate="${val}" ;; 'SR') ;; *) proto_error "invalid option ${opt}" ;;
+        esac
+    done
+
+    case "${codec}" in
+        'opus') opus_proxy "${pulse_port}" "${pulse_format}" "${pulse_sample_rate}" "${pulse_channels}" "${bitrate}" ;;
+        *) proto_error "unsupported codec ${codec} (only opus supported)" ;;
+    esac
+}
+
+server() {
+    local pulse_port="${PULSE_PORT}" pulse_format="${PULSE_FORMAT}"
+    local pulse_sample_rate="${PULSE_SAMPLE_RATE}" pulse_channels="${PULSE_CHANNELS}"
+    local tcp_port="" tcp_bind="${TCP_BIND}"
+
+    while getopts 'p:l:b:f:r:c:h' opt; do
+        case "${opt}" in
+            'p') pulse_port="${OPTARG}" ;; 'l') tcp_port="${OPTARG}" ;;
+            'b') tcp_bind="${OPTARG}" ;; 'f') pulse_format="${OPTARG}" ;;
+            'r') pulse_sample_rate="${OPTARG}" ;; 'c') pulse_channels="${OPTARG}" ;;
+            'h') echo "Usage: $0 -l <port>"; exit 0 ;; *) exit 1 ;;
+        esac
+    done
+
+    [ -z "${tcp_port}" ] && error "Usage: $0 -l <port>"
+    local proxy_cmd="${SCRIPT} proxy ${pulse_port} ${pulse_format} ${pulse_sample_rate} ${pulse_channels}"
+    exec socat tcp-listen:"${tcp_port}",bind="${tcp_bind}",nodelay,reuseaddr,fork exec:"${proxy_cmd}",nofork
+}
+
+command -v socat >/dev/null 2>&1 || error 'socat not found'
+command -v gst-launch-1.0 >/dev/null 2>&1 || error 'gst-launch-1.0 not found'
+
+if [ "$1" = 'proxy' ]; then shift; proxy "$@"; else server "$@"; fi
+"##;
+
+/// Embedded audio-plugin.js — browser-side MediaSource player for noVNC.
+/// Connects via WebSocket, receives Opus/WebM, plays via MSE.
+/// Inspired by noVNC-audio-plugin.
+///
+/// __ENVPOD_AUDIO_PORT__ is replaced with the actual port at generation time.
+const AUDIO_PLUGIN_JS: &str = r##"/**
+ * envpod audio plugin for noVNC
+ * Opus/WebM audio streaming via WebSocket + MediaSource API
+ * Inspired by noVNC-audio-plugin by Mehrzad Asri
+ */
+
+class MediaSourcePlayer {
+    static #BUFFER_MIN_REMAIN = 30;
+    static #DRIFT_CHECK_INTERVAL = 5000;
+    static #DRIFT_MAX_TOLERANCE = 1.0;
+
+    mediaSource;
+    sourceBuffer;
+    #directFeed = true;
+    #dataQueue = [];
+    #attachedEl;
+    #driftCheckTimer;
+
+    #onPlayCallback = (event) => {
+        const elem = event.target;
+        if (this.sourceBuffer.buffered.length > 0) {
+            elem.currentTime = this.sourceBuffer.buffered.end(0);
+        }
+        elem.playbackRate = 1.003;
+    };
+
+    constructor(mime) {
+        this.mediaSource = new MediaSource();
+        this.mediaSource.addEventListener('sourceopen', () => {
+            this.sourceBuffer = this.mediaSource.addSourceBuffer(mime);
+            this.sourceBuffer.mode = 'sequence';
+            this.sourceBuffer.addEventListener('updateend', () => {
+                if (this.sourceBuffer.updating) return;
+                if (this.#dataQueue.length == 0) { this.#directFeed = true; return; }
+                const data = this.#dataQueue[0];
+                try {
+                    this.sourceBuffer.appendBuffer(data);
+                    this.#dataQueue.shift();
+                } catch (err) {
+                    if (err.name == 'QuotaExceededError') {
+                        this.#emptyBuffer();
+                        if (!this.sourceBuffer.updating) {
+                            this.sourceBuffer.appendBuffer(data);
+                            this.#dataQueue.shift();
+                        }
+                    } else throw err;
+                }
+            });
+        }, { once: true });
+    }
+
+    async attach(element) {
+        if (this.#attachedEl) throw new Error('Already attached');
+        element.src = URL.createObjectURL(this.mediaSource);
+        this.#attachedEl = element;
+        return new Promise((resolve) => {
+            this.mediaSource.addEventListener('sourceopen', () => {
+                element.addEventListener('play', this.#onPlayCallback);
+                this.#driftCheckTimer = setInterval(() => this.#checkDrift(), MediaSourcePlayer.#DRIFT_CHECK_INTERVAL);
+                resolve();
+            }, { once: true });
+        });
+    }
+
+    async detach() {
+        if (this.#attachedEl) {
+            this.#attachedEl.removeEventListener('play', this.#onPlayCallback);
+            this.#attachedEl.playbackRate = 1;
+            await this.#attachedEl.pause();
+            this.#attachedEl.removeAttribute('src');
+            this.#attachedEl = null;
+        }
+        if (this.#driftCheckTimer) { clearInterval(this.#driftCheckTimer); this.#driftCheckTimer = null; }
+    }
+
+    feed(data) {
+        if (!this.#attachedEl) throw new Error('Not attached');
+        if (this.mediaSource.readyState != 'open') throw new Error('Bad MediaSource state');
+        if (this.#directFeed) {
+            try { this.sourceBuffer.appendBuffer(data); }
+            catch (err) {
+                if (err.name == 'QuotaExceededError') {
+                    this.#emptyBuffer();
+                    if (this.sourceBuffer.updating) { this.#directFeed = false; this.#dataQueue.push(data); }
+                    else this.sourceBuffer.appendBuffer(data);
+                }
+            }
+            if (this.sourceBuffer.updating) this.#directFeed = false;
+        } else {
+            this.#dataQueue.push(data);
+        }
+    }
+
+    #emptyBuffer() {
+        const end = this.sourceBuffer.buffered.end(0);
+        const removeEnd = end - MediaSourcePlayer.#BUFFER_MIN_REMAIN;
+        this.sourceBuffer.remove(0, removeEnd <= 0 ? 1 : removeEnd);
+    }
+
+    #checkDrift() {
+        if (this.#attachedEl.paused || this.sourceBuffer.buffered.length == 0) return;
+        const drift = this.sourceBuffer.buffered.end(0) - this.#attachedEl.currentTime;
+        if (drift > MediaSourcePlayer.#DRIFT_MAX_TOLERANCE) {
+            this.#attachedEl.currentTime = this.sourceBuffer.buffered.end(0);
+        }
+    }
+}
+
+const AudioProxy = {
+    handshake(socket, codec = 'opus', bitrate = 96000) {
+        const enc = new TextEncoder(), dec = new TextDecoder();
+        socket.send(enc.encode(`CD:${codec}\nBR:${bitrate}\n\n`));
+        return new Promise((resolve, reject) => {
+            socket.addEventListener('message', (msg) => {
+                const resp = dec.decode(msg.data).trim();
+                if (resp == 'READY') resolve();
+                else reject(new Error(resp.startsWith('ERR:') ? resp.substring(4) : 'Protocol error'));
+            }, { once: true });
+        });
+    }
+};
+
+const EnvpodAudio = {
+    msp: null, ws: null, audioEl: null, enabled: false,
+    audioPort: __ENVPOD_AUDIO_PORT__,
+
+    init() {
+        this.audioEl = document.createElement('audio');
+        this.audioEl.id = 'envpod_audio';
+        document.body.appendChild(this.audioEl);
+        this.addControls();
+    },
+
+    addControls() {
+        const bar = document.getElementById('noVNC_control_bar_anchor');
+        if (!bar) return;
+
+        const btn = document.createElement('input');
+        btn.type = 'image';
+        btn.id = 'envpod_audio_btn';
+        btn.alt = 'Audio';
+        btn.title = 'Toggle audio';
+        btn.style.cssText = 'width:24px;height:24px;padding:4px;cursor:pointer;filter:grayscale(1) brightness(2);';
+        btn.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>');
+
+        btn.addEventListener('click', async () => {
+            if (this.enabled) {
+                await this.stop();
+                btn.style.filter = 'grayscale(1) brightness(2)';
+                btn.title = 'Enable audio';
+            } else {
+                await this.start();
+                btn.style.filter = 'none';
+                btn.title = 'Disable audio';
+            }
+        });
+
+        bar.insertBefore(btn, bar.firstChild);
+    },
+
+    async start() {
+        if (this.msp) return;
+        this.enabled = true;
+
+        const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsHost = location.hostname;
+
+        this.ws = new WebSocket(`${wsProto}//${wsHost}:${this.audioPort}/`);
+        this.ws.binaryType = 'arraybuffer';
+
+        this.ws.addEventListener('error', async () => { await this.stop(); });
+        this.ws.addEventListener('close', async () => { if (this.msp) await this.stop(); });
+
+        this.ws.addEventListener('open', async () => {
+            try {
+                this.msp = new MediaSourcePlayer('audio/webm; codecs="opus"');
+                await this.msp.attach(this.audioEl);
+                await AudioProxy.handshake(this.ws, 'opus', 96000);
+            } catch (err) {
+                console.error('Audio setup failed:', err);
+                await this.stop();
+                return;
+            }
+
+            this.ws.addEventListener('message', async (msg) => {
+                try { this.msp.feed(msg.data); }
+                catch (err) { console.error('Audio feed error:', err); await this.stop(); }
+            });
+
+            // Browsers require user interaction before playing audio
+            document.body.addEventListener('click', async () => {
+                try { await this.audioEl.play(); } catch (e) { /* AbortError is fine */ }
+            }, { capture: true, once: true });
+
+            // Try autoplay (works if user already interacted with page)
+            try { await this.audioEl.play(); } catch (e) { /* will play on next click */ }
+        });
+    },
+
+    async stop() {
+        this.enabled = false;
+        if (this.msp) { await this.msp.detach(); this.msp = null; }
+        if (this.ws) { this.ws.close(); this.ws = null; }
+    }
+};
+
+window.addEventListener('load', () => EnvpodAudio.init());
+"##;
+
 /// Parse resolution string into (width, height). Returns None if invalid.
 pub fn parse_resolution(res: &str) -> Option<(u32, u32)> {
     let parts: Vec<&str> = res.split('x').collect();
@@ -155,9 +507,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn novnc_setup_commands() {
+    fn novnc_setup_commands_no_audio() {
         let config = WebDisplayConfig {
             display_type: WebDisplayType::Novnc,
+            audio: false,
             ..Default::default()
         };
         let cmds = generate_setup_commands(&config);
@@ -165,6 +518,22 @@ mod tests {
         assert!(cmds[0].contains("apt-get update"));
         assert!(cmds[1].contains("xvfb"));
         assert!(cmds[1].contains("x11vnc"));
+        assert!(cmds[1].contains("websockify"));
+        assert!(!cmds[1].contains("pulseaudio"));
+    }
+
+    #[test]
+    fn novnc_setup_commands_with_audio() {
+        let config = WebDisplayConfig {
+            display_type: WebDisplayType::Novnc,
+            audio: true,
+            ..Default::default()
+        };
+        let cmds = generate_setup_commands(&config);
+        assert_eq!(cmds.len(), 2);
+        assert!(cmds[1].contains("pulseaudio"));
+        assert!(cmds[1].contains("socat"));
+        assert!(cmds[1].contains("gstreamer"));
         assert!(cmds[1].contains("websockify"));
     }
 
@@ -187,10 +556,11 @@ mod tests {
     }
 
     #[test]
-    fn novnc_script_contains_key_services() {
+    fn novnc_script_no_audio() {
         let config = WebDisplayConfig {
             display_type: WebDisplayType::Novnc,
             resolution: "1920x1080".into(),
+            audio: false,
             ..Default::default()
         };
         let script = generate_supervisor_script(&config);
@@ -201,6 +571,52 @@ mod tests {
         assert!(script.contains("0.0.0.0:6080"));
         assert!(script.contains("DISPLAY=:99"));
         assert!(script.contains("exec \"$@\""));
+        assert!(!script.contains("pulseaudio"));
+        assert!(!script.contains("audio-proxy"));
+    }
+
+    #[test]
+    fn novnc_script_with_audio() {
+        let config = WebDisplayConfig {
+            display_type: WebDisplayType::Novnc,
+            resolution: "1920x1080".into(),
+            audio: true,
+            audio_port: 6081,
+            ..Default::default()
+        };
+        let script = generate_supervisor_script(&config);
+        assert!(script.contains("pulseaudio"));
+        assert!(script.contains("envpod-audio-proxy"));
+        assert!(script.contains("0.0.0.0:6081"));
+        assert!(script.contains("module-null-sink"));
+        assert!(script.contains("module-simple-protocol-tcp"));
+    }
+
+    #[test]
+    fn audio_overlay_files_when_enabled() {
+        let config = WebDisplayConfig {
+            display_type: WebDisplayType::Novnc,
+            audio: true,
+            audio_port: 6081,
+            ..Default::default()
+        };
+        let files = audio_overlay_files(&config);
+        assert_eq!(files.len(), 2);
+        assert!(files[0].0.contains("audio-proxy"));
+        assert!(files[0].2); // executable
+        assert!(files[1].0.contains("audio-plugin"));
+        assert!(!files[1].2); // not executable
+        assert!(files[1].1.contains("6081")); // port baked in
+    }
+
+    #[test]
+    fn audio_overlay_files_when_disabled() {
+        let config = WebDisplayConfig {
+            display_type: WebDisplayType::Novnc,
+            audio: false,
+            ..Default::default()
+        };
+        assert!(audio_overlay_files(&config).is_empty());
     }
 
     #[test]

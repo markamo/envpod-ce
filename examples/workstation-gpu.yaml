@@ -97,6 +97,7 @@ setup:
   # Python + CUDA tools
   - "apt-get install -y --no-install-recommends python3-pip python3-venv"
   # Wrapper scripts (adds --no-sandbox for root) and desktop entries
+  # Overwrites system .desktop files so XFCE menu launches with --no-sandbox
   - |
     cat > /usr/local/bin/chrome << 'WRAPPER'
     #!/bin/bash
@@ -109,19 +110,19 @@ setup:
     WRAPPER
     chmod +x /usr/local/bin/vscode
     mkdir -p /usr/share/applications
-    cat > /usr/share/applications/chrome.desktop << 'DESKTOP'
+    cat > /usr/share/applications/google-chrome.desktop << 'EOF'
     [Desktop Entry]
     Name=Chrome
     Exec=google-chrome --no-sandbox %U
     Icon=google-chrome
     Type=Application
     Categories=Network;WebBrowser;
-    DESKTOP
-    cat > /usr/share/applications/vscode.desktop << 'DESKTOP'
+    EOF
+    cat > /usr/share/applications/code.desktop << 'EOF'
     [Desktop Entry]
     Name=VS Code
     Exec=code --no-sandbox %F
     Icon=vscode
     Type=Application
     Categories=Development;IDE;
-    DESKTOP
+    EOF
