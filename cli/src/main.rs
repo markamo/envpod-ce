@@ -2400,7 +2400,7 @@ fn print_welcome_banner(pod_dir: &std::path::Path) {
         color::cyan("audit"),
     );
     eprintln!();
-    eprintln!("  {}", color::dim("© 2026 Xtellix Inc. — GNU Affero General Public License v3.0"));
+    eprintln!("  {}", color::dim("© 2026 Xtellix Inc. — BSL 1.1 License"));
     eprintln!("  {}", color::dim("https://envpod.com"));
     eprintln!();
 
@@ -4638,18 +4638,23 @@ fn resolve_undo_id(registry: &UndoRegistry, prefix: &str) -> Result<uuid::Uuid> 
 fn cmd_ls(store: &PodStore, base_dir: &std::path::Path, json: bool) -> Result<()> {
     let pods = store.list()?;
 
-    // Resolve base name, status, and pod IP for each pod
-    let pod_info: Vec<(Option<String>, String, String)> = pods
+    // Resolve base name, status, pod IP, and noVNC URL for each pod
+    struct PodInfo {
+        base: Option<String>,
+        status: String,
+        ip: String,
+        novnc_url: Option<String>,
+    }
+    let pod_info: Vec<PodInfo> = pods
         .iter()
         .map(|h| {
-            let base = NativeState::from_handle(h)
-                .ok()
+            let state_opt = NativeState::from_handle(h).ok();
+            let base = state_opt.as_ref()
                 .and_then(|state| resolve_base_name(&state.pod_dir));
             let (status, ip) = if let Ok(backend) = create_backend(&h.backend, base_dir) {
                 if let Ok(info) = backend.info(h) {
                     let s = format!("{:?}", info.status).to_lowercase();
-                    let ip = NativeState::from_handle(h)
-                        .ok()
+                    let ip = state_opt.as_ref()
                         .and_then(|st| st.network.as_ref().map(|n| n.pod_ip.clone()))
                         .unwrap_or_else(|| "-".into());
                     (s, ip)
@@ -4659,7 +4664,22 @@ fn cmd_ls(store: &PodStore, base_dir: &std::path::Path, json: bool) -> Result<()
             } else {
                 ("unknown".into(), "-".into())
             };
-            (base, status, ip)
+            // Check for web_display config to build noVNC URL
+            let novnc_url = state_opt.as_ref()
+                .and_then(|st| {
+                    std::fs::read_to_string(st.config_path()).ok()
+                })
+                .and_then(|yaml| {
+                    serde_yaml::from_str::<envpod_core::config::PodConfig>(&yaml).ok()
+                })
+                .and_then(|cfg| {
+                    if cfg.web_display.display_type != envpod_core::config::WebDisplayType::None {
+                        Some(format!("http://{}:{}/vnc.html", ip, cfg.web_display.port))
+                    } else {
+                        None
+                    }
+                });
+            PodInfo { base, status, ip, novnc_url }
         })
         .collect();
 
@@ -4667,16 +4687,20 @@ fn cmd_ls(store: &PodStore, base_dir: &std::path::Path, json: bool) -> Result<()
         let json_pods: Vec<serde_json::Value> = pods
             .iter()
             .zip(pod_info.iter())
-            .map(|(h, (base, status, ip))| {
-                serde_json::json!({
+            .map(|(h, info)| {
+                let mut obj = serde_json::json!({
                     "name": h.name,
                     "backend": h.backend,
                     "id": h.id,
                     "created_at": h.created_at,
-                    "base": base.as_deref().unwrap_or(""),
-                    "status": status,
-                    "ip": ip,
-                })
+                    "base": info.base.as_deref().unwrap_or(""),
+                    "status": info.status,
+                    "ip": info.ip,
+                });
+                if let Some(ref url) = info.novnc_url {
+                    obj["novnc"] = serde_json::Value::String(url.clone());
+                }
+                obj
             })
             .collect();
         println!("{}", serde_json::to_string_pretty(&json_pods)?);
@@ -4688,20 +4712,43 @@ fn cmd_ls(store: &PodStore, base_dir: &std::path::Path, json: bool) -> Result<()
         return Ok(());
     }
 
-    println!(
-        "{:<20} {:<10} {:<16} {:<16}",
-        "NAME", "STATUS", "IP", "BASE"
-    );
-    println!("{}", "-".repeat(62));
-    for (handle, (base, status, ip)) in pods.iter().zip(pod_info.iter()) {
-        let base_display = base.as_deref().unwrap_or("-");
+    // Check if any pod has noVNC — if so, show the URL column
+    let has_novnc = pod_info.iter().any(|i| i.novnc_url.is_some());
+
+    if has_novnc {
+        println!(
+            "{:<20} {:<10} {:<16} {:<16} {}",
+            "NAME", "STATUS", "IP", "BASE", "DISPLAY"
+        );
+        println!("{}", "-".repeat(100));
+        for (handle, info) in pods.iter().zip(pod_info.iter()) {
+            let base_display = info.base.as_deref().unwrap_or("-");
+            let novnc = info.novnc_url.as_deref().unwrap_or("");
+            println!(
+                "{:<20} {:<10} {:<16} {:<16} {}",
+                handle.name,
+                info.status,
+                info.ip,
+                base_display,
+                novnc,
+            );
+        }
+    } else {
         println!(
             "{:<20} {:<10} {:<16} {:<16}",
-            handle.name,
-            status,
-            ip,
-            base_display,
+            "NAME", "STATUS", "IP", "BASE"
         );
+        println!("{}", "-".repeat(62));
+        for (handle, info) in pods.iter().zip(pod_info.iter()) {
+            let base_display = info.base.as_deref().unwrap_or("-");
+            println!(
+                "{:<20} {:<10} {:<16} {:<16}",
+                handle.name,
+                info.status,
+                info.ip,
+                base_display,
+            );
+        }
     }
     println!("\n{} pod(s)", pods.len());
 
