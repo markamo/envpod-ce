@@ -27,6 +27,9 @@ Complete guide to `pod.yaml` — the configuration file that defines every aspec
 - [Audit](#audit)
 - [Tools](#tools)
 - [Vault](#vault)
+- [Snapshots](#snapshots)
+- [Queue](#queue)
+- [Host User](#host-user)
 - [Setup Commands](#setup-commands)
 - [Full Examples](#full-examples)
 - [Defaults Reference](#defaults-reference)
@@ -100,6 +103,9 @@ Controls the filesystem wall — what the agent can see and write.
 ```yaml
 filesystem:
   system_access: safe       # How system dirs are handled
+  apps:                     # Host apps to auto-mount (resolved via which + ldd)
+    - python3
+    - google-chrome
   mounts:                   # Extra host paths to mount
     - path: /opt/google
       permissions: ReadOnly
@@ -126,6 +132,22 @@ Controls how system directories (`/usr`, `/bin`, `/sbin`, `/lib`, `/lib64`) are 
 | `dangerous` | COW overlay on system dirs. `envpod commit` warns but allows system changes by default. | Full development environments where you trust the agent. |
 
 With `advanced` or `dangerous`, each system directory gets its own OverlayFS. Writes go to `pod_dir/sys_upper/{dir}/`, never touching the host. Use `envpod diff` to see system changes and `envpod commit --include-system` to apply them.
+
+### `apps`
+
+Auto-mount host applications into the pod without reinstalling them. Each app name is resolved via `which` on the host, then `ldd` finds all shared library dependencies. The binary and its libraries are bind-mounted read-only into the pod.
+
+```yaml
+filesystem:
+  apps:
+    - python3          # Resolves /usr/bin/python3 + all .so deps
+    - google-chrome    # Resolves Chrome binary + GPU/rendering libs
+    - node             # Resolves Node.js binary + deps
+```
+
+This eliminates the need for `apt install` or `pip install` inside the pod for apps already on the host. The agent gets the exact same binary and libraries as the host system.
+
+Known apps (Chrome, Python, Node, VS Code) also mount their standard data directories (e.g., `/opt/google`, `/usr/lib/python3`).
 
 ### `mounts`
 
@@ -813,6 +835,95 @@ tools:
     - /usr/bin/python3
     - /usr/bin/pip
 ```
+
+---
+
+## Snapshots
+
+Controls automatic overlay checkpoints.
+
+```yaml
+snapshots:
+  auto_on_run: true     # Create snapshot before each `envpod run`
+  max_keep: 10          # Maximum snapshots to keep (auto-prune oldest)
+```
+
+### Fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `auto_on_run` | bool | `false` | Automatically create a snapshot before each `envpod run`. Enables "rollback to before last session". |
+| `max_keep` | integer | `10` | Maximum total snapshots. When exceeded, oldest auto-created snapshots are pruned. Named (manual) snapshots are never auto-pruned. |
+
+### CLI
+
+```bash
+sudo envpod snapshot my-pod create -n "before-refactor"   # Named checkpoint
+sudo envpod snapshot my-pod ls                             # List all
+sudo envpod snapshot my-pod restore <id>                   # Restore
+sudo envpod snapshot my-pod destroy <id>                   # Delete one
+sudo envpod snapshot my-pod prune                          # Remove old auto-snapshots
+sudo envpod snapshot my-pod promote <id> my-base           # Promote to clonable base
+```
+
+---
+
+## Queue
+
+Controls the action staging queue — human-in-the-loop approval for destructive operations.
+
+```yaml
+queue:
+  socket: true                      # Mount queue socket inside pod
+  require_commit_approval: true     # Require `envpod approve` before commit
+  require_rollback_approval: false  # Require approval before rollback
+```
+
+### Fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `socket` | bool | `false` | Mount the queue Unix socket at `/run/envpod/queue.sock` inside the pod. Agents submit and poll actions via this socket. |
+| `require_commit_approval` | bool | `false` | When true, `envpod commit` creates a staged queue entry instead of executing immediately. Use `envpod approve <pod> <id>` to execute. |
+| `require_rollback_approval` | bool | `false` | Same as above, but for `envpod rollback`. |
+
+---
+
+## Host User
+
+Clone the host system user into the pod — agent works in your real environment with COW isolation.
+
+```yaml
+host_user:
+  clone_host: true          # Clone current user into pod
+  dirs:                     # Extra workspace directories to mount
+    - /home/mark/Projects
+    - /home/mark/src
+  exclude:                  # Additional paths to exclude (added to defaults)
+    - .config/sensitive-app
+  include_dotfiles:         # Override default excludes (force-include)
+    - .gitconfig
+```
+
+### Fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `clone_host` | bool | `false` | Clone the host user (name, UID, shell, dotfiles) into the pod rootfs. |
+| `dirs` | list | Documents, Desktop, Downloads, Pictures, Videos, Music, Projects, src, workspace | Host directories to bind-mount read-only into the pod. Agent sees your real files but writes go to the COW overlay. |
+| `exclude` | list | .ssh, .gnupg, .aws, .config/gcloud, .mozilla, .password-store, .kube, .docker, .netrc, .npmrc, .pypirc, .gem/credentials, .config/google-chrome | Dotfile paths to exclude from cloning (security-sensitive). |
+| `include_dotfiles` | list | empty | Force-include specific dotfiles that would otherwise be excluded by `exclude`. |
+
+### How it works
+
+1. During `envpod init`: the host user's `/etc/passwd` entry is cloned into the pod rootfs, home directory is created, and non-excluded dotfiles are copied
+2. During `envpod run`: workspace directories from `dirs` are bind-mounted read-only into the pod
+3. The agent works in the user's real environment — same shell, same git config, same editor settings
+4. All changes go to the COW overlay — `envpod diff` shows what the agent modified, `envpod commit` applies changes back
+
+### Security
+
+Sensitive directories (.ssh, .gnupg, .aws, etc.) are excluded by default. The agent cannot access SSH keys, GPG keys, cloud credentials, or browser profiles unless explicitly added to `include_dotfiles`.
 
 ---
 
@@ -1577,6 +1688,7 @@ user: agent                 # Non-root (UID 60000)
 
 filesystem:
   system_access: safe       # Read-only system dirs
+  apps: []                  # No auto-mounted host apps
   mounts: []                # No extra mounts
   tracking:
     watch:                  # Default watched paths
@@ -1637,6 +1749,21 @@ vault:
 
 tools:
   allowed_commands: []      # All commands allowed
+
+snapshots:
+  auto_on_run: false        # No auto-snapshots
+  max_keep: 10              # Keep up to 10 snapshots
+
+queue:
+  socket: false             # Queue socket not mounted
+  require_commit_approval: false
+  require_rollback_approval: false
+
+host_user:
+  clone_host: false         # Don't clone host user
+  dirs: []                  # Default workspace dirs (Documents, Desktop, etc.)
+  exclude: []               # Default security excludes (.ssh, .gnupg, etc.)
+  include_dotfiles: []      # No forced includes
 
 setup: []                   # No setup commands
 setup_script: null          # No setup script
