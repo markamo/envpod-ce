@@ -1,0 +1,79 @@
+# Full Workstation — Chrome + Firefox + VS Code + GIMP + LibreOffice in XFCE
+#
+# A comprehensive desktop workstation with browsers, IDE, image editor,
+# and office suite. All accessible via noVNC in the browser.
+#
+# Installs ~1.5GB during setup. First init takes 6-10 min.
+# After first setup, use `envpod clone` for instant copies.
+#
+# Usage:
+#   sudo envpod init full-ws -c examples/workstation-full.yaml
+#   sudo envpod setup full-ws
+#   sudo envpod run full-ws -b -- startxfce4
+#   # Open the noVNC URL from `envpod ls` in your browser
+#
+# Launching apps (from the XFCE menu or desktop terminal):
+#   chrome          # Google Chrome (wrapper adds --no-sandbox)
+#   firefox-pod     # Firefox (wrapper disables internal sandbox)
+#   vscode          # VS Code (wrapper adds --no-sandbox)
+#   gimp            # GIMP (works as-is)
+#   libreoffice     # LibreOffice (works as-is)
+#
+#   Why wrappers? Pods run as root — envpod's namespace isolation replaces
+#   each app's internal sandbox, so --no-sandbox is safe here.
+#
+# Lock/unlock:
+#   sudo envpod lock full-ws      # freeze — noVNC stays connected
+#   sudo envpod unlock full-ws    # resume
+#   Single-process apps (GIMP, LibreOffice) survive freeze/thaw.
+#   Multi-process apps (Chrome, Firefox, VS Code) may crash on resume —
+#   relaunch them from the desktop terminal.
+#
+# Adding more apps (from desktop terminal inside the pod):
+#   bash /usr/local/bin/desktop-app-setup.sh slack brave obsidian cursor blender
+
+name: full-ws
+type: standard
+user: root
+
+web_display:
+  type: novnc
+  port: 6080
+  resolution: "1920x1080"
+
+devices:
+  desktop_env: xfce
+  gpu: true
+
+filesystem:
+  system_access: advanced
+  mount_cwd: true
+
+network:
+  mode: Monitored
+  dns:
+    mode: Blacklist
+    deny:
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+
+processor:
+  cores: 4.0
+  memory: "8GB"
+  max_pids: 4096
+
+security:
+  seccomp_profile: browser
+  shm_size: "512MB"
+
+budget:
+  max_duration: "12h"
+
+audit:
+  action_log: true
+
+setup_script: examples/desktop-app-setup.sh
+
+setup:
+  - "bash /usr/local/bin/desktop-app-setup.sh chrome firefox vscode gimp libreoffice"
