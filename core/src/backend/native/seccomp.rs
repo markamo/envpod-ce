@@ -1,3 +1,6 @@
+// Copyright 2026 Mark Amo-Boateng / Xtellix Inc.
+// SPDX-License-Identifier: BSL-1.1
+
 //! seccomp-BPF syscall filtering for pods.
 //!
 //! Applies an allowlist of ~130 safe syscalls. Any syscall not on the list

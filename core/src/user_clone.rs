@@ -1,3 +1,6 @@
+// Copyright 2026 Mark Amo-Boateng / Xtellix Inc.
+// SPDX-License-Identifier: BSL-1.1
+
 use std::fs;
 use std::path::{Path, PathBuf};
 

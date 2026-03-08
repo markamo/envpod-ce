@@ -1,3 +1,6 @@
+// Copyright 2026 Mark Amo-Boateng / Xtellix Inc.
+// SPDX-License-Identifier: BSL-1.1
+
 //! cgroup v2 management for pod resource limits and process control.
 //!
 //! Each pod gets its own cgroup under `/sys/fs/cgroup/envpod/<pod-id>/`.

@@ -1,3 +1,6 @@
+// Copyright 2026 Mark Amo-Boateng / Xtellix Inc.
+// SPDX-License-Identifier: BSL-1.1
+
 pub mod native;
 
 use std::path::{Path, PathBuf};

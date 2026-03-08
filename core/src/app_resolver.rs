@@ -1,3 +1,6 @@
+// Copyright 2026 Mark Amo-Boateng / Xtellix Inc.
+// SPDX-License-Identifier: BSL-1.1
+
 use std::collections::BTreeSet;
 use std::path::PathBuf;
 use std::process::Command;

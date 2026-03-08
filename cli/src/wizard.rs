@@ -1,3 +1,6 @@
+// Copyright 2026 Mark Amo-Boateng / Xtellix Inc.
+// SPDX-License-Identifier: BSL-1.1
+
 /// Interactive init wizard — categorized preset selection + resource customization.
 ///
 /// Only runs when stdin is a terminal. Returns a parsed `PodConfig` (or None

@@ -1,3 +1,6 @@
+// Copyright 2026 Mark Amo-Boateng / Xtellix Inc.
+// SPDX-License-Identifier: BSL-1.1
+
 /// Built-in pod presets — curated configs for common agents and environments.
 ///
 /// Each preset maps to a YAML file in `examples/` embedded at compile time.

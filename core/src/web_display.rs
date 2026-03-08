@@ -1,3 +1,6 @@
+// Copyright 2026 Mark Amo-Boateng / Xtellix Inc.
+// SPDX-License-Identifier: BSL-1.1
+
 //! Web display support for browser-based GUI access to pods.
 //!
 //! Two modes:
