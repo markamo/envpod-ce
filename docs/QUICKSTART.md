@@ -223,15 +223,15 @@ sudo envpod vault claude-code set ANTHROPIC_API_KEY
 
 The vault prompts for the value interactively — it never appears in shell history or audit logs.
 
-Run the agent:
+Run the agent. Use `-w` to mount the current working directory so the agent can see your project files (writes go to the COW overlay):
 
 <!-- no-exec -->
 ```bash
-sudo envpod run claude-code -- claude
+sudo envpod run claude-code -w -- claude
 ```
 
 The agent runs with full isolation:
-- **Filesystem:** All file writes go to the COW overlay
+- **Filesystem:** All file writes go to the COW overlay. With `-w`, the agent sees your project directory but changes are staged for review via `envpod diff`/`commit`
 - **Network:** Only `api.anthropic.com`, `github.com`, and package registries are reachable (see `examples/claude-code.yaml` for the full whitelist)
 - **Process:** Capped at 2 CPU cores and 4 GB memory
 - **Audit:** Every action is logged

@@ -20,6 +20,7 @@ What envpod can do today (v0.1.0). For how-to guides, see [Quickstart](QUICKSTAR
 | | Per-pod embedded DNS resolver | Shipped |
 | **Governance** | Diff / commit / rollback (file-level review) | Shipped |
 | | Selective commit (per-path, `--output`, `--exclude`) | Shipped |
+| | Mount working directory (`mount_cwd` / `-w`) | Shipped |
 | | Credential vault (encrypted, env var injection) | Shipped |
 | | Vault proxy injection (transparent HTTPS, zero-knowledge) | Shipped v0.2 |
 | | Web dashboard (fleet overview, pod detail, actions) | Shipped v0.2 |
@@ -111,6 +112,7 @@ Any tool that runs on Linux works inside a pod — envpod doesn't require agent-
 | `envpod commit --output /dir` | Export changes to a custom directory |
 | `envpod commit --include-system` | Include system directory changes (advanced mode) |
 | `envpod rollback` | Discard all changes (reset overlay) |
+| `envpod run -w` | Mount working directory into pod (COW isolated) |
 | `envpod diff --all` | Show changes including ignored paths |
 
 ## DNS Filtering Modes

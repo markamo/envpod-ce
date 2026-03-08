@@ -103,6 +103,7 @@ Controls the filesystem wall — what the agent can see and write.
 ```yaml
 filesystem:
   system_access: safe       # How system dirs are handled
+  mount_cwd: true           # Mount working directory into pod with COW isolation
   apps:                     # Host apps to auto-mount (resolved via which + ldd)
     - python3
     - google-chrome
@@ -148,6 +149,36 @@ filesystem:
 This eliminates the need for `apt install` or `pip install` inside the pod for apps already on the host. The agent gets the exact same binary and libraries as the host system.
 
 Known apps (Chrome, Python, Node, VS Code) also mount their standard data directories (e.g., `/opt/google`, `/usr/lib/python3`).
+
+### `mount_cwd`
+
+Mount the current working directory into the pod with COW isolation. When enabled, `envpod init` captures `$PWD` and stores it as `cwd_path` in pod.yaml. At `envpod run` time, that path is bind-mounted read-only into the pod at the same location — agent sees the real files, but writes go to the COW overlay.
+
+```yaml
+filesystem:
+  mount_cwd: true       # captures CWD at init time
+  # cwd_path: /home/user/project   # auto-set by envpod init (do not set manually)
+```
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `mount_cwd` | `false` | Enable CWD mounting |
+| `cwd_path` | `null` | Absolute path captured at `envpod init` time. Auto-set — do not set manually. |
+
+After mounting, use the standard review workflow:
+
+```bash
+sudo envpod diff my-agent        # see what the agent changed in your project
+sudo envpod commit my-agent      # apply changes back to the real directory
+sudo envpod rollback my-agent    # discard everything
+```
+
+**CLI overrides** for `envpod run`:
+
+| Flag | Description |
+|------|-------------|
+| `-w`, `--mount-cwd` | Force mount CWD even if `mount_cwd: false` in config. Uses current CWD at run time if no `cwd_path` was captured at init. |
+| `--no-mount-cwd` | Skip CWD mount even if `mount_cwd: true` in config. |
 
 ### `mounts`
 
@@ -1688,6 +1719,8 @@ user: agent                 # Non-root (UID 60000)
 
 filesystem:
   system_access: safe       # Read-only system dirs
+  mount_cwd: false          # No CWD mount
+  cwd_path: null            # Auto-set by envpod init when mount_cwd: true
   apps: []                  # No auto-mounted host apps
   mounts: []                # No extra mounts
   tracking:

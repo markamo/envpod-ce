@@ -4,6 +4,12 @@ All notable changes to envpod are documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Added
+
+- `filesystem.mount_cwd` — mount the working directory into the pod with COW isolation. `envpod init` captures `$PWD`; `envpod run` bind-mounts it read-only. Agent sees real files, writes go to overlay. CLI: `-w`/`--mount-cwd` to force, `--no-mount-cwd` to skip.
+
 ## [0.1.0] - 2026-03-03
 
 First public release.

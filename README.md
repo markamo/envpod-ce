@@ -51,6 +51,8 @@ Existing sandboxes (Docker, E2B, Firecrackers) provide isolation but zero govern
 
 **Clone Host User** — `host_user: { clone_host: true }` clones your username, shell, dotfiles, and workspace directories into the pod with COW isolation. The agent works in your real environment — your files, your tools, your config — but every change is staged for review. Sensitive paths (`.ssh`, `.gnupg`, `.aws`) excluded by default.
 
+**Mount Working Directory** — `filesystem: { mount_cwd: true }` or `envpod run -w` mounts the current working directory into the pod with COW isolation. The agent sees your project files; writes go to the overlay. `diff`/`commit`/`rollback` as usual.
+
 ## Quick Start
 
 ```bash
@@ -116,7 +118,7 @@ See [Installation](docs/INSTALL.md), [Quickstart](docs/QUICKSTART.md), [Pod Conf
 | `envpod init <name> [-c config.yaml] [--preset name]` | Create a new pod (interactive wizard if no flags) |
 | `envpod presets` | List all built-in presets by category |
 | `envpod setup <name>` | Re-run setup commands |
-| `envpod run <name> [--root] [-b] [-d] [-a] [-p h:p] [-P h:p] [-i port] -- <cmd>` | Run a command inside a pod (Ctrl+Z to detach) |
+| `envpod run <name> [--root] [-b] [-d] [-a] [-w] [-p h:p] [-P h:p] [-i port] -- <cmd>` | Run a command inside a pod (Ctrl+Z to detach) |
 | `envpod fg <name>` | Reattach to a background/detached pod |
 | `envpod diff <name>` | Show filesystem changes (COW overlay) |
 | `envpod commit <name> [paths...] [--exclude ...]` | Apply changes to host |
@@ -157,6 +159,7 @@ user: agent              # "agent" (non-root, UID 60000) or "root"
 
 filesystem:
   system_access: safe    # safe (read-only), advanced (COW), dangerous (COW + commit)
+  mount_cwd: false       # mount working directory into pod (COW isolated)
   mounts:
     - path: /opt/google
       permissions: ReadOnly

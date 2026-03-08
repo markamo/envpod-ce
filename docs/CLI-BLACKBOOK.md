@@ -150,6 +150,8 @@ envpod run <name> [flags] -- <command> [args...]
 | `--background` | `-b` | Run in background (detached). Use `envpod fg` to reattach |
 | `--enable-display` | `-d` | Forward display (Wayland preferred, X11 fallback) |
 | `--enable-audio` | `-a` | Forward audio (PipeWire preferred, PulseAudio fallback) |
+| `--mount-cwd` | `-w` | Mount working directory into pod (COW isolated). Uses `cwd_path` from init, or current CWD if not set |
+| `--no-mount-cwd` | | Skip CWD mount even if `mount_cwd: true` in pod.yaml |
 | `--publish host:pod` | `-p` | Port forward — localhost only (OUTPUT DNAT) |
 | `--publish-all host:pod` | `-P` | Port forward — all interfaces (PREROUTING + FORWARD) |
 | `--internal pod_port` | `-i` | Pod-to-pod port only (no host mapping) |
@@ -174,6 +176,9 @@ sudo envpod run myagent --user 1000 -- id
 # Background mode — run detached, reattach later
 sudo envpod run myagent -b -- python3 long_task.py
 sudo envpod fg myagent
+
+# Mount working directory (agent sees project files, writes go to overlay)
+sudo envpod run myagent -w -- claude
 
 # With display and audio (browser, GUI apps)
 sudo envpod run myagent -d -a -- google-chrome --no-sandbox

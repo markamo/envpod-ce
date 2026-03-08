@@ -993,6 +993,36 @@ sudo envpod mount my-agent ~/data --readonly
 sudo envpod unmount my-agent ~/data
 ```
 
+### Working Directory Mount (`mount_cwd`)
+
+The simplest way to give an agent access to your project is `mount_cwd`. When enabled, `envpod init` captures your current working directory and `envpod run` bind-mounts it read-only into the pod at the same path. Writes go to the COW overlay.
+
+<!-- output -->
+```yaml
+# In pod.yaml
+filesystem:
+  mount_cwd: true    # captures $PWD at init time
+```
+
+Or use the `-w` flag at run time (no config needed):
+
+<!-- no-exec -->
+```bash
+# Mount CWD on-the-fly — uses current directory if no cwd_path was captured
+sudo envpod run my-agent -w -- claude
+
+# Skip CWD mount even if pod.yaml says mount_cwd: true
+sudo envpod run my-agent --no-mount-cwd -- sh
+```
+
+After the agent runs, review and apply changes with the standard workflow:
+
+<!-- no-exec -->
+```bash
+sudo envpod diff my-agent        # see project file changes
+sudo envpod commit my-agent      # apply back to the real directory
+```
+
 ---
 
 ## Network Isolation
