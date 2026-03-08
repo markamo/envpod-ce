@@ -12,7 +12,13 @@
 #   sudo envpod setup workstation
 #   sudo envpod run workstation -b -- startxfce4
 #   # Open the noVNC URL from `envpod ls` in your browser
-#   # Launch Chrome, GIMP, or VS Code from the Applications menu or terminal
+#
+# Launching apps (from the desktop terminal or XFCE menu):
+#   chrome          # wrapper script — adds --no-sandbox automatically
+#   vscode          # wrapper script — adds --no-sandbox automatically
+#   gimp            # works as-is
+#   The --no-sandbox flag is needed because the pod runs as root.
+#   envpod's namespace isolation replaces the apps' internal sandboxes.
 #
 # Lock/unlock:
 #   sudo envpod lock workstation     # freeze everything — noVNC stays connected
@@ -82,3 +88,32 @@ setup:
       echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list
       apt-get update && apt-get install -y code
     fi
+  # Wrapper scripts (adds --no-sandbox for root) and desktop entries
+  - |
+    cat > /usr/local/bin/chrome << 'WRAPPER'
+    #!/bin/bash
+    exec google-chrome --no-sandbox "$@"
+    WRAPPER
+    chmod +x /usr/local/bin/chrome
+    cat > /usr/local/bin/vscode << 'WRAPPER'
+    #!/bin/bash
+    exec code --no-sandbox "$@"
+    WRAPPER
+    chmod +x /usr/local/bin/vscode
+    mkdir -p /usr/share/applications
+    cat > /usr/share/applications/chrome.desktop << 'DESKTOP'
+    [Desktop Entry]
+    Name=Chrome
+    Exec=google-chrome --no-sandbox %U
+    Icon=google-chrome
+    Type=Application
+    Categories=Network;WebBrowser;
+    DESKTOP
+    cat > /usr/share/applications/vscode.desktop << 'DESKTOP'
+    [Desktop Entry]
+    Name=VS Code
+    Exec=code --no-sandbox %F
+    Icon=vscode
+    Type=Application
+    Categories=Development;IDE;
+    DESKTOP

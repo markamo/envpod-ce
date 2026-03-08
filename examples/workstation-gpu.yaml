@@ -16,7 +16,12 @@
 #   sudo envpod setup gpu-ws
 #   sudo envpod run gpu-ws -b -- startxfce4
 #   # Open the noVNC URL from `envpod ls` in your browser
-#   # Run `nvidia-smi` in the desktop terminal to verify GPU access
+#
+# Launching apps (from the desktop terminal or XFCE menu):
+#   chrome          # wrapper script — adds --no-sandbox automatically
+#   vscode          # wrapper script — adds --no-sandbox automatically
+#   gimp            # works as-is
+#   nvidia-smi      # verify GPU access
 #
 # Lock/unlock:
 #   sudo envpod lock gpu-ws       # freeze — noVNC stays connected
@@ -88,3 +93,32 @@ setup:
     fi
   # Python + CUDA tools
   - "apt-get install -y --no-install-recommends python3-pip python3-venv"
+  # Wrapper scripts (adds --no-sandbox for root) and desktop entries
+  - |
+    cat > /usr/local/bin/chrome << 'WRAPPER'
+    #!/bin/bash
+    exec google-chrome --no-sandbox "$@"
+    WRAPPER
+    chmod +x /usr/local/bin/chrome
+    cat > /usr/local/bin/vscode << 'WRAPPER'
+    #!/bin/bash
+    exec code --no-sandbox "$@"
+    WRAPPER
+    chmod +x /usr/local/bin/vscode
+    mkdir -p /usr/share/applications
+    cat > /usr/share/applications/chrome.desktop << 'DESKTOP'
+    [Desktop Entry]
+    Name=Chrome
+    Exec=google-chrome --no-sandbox %U
+    Icon=google-chrome
+    Type=Application
+    Categories=Network;WebBrowser;
+    DESKTOP
+    cat > /usr/share/applications/vscode.desktop << 'DESKTOP'
+    [Desktop Entry]
+    Name=VS Code
+    Exec=code --no-sandbox %F
+    Icon=vscode
+    Type=Application
+    Categories=Development;IDE;
+    DESKTOP
