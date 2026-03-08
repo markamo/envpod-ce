@@ -1919,6 +1919,9 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
         config_user.to_string()
     };
     eprintln!("  {}  {}", color::dim("User    "), user_display);
+    if let Some(ref net) = state.network {
+        eprintln!("  {}  {}", color::dim("Pod IP  "), net.pod_ip);
+    }
     if web_display_type != envpod_core::config::WebDisplayType::None {
         let display_label = match web_display_type {
             envpod_core::config::WebDisplayType::Novnc => "noVNC",
