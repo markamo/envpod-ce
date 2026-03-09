@@ -1447,6 +1447,26 @@ sudo envpod run my-desktop -b -- startxfce4
 
 Pairs with `devices.desktop_env` (xfce, openbox, sway) for a complete desktop experience.
 
+### Default Ports & Services
+
+All ports are forwarded to `127.0.0.1` (localhost only) automatically when `web_display.type: novnc` is set. No manual port configuration needed.
+
+| Port | Service | Direction | Configurable | Notes |
+|------|---------|-----------|-------------|-------|
+| 6080 | noVNC (websockify) | browser → pod | `web_display.port` | Main display — open this in your browser |
+| 6081 | Audio WebSocket | browser → pod | `web_display.audio_port` | Opus/WebM audio stream (when `audio: true`) |
+| 5080 | File upload server | browser → pod | `web_display.upload_port` | Python HTTP server (when `file_upload: true`) |
+| 5900 | VNC (x11vnc) | internal | — | Not exposed to host — websockify bridges it |
+| 5711 | Audio proxy (GStreamer) | internal | — | Not exposed — audio websockify bridges it |
+
+**Internal pod IP:** Each pod gets a unique IP in the `10.200.x.0/30` range. The pod-side IP is `10.200.x.2`, host-side veth is `10.200.x.1`. Port forwarding uses iptables DNAT from `127.0.0.1:<port>` to the pod IP.
+
+**Upload location:** Files uploaded via the noVNC upload button are saved to `/tmp/uploads/` inside the pod. This is upload-only — files come out through the governance layer (`envpod diff` / `envpod commit`).
+
+**Auto-restart:** All supervisor processes (Xvfb, x11vnc, websockify, audio proxy, audio websockify, upload server) run in auto-restart loops. If any process crashes, it restarts within 1 second.
+
+**Guardian cgroup:** Display, audio, and upload processes are migrated to a `guardian/` subcgroup so they survive `envpod lock` / `envpod unlock` (cgroup freeze/thaw). The user's application runs in the `app/` subcgroup.
+
 ---
 
 ### Why This Matters
