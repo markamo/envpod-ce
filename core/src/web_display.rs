@@ -123,6 +123,18 @@ AUDIO_WS_PID=$!
         ""
     };
 
+    let upload_block = if config.file_upload {
+        "\n# --- File upload server ---\nmkdir -p /tmp/uploads\npython3 /usr/local/bin/envpod-upload-server.py &\nUPLOAD_PID=$!\n".to_string()
+    } else {
+        "\nUPLOAD_PID=\n".to_string()
+    };
+
+    let upload_cleanup = if config.file_upload {
+        "$UPLOAD_PID "
+    } else {
+        ""
+    };
+
     format!(
         r#"#!/bin/bash
 # envpod web display supervisor (noVNC)
@@ -134,7 +146,7 @@ export DISPLAY=:99
 
 # Cleanup on exit
 cleanup() {{
-    kill {audio_cleanup}$WEBSOCKIFY_PID $X11VNC_PID $XVFB_PID 2>/dev/null || true
+    kill {upload_cleanup}{audio_cleanup}$WEBSOCKIFY_PID $X11VNC_PID $XVFB_PID 2>/dev/null || true
 }}
 trap cleanup EXIT
 
@@ -156,7 +168,7 @@ sleep 1
 # Start websockify to bridge VNC to WebSocket
 websockify --web /usr/share/novnc 0.0.0.0:6080 localhost:5900 &
 WEBSOCKIFY_PID=$!
-{audio_block}
+{audio_block}{upload_block}
 # Execute the user command, redirecting its output to a log file
 # so GUI app noise (Chrome, Firefox, etc.) doesn't flood the terminal.
 exec "$@" >/tmp/envpod-display-app.log 2>&1
@@ -228,6 +240,28 @@ pub fn audio_overlay_files(config: &WebDisplayConfig) -> Vec<(&'static str, Stri
 /// Generate audio-plugin.js with the correct default port baked in.
 fn generate_audio_plugin_js(config: &WebDisplayConfig) -> String {
     AUDIO_PLUGIN_JS.replace("__ENVPOD_AUDIO_PORT__", &config.audio_port.to_string())
+}
+
+/// Returns files to inject into the pod overlay for file upload support.
+/// Each tuple is (path_inside_pod, content, executable).
+pub fn upload_overlay_files(config: &WebDisplayConfig) -> Vec<(&'static str, String, bool)> {
+    if config.display_type != WebDisplayType::Novnc || !config.file_upload {
+        return Vec::new();
+    }
+    vec![
+        ("/usr/local/bin/envpod-upload-server.py", generate_upload_server_py(config), true),
+        ("/usr/share/novnc/upload-plugin.js", generate_upload_plugin_js(config), false),
+    ]
+}
+
+/// Generate upload-server.py with the correct port baked in.
+fn generate_upload_server_py(config: &WebDisplayConfig) -> String {
+    UPLOAD_SERVER_SCRIPT.replace("__ENVPOD_UPLOAD_PORT__", &config.upload_port.to_string())
+}
+
+/// Generate upload-plugin.js with the correct port baked in.
+fn generate_upload_plugin_js(config: &WebDisplayConfig) -> String {
+    UPLOAD_PLUGIN_JS.replace("__ENVPOD_UPLOAD_PORT__", &config.upload_port.to_string())
 }
 
 /// Embedded audio-proxy.sh — GStreamer pipeline that encodes PulseAudio raw PCM
@@ -443,15 +477,23 @@ const EnvpodAudio = {
     },
 
     addControls() {
-        const bar = document.getElementById('noVNC_control_bar_anchor');
-        if (!bar) { console.warn('[envpod-audio] control bar not found'); return; }
+        // Insert audio button into the noVNC side panel, before the disconnect button.
+        // Uses the same noVNC_button class so it matches the existing panel style.
+        const disconnectBtn = document.getElementById('noVNC_disconnect_button');
+        const container = disconnectBtn ? disconnectBtn.parentElement : document.getElementById('noVNC_control_bar');
+        if (!container) { console.warn('[envpod-audio] control bar not found'); return; }
+
+        const speakerOn = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>';
+        const speakerOff = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0021 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 003.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>';
+        this.speakerOnSrc = 'data:image/svg+xml,' + encodeURIComponent(speakerOn);
+        this.speakerOffSrc = 'data:image/svg+xml,' + encodeURIComponent(speakerOff);
 
         const btn = document.createElement('img');
         btn.id = 'envpod_audio_btn';
+        btn.className = 'noVNC_button';
         btn.alt = 'Audio';
-        btn.title = 'Enable audio';
-        btn.style.cssText = 'width:24px;height:24px;padding:4px;cursor:pointer;opacity:0.5;';
-        btn.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>');
+        btn.title = 'Enable audio [beta]';
+        btn.src = this.speakerOffSrc;
         this.btn = btn;
 
         btn.addEventListener('click', async (e) => {
@@ -465,13 +507,22 @@ const EnvpodAudio = {
             }
         });
 
-        bar.insertBefore(btn, bar.firstChild);
+        if (disconnectBtn) {
+            container.insertBefore(btn, disconnectBtn);
+        } else {
+            container.appendChild(btn);
+        }
     },
 
     updateBtn(on) {
         if (!this.btn) return;
-        this.btn.style.opacity = on ? '1' : '0.5';
-        this.btn.title = on ? 'Disable audio' : 'Enable audio';
+        this.btn.src = on ? this.speakerOnSrc : this.speakerOffSrc;
+        this.btn.title = on ? 'Disable audio' : 'Enable audio [beta]';
+        if (on) {
+            this.btn.classList.add('noVNC_selected');
+        } else {
+            this.btn.classList.remove('noVNC_selected');
+        }
     },
 
     async start() {
@@ -539,6 +590,168 @@ const EnvpodAudio = {
 };
 
 window.addEventListener('load', () => EnvpodAudio.init());
+"##;
+
+/// Embedded upload server — Python3 HTTP server that accepts file uploads.
+/// __ENVPOD_UPLOAD_PORT__ is replaced with the actual port at generation time.
+const UPLOAD_SERVER_SCRIPT: &str = r##"#!/usr/bin/env python3
+"""envpod file upload server — saves files to /tmp/uploads/"""
+import os, http.server, json
+
+UPLOAD_DIR = '/tmp/uploads'
+PORT = __ENVPOD_UPLOAD_PORT__
+
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+class H(http.server.BaseHTTPRequestHandler):
+    def log_message(self, *a): pass
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self._cors()
+        self.end_headers()
+
+    def do_GET(self):
+        files = []
+        for f in sorted(os.listdir(UPLOAD_DIR)):
+            p = os.path.join(UPLOAD_DIR, f)
+            if os.path.isfile(p):
+                files.append({'name': f, 'size': os.path.getsize(p)})
+        self.send_response(200)
+        self._cors()
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps({'files': files, 'dir': UPLOAD_DIR}).encode())
+
+    def do_POST(self):
+        name = self.headers.get('X-Filename', 'upload')
+        name = os.path.basename(name)
+        length = int(self.headers.get('Content-Length', 0))
+        if length == 0:
+            self._err(400, 'empty body')
+            return
+        data = self.rfile.read(length)
+        with open(os.path.join(UPLOAD_DIR, name), 'wb') as f:
+            f.write(data)
+        self.send_response(200)
+        self._cors()
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps({'ok': True, 'file': name, 'size': len(data)}).encode())
+
+    def _err(self, code, msg):
+        self.send_response(code)
+        self._cors()
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps({'error': msg}).encode())
+
+    def _cors(self):
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', '*')
+
+http.server.HTTPServer(('0.0.0.0', PORT), H).serve_forever()
+"##;
+
+/// Embedded upload-plugin.js — browser-side upload button for noVNC panel.
+/// Sends files via fetch() to the upload server. Shows status on button.
+///
+/// __ENVPOD_UPLOAD_PORT__ is replaced with the actual port at generation time.
+const UPLOAD_PLUGIN_JS: &str = r##"/**
+ * envpod upload plugin for noVNC
+ * File upload via fetch() to Python upload server inside pod
+ */
+
+const EnvpodUpload = {
+    btn: null,
+    uploadPort: __ENVPOD_UPLOAD_PORT__,
+
+    init() {
+        this.addControls();
+        console.log('[envpod-upload] initialized, upload port:', this.uploadPort);
+    },
+
+    addControls() {
+        const disconnectBtn = document.getElementById('noVNC_disconnect_button');
+        const container = disconnectBtn ? disconnectBtn.parentElement : document.getElementById('noVNC_control_bar');
+        if (!container) { console.warn('[envpod-upload] control bar not found'); return; }
+
+        const uploadIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>';
+        const uploadSrc = 'data:image/svg+xml,' + encodeURIComponent(uploadIcon);
+
+        const btn = document.createElement('img');
+        btn.id = 'envpod_upload_btn';
+        btn.className = 'noVNC_button';
+        btn.alt = 'Upload';
+        btn.title = 'Upload file to pod';
+        btn.src = uploadSrc;
+        this.btn = btn;
+
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.multiple = true;
+        fileInput.style.display = 'none';
+        document.body.appendChild(fileInput);
+
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async () => {
+            const files = fileInput.files;
+            if (!files || files.length === 0) return;
+            for (const file of files) {
+                await this.upload(file);
+            }
+            fileInput.value = '';
+        });
+
+        const audioBtn = document.getElementById('envpod_audio_btn');
+        const insertBefore = audioBtn || disconnectBtn;
+        if (insertBefore) {
+            container.insertBefore(btn, insertBefore);
+        } else {
+            container.appendChild(btn);
+        }
+    },
+
+    async upload(file) {
+        const url = `${location.protocol}//${location.hostname}:${this.uploadPort}/`;
+        this.btn.title = `Uploading ${file.name}...`;
+        this.btn.classList.add('noVNC_selected');
+        try {
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: { 'X-Filename': file.name },
+                body: file,
+            });
+            const data = await resp.json();
+            if (data.ok) {
+                this.btn.title = `Uploaded: ${data.file} (${this.fmtSize(data.size)}) \u2192 /tmp/uploads/`;
+            } else {
+                this.btn.title = 'Upload failed';
+            }
+        } catch (err) {
+            console.error('[envpod-upload] failed:', err);
+            this.btn.title = 'Upload failed \u2014 server not reachable';
+        }
+        setTimeout(() => {
+            this.btn.classList.remove('noVNC_selected');
+            this.btn.title = 'Upload file to pod';
+        }, 3000);
+    },
+
+    fmtSize(b) {
+        if (b < 1024) return b + ' B';
+        if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+        return (b / 1048576).toFixed(1) + ' MB';
+    }
+};
+
+window.addEventListener('load', () => EnvpodUpload.init());
 "##;
 
 /// Parse resolution string into (width, height). Returns None if invalid.
@@ -668,6 +881,57 @@ mod tests {
             ..Default::default()
         };
         assert!(audio_overlay_files(&config).is_empty());
+    }
+
+    #[test]
+    fn upload_overlay_files_when_enabled() {
+        let config = WebDisplayConfig {
+            display_type: WebDisplayType::Novnc,
+            file_upload: true,
+            upload_port: 5080,
+            ..Default::default()
+        };
+        let files = upload_overlay_files(&config);
+        assert_eq!(files.len(), 2);
+        assert!(files[0].0.contains("upload-server"));
+        assert!(files[0].2); // executable
+        assert!(files[1].0.contains("upload-plugin"));
+        assert!(!files[1].2); // not executable
+        assert!(files[1].1.contains("5080")); // port baked in
+    }
+
+    #[test]
+    fn upload_overlay_files_when_disabled() {
+        let config = WebDisplayConfig {
+            display_type: WebDisplayType::Novnc,
+            file_upload: false,
+            ..Default::default()
+        };
+        assert!(upload_overlay_files(&config).is_empty());
+    }
+
+    #[test]
+    fn novnc_script_with_upload() {
+        let config = WebDisplayConfig {
+            display_type: WebDisplayType::Novnc,
+            file_upload: true,
+            ..Default::default()
+        };
+        let script = generate_supervisor_script(&config);
+        assert!(script.contains("envpod-upload-server.py"));
+        assert!(script.contains("UPLOAD_PID"));
+        assert!(script.contains("/tmp/uploads"));
+    }
+
+    #[test]
+    fn novnc_script_without_upload() {
+        let config = WebDisplayConfig {
+            display_type: WebDisplayType::Novnc,
+            file_upload: false,
+            ..Default::default()
+        };
+        let script = generate_supervisor_script(&config);
+        assert!(!script.contains("envpod-upload-server.py"));
     }
 
     #[test]

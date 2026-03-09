@@ -547,6 +547,10 @@ pub struct WebDisplayConfig {
     pub audio: bool,
     /// Host port for audio WebSocket (noVNC audio only). Default: 6081.
     pub audio_port: u16,
+    /// Enable file upload button in noVNC panel. Default: true.
+    pub file_upload: bool,
+    /// Host port for upload server (noVNC only). Default: 5080.
+    pub upload_port: u16,
     /// Video codec (WebRTC only): vp8 or h264. Default: "vp8".
     pub codec: String,
 }
@@ -559,6 +563,8 @@ impl Default for WebDisplayConfig {
             resolution: "1280x720".into(),
             audio: false,
             audio_port: 6081,
+            file_upload: true,
+            upload_port: 5080,
             codec: "vp8".into(),
         }
     }

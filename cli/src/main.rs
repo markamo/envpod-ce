@@ -858,12 +858,58 @@ async fn cmd_init(
                 }
             }
 
-            // Patch vnc.html to load audio plugin (adds script tag if not present)
-            if config.web_display.audio && config.web_display.display_type == envpod_core::config::WebDisplayType::Novnc {
-                // vnc.html is installed by apt (novnc package) during setup,
-                // so we inject a setup command to patch it after installation
-                let patch_cmd = r#"sed -i 's|</head>|<script src="audio-plugin.js"></script></head>|' /usr/share/novnc/vnc.html 2>/dev/null; true"#;
-                config.setup.push(patch_cmd.to_string());
+            // Inject upload overlay files (upload-server.py, upload-plugin.js)
+            for (pod_path, content, executable) in envpod_core::web_display::upload_overlay_files(&config.web_display) {
+                let rel = pod_path.trim_start_matches('/');
+                let dest = if rel.starts_with("usr/") && matches!(config.filesystem.system_access, envpod_core::config::SystemAccess::Advanced | envpod_core::config::SystemAccess::Dangerous) {
+                    state.sys_upper_dir().join(rel)
+                } else {
+                    state.upper_dir().join(rel)
+                };
+                if let Some(parent) = dest.parent() {
+                    std::fs::create_dir_all(parent).ok();
+                }
+                std::fs::write(&dest, &content)
+                    .with_context(|| format!("write upload file: {pod_path}"))?;
+                if executable {
+                    std::fs::set_permissions(&dest, std::fs::Permissions::from_mode(0o755))?;
+                }
+            }
+
+            // Patch vnc.html after apt installs the novnc package:
+            // - Replace both noVNC logos (side panel + connect dialog) with envpod
+            // - Update page title to "envpod — <pod-name>"
+            // - Replace favicon with envpod SVG icon
+            // - Auto-connect (skip the connect dialog)
+            // - Load audio/upload plugin scripts (if enabled)
+            if config.web_display.display_type == envpod_core::config::WebDisplayType::Novnc {
+                let favicon_svg = r#"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" rx=\"6\" fill=\"%2324292e\"/><text x=\"16\" y=\"22\" text-anchor=\"middle\" font-family=\"monospace\" font-weight=\"bold\" font-size=\"14\" fill=\"%2358a6ff\">ep</text></svg>"#;
+                let mut patches = vec![
+                    // Side panel logo: "noVNC" → "envpod"
+                    r#"sed -i 's|<h1 class="noVNC_logo"[^>]*><span>no</span><br>VNC</h1>|<h1 class="noVNC_logo" translate="no"><span>env</span><br>pod</h1>|' /usr/share/novnc/vnc.html"#.to_string(),
+                    // Connect dialog logo: "noVNC" → "envpod"
+                    r#"sed -i 's|<div class="noVNC_logo"[^>]*><span>no</span>VNC</div>|<div class="noVNC_logo" translate="no"><span>env</span>pod</div>|' /usr/share/novnc/vnc.html"#.to_string(),
+                    // Page title
+                    format!(r#"sed -i 's|<title>noVNC</title>|<title>envpod — {name}</title>|' /usr/share/novnc/vnc.html"#),
+                    // Favicon
+                    format!(
+                        r#"sed -i 's|<link rel="icon"[^>]*>||g; s|<link rel="apple-touch-icon"[^>]*>||g; s|</head>|<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,{favicon_svg}"></head>|' /usr/share/novnc/vnc.html"#
+                    ),
+                    // Auto-connect: inject autoconnect=true default so users skip the connect dialog
+                    r#"sed -i 's|</body>|<script>if(!location.search.includes("autoconnect=false"))window.addEventListener("load",function(){setTimeout(function(){var b=document.getElementById("noVNC_connect_button");if(b)b.click();},500);});</script></body>|' /usr/share/novnc/vnc.html"#.to_string(),
+                ];
+                if config.web_display.file_upload {
+                    patches.push(
+                        r#"sed -i 's|</head>|<script src="upload-plugin.js"></script></head>|' /usr/share/novnc/vnc.html"#.to_string(),
+                    );
+                }
+                if config.web_display.audio {
+                    patches.push(
+                        r#"sed -i 's|</head>|<script src="audio-plugin.js"></script></head>|' /usr/share/novnc/vnc.html"#.to_string(),
+                    );
+                }
+                let patch_cmd = patches.join(" && ") + " 2>/dev/null; true";
+                config.setup.push(patch_cmd);
             }
 
             eprintln!("  Web display supervisor script installed");
@@ -1992,6 +2038,9 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
             if cfg.web_display.audio {
                 eprintln!("  {}  Opus/WebM → port {} (click speaker icon in noVNC) {}", color::dim("Audio   "), cfg.web_display.audio_port, color::dim("[beta]"));
             }
+            if cfg.web_display.file_upload {
+                eprintln!("  {}  Click upload icon in noVNC → /tmp/uploads/", color::dim("Upload  "));
+            }
         }
     }
     if is_root {
@@ -2067,6 +2116,10 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
             if let Some(ref cfg) = pod_config {
                 if cfg.web_display.audio {
                     all_ports.push(format!("127.0.0.1:{}:{}", cfg.web_display.audio_port, cfg.web_display.audio_port));
+                }
+                // Auto-add upload server port forward if file upload enabled
+                if cfg.web_display.file_upload {
+                    all_ports.push(format!("127.0.0.1:{}:{}", cfg.web_display.upload_port, cfg.web_display.upload_port));
                 }
             }
         }
