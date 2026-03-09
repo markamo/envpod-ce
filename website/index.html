@@ -180,7 +180,7 @@
       <!-- Shared runtime -->
       <div class="arch-runtime">
         <span class="arch-runtime-name">envpod CE</span>
-        <span class="arch-runtime-items">Vault · Action Queue · Audit log · DNS daemon · Port forwarding · Pod discovery · seccomp-BPF</span>
+        <span class="arch-runtime-items">Vault · Action Queue · Audit log · DNS daemon · Port forwarding · Pod discovery · Snapshots · Web Display · seccomp-BPF</span>
       </div>
       <!-- Linux kernel -->
       <div class="arch-kernel">
@@ -190,7 +190,7 @@
     </div>
 
     <div class="feature-grid">
-      <div class="feature-card"><div class="feature-icon">🗂️</div><div class="feature-title">Copy-on-Write Filesystem</div><div class="feature-desc">Every write goes to an OverlayFS overlay. Host untouched until you explicitly approve. <code>envpod diff</code> shows the changeset. <code>envpod commit</code> or <code>envpod rollback</code> in one command. Named snapshots to restore any point.</div></div>
+      <div class="feature-card"><div class="feature-icon">🗂️</div><div class="feature-title">Copy-on-Write Filesystem</div><div class="feature-desc">Every write goes to an OverlayFS overlay. Host untouched until you explicitly approve. <code>envpod diff</code> shows the changeset. <code>envpod commit</code> or <code>envpod rollback</code> in one command. Named snapshots with auto-checkpoint, restore, and promote-to-base.</div></div>
       <div class="feature-card"><div class="feature-icon">🔐</div><div class="feature-title">Encrypted Credential Vault</div><div class="feature-desc">ChaCha20-Poly1305 encrypted at rest. Injected as env vars at runtime — never in <code>pod.yaml</code>, CLI args, shell history, or logs. <code>envpod vault import .env</code> to bulk-load. Bind credentials to specific domains.</div></div>
       <div class="feature-card"><div class="feature-icon">📋</div><div class="feature-title">Action Queue &amp; Approval</div><div class="feature-desc">20 built-in action types: HTTP (6), filesystem (7), git (6), custom (1). Four tiers: <code>immediate</code>, <code>delayed</code>, <code>staged</code> (human approval), <code>blocked</code>. MCP-style tool discovery. Hot-reload without restart.</div></div>
       <div class="feature-card"><div class="feature-icon">🌐</div><div class="feature-title">DNS Filtering</div><div class="feature-desc">Each pod runs its own embedded DNS resolver. Exact allow-list of reachable domains. Anti-DNS-tunneling protection. Live mutation — add or remove domains on a running pod with no restart.</div></div>
@@ -198,8 +198,8 @@
       <div class="feature-card"><div class="feature-icon">🖥️</div><div class="feature-title">Web Dashboard</div><div class="feature-desc"><code>envpod dashboard</code> — local web UI on port 9090. Fleet overview, live cgroup stats, filterable audit timeline, diff viewer with commit/rollback buttons. No database, no dependencies.</div></div>
       <div class="feature-card"><div class="feature-icon">🔒</div><div class="feature-title">Process Isolation</div><div class="feature-desc">PID + UTS + user namespace. cgroups v2 CPU/memory/IO/PID limits. Seccomp-BPF syscall filtering. A runaway agent cannot starve the host. A compromised agent cannot see host processes.</div></div>
       <div class="feature-card"><div class="feature-icon">⚡</div><div class="feature-title">Base Pods &amp; Fast Cloning</div><div class="feature-desc">Run <code>envpod init</code> once. That becomes a base. Clone from it in ~130ms — 10× faster. Spin up 50 identical agents in seconds, each with its own isolated overlay.</div></div>
-      <div class="feature-card"><div class="feature-icon">📡</div><div class="feature-title">Display, Audio &amp; GPU</div><div class="feature-desc">Governed Wayland forwarding with per-window isolation. PipeWire/PulseAudio support. NVIDIA and AMD GPUs work out of the box — no toolkit, no drivers. ARM64: Raspberry Pi, Jetson Orin.</div></div>
-      <div class="feature-card"><div class="feature-icon">🖥️</div><div class="feature-title">Web Display &amp; Desktop</div><div class="feature-desc">Access a pod's graphical desktop from any browser via noVNC. Set <code>desktop_env: xfce</code> (or <code>openbox</code>/<code>sway</code>) — envpod auto-installs the DE during setup. Open <code>localhost:6080</code> and you're in.</div></div>
+      <div class="feature-card"><div class="feature-icon">📡</div><div class="feature-title">Display, Audio &amp; GPU</div><div class="feature-desc">Wayland forwarding with per-window isolation. PipeWire/PulseAudio passthrough. noVNC audio streaming via Opus/WebM. NVIDIA and AMD GPUs — no toolkit, no drivers. ARM64: Raspberry Pi, Jetson Orin.</div></div>
+      <div class="feature-card"><div class="feature-icon">🖥️</div><div class="feature-title">Web Display &amp; Desktop</div><div class="feature-desc">Access a pod's graphical desktop from any browser via noVNC. Audio streaming (PulseAudio + Opus/WebM). File upload from host to pod. Auto-connect, custom branding, auto-restart on crash. Set <code>desktop_env: xfce</code> — open <code>localhost:6080</code> and you're in.</div></div>
       <div class="feature-card"><div class="feature-icon">📦</div><div class="feature-title">Host App Auto-Mount</div><div class="feature-desc">List apps in <code>pod.yaml</code> — envpod resolves binaries, shared libraries, and data dirs via <code>which</code> + <code>ldd</code>, then bind-mounts them read-only. No reinstalling Chrome, Python, or Node inside the pod.</div></div>
       <div class="feature-card"><div class="feature-icon">📂</div><div class="feature-title">Mount Working Directory</div><div class="feature-desc"><code>mount_cwd: true</code> or <code>envpod run -w</code> — your project directory is visible inside the pod with COW isolation. Agent reads real files, writes go to the overlay. <code>diff</code>/<code>commit</code>/<code>rollback</code> as usual.</div></div>
       <div class="feature-card"><div class="feature-icon">👤</div><div class="feature-title">Clone Host User</div><div class="feature-desc">Your username, shell, dotfiles, and workspace directories — cloned into the pod with COW isolation. The agent works in your real environment, but every change is staged for human review. <code>.ssh</code>, <code>.gnupg</code>, <code>.aws</code> excluded by default.</div></div>
@@ -211,7 +211,7 @@
 <section class="section reveal" id="agents">
   <div class="wrap">
     <h2>Works with every major AI agent</h2>
-    <p class="section-sub">25 ready-made pod configs in <code>examples/</code>. Three commands to go from zero to governed.</p>
+    <p class="section-sub">42 ready-made pod configs in <code>examples/</code>. Three commands to go from zero to governed.</p>
 
     <div class="agent-grid">
       <div class="agent-card"><div class="agent-header"><span class="agent-name">Claude Code</span><span class="agent-tag tag-coding">Coding</span></div><div class="agent-desc">Anthropic's CLI coding agent. DNS-locked to api.anthropic.com, GitHub, and package registries.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init claude-code -c examples/claude-code.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run claude-code -- claude</span></div></div></div>
@@ -222,9 +222,12 @@
       <div class="agent-card"><div class="agent-header"><span class="agent-name">OpenCode</span><span class="agent-tag tag-coding">Coding</span></div><div class="agent-desc">Go-based TUI coding agent. 75+ LLM providers including local Ollama.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init opencode -c examples/opencode.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run opencode -- opencode</span></div></div></div>
       <div class="agent-card"><div class="agent-header"><span class="agent-name">ML Training</span><span class="agent-tag tag-gpu">GPU</span></div><div class="agent-desc">PyTorch / TensorFlow with full NVIDIA GPU passthrough. 16 GB memory, 8-hour budget.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init ml-trainer -c examples/ml-training.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run ml-trainer -- python train.py</span></div></div></div>
       <div class="agent-card"><div class="agent-header"><span class="agent-name">Hardened Sandbox</span><span class="agent-tag tag-sandbox">Sandbox</span></div><div class="agent-desc">Maximum isolation. No network. No GPU. 256 MB memory. 64 PID cap. For untrusted code.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init sandbox -c examples/hardened-sandbox.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run sandbox -- /bin/sh</span></div></div></div>
+      <div class="agent-card"><div class="agent-header"><span class="agent-name">Gemini CLI</span><span class="agent-tag tag-coding">Coding</span></div><div class="agent-desc">Google's Gemini CLI agent. DNS-locked to googleapis.com, GitHub, and npm registries.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init gemini -c examples/gemini-cli.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run gemini -- gemini</span></div></div></div>
+      <div class="agent-card"><div class="agent-header"><span class="agent-name">GPU Workstation</span><span class="agent-tag tag-gpu">Desktop + GPU</span></div><div class="agent-desc">XFCE desktop with Chrome, GIMP, VS Code, and NVIDIA GPU. Access via browser at localhost:6080. Audio streaming, file upload, lock/unlock.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init gpu-ws -c examples/workstation-gpu.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod setup gpu-ws &amp;&amp; envpod run gpu-ws -b -- startxfce4</span></div></div></div>
+      <div class="agent-card"><div class="agent-header"><span class="agent-name">Desktop Web</span><span class="agent-tag tag-browser">Desktop</span></div><div class="agent-desc">Browser-based XFCE desktop with Chrome and VS Code. No GPU needed. Open localhost:6080 — auto-connects, audio enabled.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init web -c examples/desktop-web.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod setup web &amp;&amp; envpod run web -b -- startxfce4</span></div></div></div>
       <div class="agent-card"><div class="agent-header"><span class="agent-name">Chrome + Wayland</span><span class="agent-tag tag-browser">Display + Audio</span></div><div class="agent-desc">Full graphical Chrome with Wayland display and PipeWire audio forwarded into the pod. The agent browses with real rendering and sound — API keys injected by vault, never visible.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init chrome -c examples/browser-use.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run chrome -d -a -- google-chrome \</span></div><div><span class="pr">  </span><span class="cm">  --ozone-platform=wayland https://claude.ai</span></div></div></div>
     </div>
-    <div class="more-examples">25 configs total — <a href="https://github.com/markamo/envpod-ce/tree/main/examples">browse all examples →</a></div>
+    <div class="more-examples">42 configs total — <a href="https://github.com/markamo/envpod-ce/tree/main/examples">browse all examples →</a></div>
   </div>
 </section>
 
@@ -255,7 +258,7 @@
       <div class="step"><div class="step-num">03</div><div class="step-content"><h3>Every action goes through the queue</h3><p>Push code, send email, call API — each hits the four-tier queue. Immediate actions execute. Staged actions wait for <code>envpod approve</code>. Blocked actions denied.</p></div></div>
       <div class="step"><div class="step-num">04</div><div class="step-content"><h3>Credentials stay invisible</h3><p>API keys live in the encrypted vault. Envpod injects them at execution time. The agent never sees the real secret.</p></div></div>
       <div class="step"><div class="step-num">05</div><div class="step-content"><h3>You review the diff</h3><p><code>envpod diff</code> shows every file changed. Commit individual files. Export to staging first with <code>--output</code>.</p></div></div>
-      <div class="step"><div class="step-num">06</div><div class="step-content"><h3>Nothing persists without your approval</h3><p><code>envpod rollback</code> discards everything. <code>envpod snapshot restore</code> returns to any checkpoint. <code>envpod destroy</code> — no traces.</p></div></div>
+      <div class="step"><div class="step-num">06</div><div class="step-content"><h3>Nothing persists without your approval</h3><p><code>envpod rollback</code> discards everything. <code>envpod snapshot restore</code> returns to any checkpoint. Auto-snapshots before every run. Promote any snapshot to a clonable base. <code>envpod destroy</code> — no traces.</p></div></div>
     </div>
   </div>
 </section>
@@ -470,11 +473,16 @@
           <li>Web dashboard — fleet overview, live stats, diff from browser</li>
           <li>Base pods + fast cloning (~130ms)</li>
           <li>GPU, display &amp; audio passthrough</li>
-          <li>Web display (noVNC) — browser-based pod desktop</li>
+          <li>Web display (noVNC) — desktop, audio streaming, file upload</li>
+          <li>Snapshots — create, restore, auto-checkpoint, promote to base</li>
+          <li>Interactive init wizard + 18 built-in presets</li>
+          <li>Port forwarding — localhost, public, pod-to-pod</li>
           <li>Host app auto-mount — <code>which</code> + <code>ldd</code>, zero reinstall</li>
           <li>Clone host user — your files, tools, dotfiles in the pod</li>
           <li>Pod-to-pod discovery (envpod-dns daemon)</li>
-          <li>25+ example configs</li>
+          <li>Budget enforcement — auto-kill after max_duration</li>
+          <li>Jailbreak test — built-in security boundary probe</li>
+          <li>42 example configs</li>
         </ul>
         <div class="pricing-cta">
           <a href="#install" class="btn-p" style="width:100%;justify-content:center">Install now →</a>
