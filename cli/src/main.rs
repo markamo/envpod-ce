@@ -3828,17 +3828,19 @@ async fn cmd_destroy(store: &PodStore, base_dir: &std::path::Path, name: &str, r
         backend.destroy(&handle)
     };
 
-    // Always remove the handle file, even if destroy_impl failed (e.g. busy mount).
-    // This prevents "pod already exists" on re-init. The leftover pod directory
-    // will be cleaned up by `envpod gc`.
-    store.remove(name)?;
-
-    if let Err(e) = destroy_result {
-        eprintln!("warning: cleanup incomplete for '{name}': {e}");
-        eprintln!("  Run `sudo envpod gc` to clean up leftover resources");
+    match &destroy_result {
+        Ok(()) => {
+            // Pod directory removed successfully — safe to remove handle
+            store.remove(name)?;
+            println!("Destroyed pod '{name}'");
+        }
+        Err(e) => {
+            // Pod directory still exists (e.g. busy mount) — keep handle so
+            // `envpod ls` shows it and a second `destroy` can finish the job.
+            eprintln!("warning: cleanup incomplete for '{name}': {e}");
+            eprintln!("  Try again or run `sudo envpod gc` to clean up leftover resources");
+        }
     }
-
-    println!("Destroyed pod '{name}'");
 
     // Optionally destroy the base pod too
     if remove_base {
