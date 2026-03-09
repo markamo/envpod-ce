@@ -171,7 +171,17 @@ WEBSOCKIFY_PID=$!
 {audio_block}{upload_block}
 # Execute the user command, redirecting its output to a log file
 # so GUI app noise (Chrome, Firefox, etc.) doesn't flood the terminal.
-exec "$@" >/tmp/envpod-display-app.log 2>&1
+# When ENVPOD_RUN_USER is set, display services ran as root above;
+# drop to the requested user for the application command only.
+if [ -n "$ENVPOD_RUN_USER" ]; then
+    # Ensure X socket is accessible to non-root user
+    chmod 1777 /tmp/.X11-unix 2>/dev/null
+    # Add user to pulse-access group for audio
+    usermod -aG pulse-access "$ENVPOD_RUN_USER" 2>/dev/null
+    exec runuser -u "$ENVPOD_RUN_USER" -- "$@" >/tmp/envpod-display-app.log 2>&1
+else
+    exec "$@" >/tmp/envpod-display-app.log 2>&1
+fi
 "#
     )
 }
@@ -220,7 +230,12 @@ cleanup() {{
 trap cleanup EXIT
 
 # Execute the user command, redirecting its output to a log file
-exec "$@" >/tmp/envpod-display-app.log 2>&1
+if [ -n "$ENVPOD_RUN_USER" ]; then
+    chmod 1777 /tmp/.X11-unix 2>/dev/null
+    exec runuser -u "$ENVPOD_RUN_USER" -- "$@" >/tmp/envpod-display-app.log 2>&1
+else
+    exec "$@" >/tmp/envpod-display-app.log 2>&1
+fi
 "#
     )
 }
@@ -596,12 +611,28 @@ window.addEventListener('load', () => EnvpodAudio.init());
 /// __ENVPOD_UPLOAD_PORT__ is replaced with the actual port at generation time.
 const UPLOAD_SERVER_SCRIPT: &str = r##"#!/usr/bin/env python3
 """envpod file upload server — saves files to /tmp/uploads/"""
-import os, http.server, json
+import os, http.server, json, datetime
 
 UPLOAD_DIR = '/tmp/uploads'
+AUDIT_LOG = '/tmp/envpod-uploads.jsonl'
 PORT = __ENVPOD_UPLOAD_PORT__
+POD_NAME = os.environ.get('ENVPOD_POD_NAME', 'unknown')
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+def audit(filename, size, success=True):
+    entry = {
+        'timestamp': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+        'pod_name': POD_NAME,
+        'action': 'file_upload',
+        'detail': f'file={filename}, size={size}',
+        'success': success,
+    }
+    try:
+        with open(AUDIT_LOG, 'a') as f:
+            f.write(json.dumps(entry) + '\n')
+    except Exception:
+        pass
 
 class H(http.server.BaseHTTPRequestHandler):
     def log_message(self, *a): pass
@@ -633,6 +664,7 @@ class H(http.server.BaseHTTPRequestHandler):
         data = self.rfile.read(length)
         with open(os.path.join(UPLOAD_DIR, name), 'wb') as f:
             f.write(data)
+        audit(name, len(data))
         self.send_response(200)
         self._cors()
         self.send_header('Content-Type', 'application/json')

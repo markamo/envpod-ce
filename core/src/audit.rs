@@ -55,6 +55,7 @@ pub enum AuditAction {
     Clone,
     WebDisplayStart,
     WebDisplayStop,
+    FileUpload,
 }
 
 impl std::fmt::Display for AuditAction {
@@ -103,6 +104,27 @@ impl AuditLog {
         let line = serde_json::to_string(entry).context("serialize audit entry")?;
         writeln!(file, "{line}").context("write audit entry")?;
         Ok(())
+    }
+
+    /// Read entries from an arbitrary JSONL file (e.g. in-pod upload log).
+    /// Skips malformed lines instead of failing.
+    pub fn read_file(path: &Path) -> Result<Vec<AuditEntry>> {
+        let file = match File::open(path) {
+            Ok(f) => f,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+            Err(e) => return Err(e.into()),
+        };
+        let reader = BufReader::new(file);
+        let mut entries = Vec::new();
+        for line in reader.lines() {
+            let line = line?;
+            let line = line.trim();
+            if line.is_empty() { continue; }
+            if let Ok(entry) = serde_json::from_str::<AuditEntry>(line) {
+                entries.push(entry);
+            }
+        }
+        Ok(entries)
     }
 
     /// Read all entries from the log. Returns an empty vec if the file doesn't exist.

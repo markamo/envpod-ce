@@ -826,7 +826,15 @@ pub fn rollback(upper: &Path, work: &Path) -> Result<()> {
 /// Remove all overlay directories for a pod.
 pub fn destroy(pod_dir: &Path) -> Result<()> {
     if pod_dir.exists() {
-        fs::remove_dir_all(pod_dir).context("remove pod directory")?;
+        match fs::remove_dir_all(pod_dir) {
+            Ok(()) => return Ok(()),
+            Err(_) => {
+                // Processes may still be releasing file handles after SIGKILL.
+                // Brief wait and retry once.
+                std::thread::sleep(std::time::Duration::from_millis(500));
+                fs::remove_dir_all(pod_dir).context("remove pod directory")?;
+            }
+        }
     }
     Ok(())
 }

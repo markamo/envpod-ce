@@ -1811,6 +1811,7 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
         .unwrap_or_default();
 
     let mut extra_env: Vec<String> = env_vars.to_vec();
+    extra_env.push(format!("ENVPOD_POD_NAME={name}"));
 
     // Handle --enable-display: protocol-aware env vars
     if enable_display {
@@ -1901,7 +1902,6 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
         extra_env.push("DISPLAY=:99".to_string());
         extra_env.push("XDG_RUNTIME_DIR=/tmp".to_string());
     }
-    let env_vars = &extra_env;
 
     // Build effective command: wrap with display supervisor if web_display is enabled
     let effective_command: Vec<String> = if web_display_type != envpod_core::config::WebDisplayType::None {
@@ -1972,13 +1972,24 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
     let config_user = pod_config.as_ref().map(|c| c.user.as_str()).unwrap_or("agent");
     let user_is_root = user.map(|u| u == "root").unwrap_or(false);
     let is_root = root || user_is_root || config_user == "root";
-    let effective_user: Option<&str> = if let Some(u) = user {
+    let mut effective_user: Option<&str> = if let Some(u) = user {
         if u == "root" { None } else { Some(u) }
     } else if is_root {
         None // root = no setuid
     } else {
         Some(config_user) // pod.yaml user or default "agent"
     };
+
+    // When web_display is active, display services (Xvfb, x11vnc, websockify,
+    // PulseAudio) need root. Pass the requested user via env var so the
+    // supervisor script drops privileges only for the final user command.
+    if web_display_type != envpod_core::config::WebDisplayType::None {
+        if let Some(u) = effective_user {
+            extra_env.push(format!("ENVPOD_RUN_USER={u}"));
+            effective_user = None; // run supervisor as root
+        }
+    }
+    let env_vars = &extra_env;
 
     // Auto-snapshot before run if configured (snapshots.auto_on_run: true)
     if let Some(ref cfg) = pod_config {
@@ -3678,7 +3689,17 @@ fn cmd_audit(store: &PodStore, _base_dir: &std::path::Path, name: &str, json: bo
     let state = NativeState::from_handle(&handle)?;
 
     let log = envpod_core::audit::AuditLog::new(&state.pod_dir);
-    let entries = log.read_all()?;
+    let mut entries = log.read_all()?;
+
+    // Merge file upload audit entries from in-pod upload server.
+    // The upload server writes to /tmp/envpod-uploads.jsonl inside the overlay.
+    let upload_log = state.pod_dir.join("upper/tmp/envpod-uploads.jsonl");
+    if upload_log.exists() {
+        if let Ok(upload_entries) = envpod_core::audit::AuditLog::read_file(&upload_log) {
+            entries.extend(upload_entries);
+            entries.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+        }
+    }
 
     if json {
         println!("{}", serde_json::to_string_pretty(&entries)?);

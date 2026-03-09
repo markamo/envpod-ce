@@ -206,11 +206,20 @@ impl NativeBackend {
             netns::release_pod_index(&self.base_dir, net.pod_index);
         }
 
-        // Remove cgroup (best-effort, processes may still linger or cgroup may be gone)
+        // Ensure all cgroup processes are dead before unmounting.
+        // Multiple shells/sessions may be running — kill aggressively and wait.
         if let Some(ref cg) = state.cgroup_path {
-            if cgroup::cgroup_exists(cg) {
-                cgroup::destroy(cg).ok();
+            if cgroup::cgroup_exists(cg) && cgroup::has_processes(cg) {
+                cgroup::kill_all(cg, nix::sys::signal::Signal::SIGKILL).ok();
+                // Wait up to 5 seconds for all processes to exit
+                for _ in 0..50 {
+                    if !cgroup::has_processes(cg) {
+                        break;
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+                }
             }
+            cgroup::destroy(cg).ok();
         }
 
         // Unmount all overlays: system COW sub-mounts first, then main overlay.

@@ -141,10 +141,20 @@ pub fn read_audit(store: &PodStore, name: &str, offset: usize, limit: usize) -> 
     let handle = store.load(name)?;
     let state = NativeState::from_handle(&handle)?;
     let log = AuditLog::new(&state.pod_dir);
-    let (all_entries, total) = log.read_from(0)?;
+    let (mut all_entries, _) = log.read_from(0)?;
 
-    let start = offset.min(all_entries.len());
-    let end = (start + limit).min(all_entries.len());
+    // Merge file upload audit entries from in-pod upload server
+    let upload_log = state.pod_dir.join("upper/tmp/envpod-uploads.jsonl");
+    if upload_log.exists() {
+        if let Ok(upload_entries) = AuditLog::read_file(&upload_log) {
+            all_entries.extend(upload_entries);
+            all_entries.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+        }
+    }
+
+    let total = all_entries.len();
+    let start = offset.min(total);
+    let end = (start + limit).min(total);
     let page = all_entries[start..end].to_vec();
 
     Ok((page, total))
