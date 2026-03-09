@@ -12,13 +12,16 @@ Containers solve **isolation** — drawing a box around a process. But they do n
 
 ## The Solution
 
-envpod is a governance runtime for AI agents. Every agent runs inside a **pod** — an environment with four isolation walls and a governance ceiling.
+envpod is a governance runtime for AI agents. Every agent runs inside a **pod** — an environment with a foundation, four isolation walls, and a governance ceiling.
+
+**Foundation — Copy-on-Write Filesystem:**
+OverlayFS captures every write in a private overlay. The host is untouched until a human runs `envpod commit`. `envpod diff` shows exactly what changed. `envpod rollback` discards everything. Named snapshots allow restoring any checkpoint. The foundation is what makes everything else reversible — the pod sits on top of it.
 
 **Four Walls:**
-- **Filesystem** — Copy-on-write via OverlayFS. Every write goes to a private overlay. The host is untouched until a human runs `envpod commit`. `envpod diff` shows exactly what changed. `envpod rollback` discards everything. Named snapshots allow restoring any checkpoint.
-- **Network** — Per-pod network namespace with an embedded DNS resolver. Domain-level allow/deny lists, anti-DNS-tunneling, bandwidth caps. Live mutation without restart.
 - **Processor** — cgroups v2 enforce CPU, memory, and PID limits. Seccomp-BPF filters block dangerous syscalls. Budget enforcement auto-kills pods after a configurable duration.
+- **Network** — Per-pod network namespace with an embedded DNS resolver. Domain-level allow/deny lists, anti-DNS-tunneling, bandwidth caps. Live mutation without restart.
 - **Memory** — PID, mount, UTS, and user namespace separation. Process isolation prevents visibility into host or other pods.
+- **Devices** — Selective GPU, display, and audio passthrough. The agent gets hardware access without escaping the governance layer.
 
 **Governance Ceiling:**
 - **Action Queue** — 20 built-in action types (HTTP, filesystem, git, custom) with four approval tiers: immediate, delayed, staged (human approval), and blocked. Every action tracks an undo mechanism.

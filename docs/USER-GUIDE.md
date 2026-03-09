@@ -60,7 +60,7 @@ Every action is auditable. Every capability is revocable. Every change is revers
 
 ### The Pod
 
-A pod is a self-contained execution environment with four isolation walls and a governance ceiling.
+A pod is a self-contained execution environment with a foundation (COW filesystem), four isolation walls, and a governance ceiling.
 
 <!-- output -->
 ```
@@ -68,11 +68,15 @@ A pod is a self-contained execution environment with four isolation walls and a 
 │                  GOVERNANCE CEILING                       │
 │  Audit · Vault · Action Queue · Monitoring · Lockdown    │
 ├──────────────┬─────────────┬─────────────┬──────────────┤
-│   MEMORY     │    FILE     │   NETWORK   │  PROCESSOR   │
-│  /proc mask  │ OverlayFS  │ DNS filter  │ cgroups v2   │
-│  coredump    │ COW diff/  │ namespace   │ CPU affinity │
-│  prevention  │ commit     │ iptables    │ PID ns       │
-└──────────────┴─────────────┴─────────────┴──────────────┘
+│  PROCESSOR   │   NETWORK   │   MEMORY    │   DEVICES    │
+│  cgroups v2  │ DNS filter  │ /proc mask  │ GPU pass-    │
+│  CPU affinity│ namespace   │ coredump    │  through     │
+│  seccomp-BPF │ iptables    │ prevention  │ Display/Audio│
+├──────────────┴─────────────┴─────────────┴──────────────┤
+│                  ▼ FOUNDATION ▼                          │
+│            OverlayFS Copy-on-Write                       │
+│       diff · commit · rollback · snapshots               │
+└──────────────────────────────────────────────────────────┘
 ```
 
 <!-- pause 2 -->

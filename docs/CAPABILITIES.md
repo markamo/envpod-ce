@@ -51,20 +51,24 @@ What envpod can do today (v0.1.0). For how-to guides, see [Quickstart](QUICKSTAR
 
 ## Isolation Boundaries
 
-Every pod runs inside four walls:
+Every pod has a foundation, four walls, and a governance ceiling:
 
 ```
 ┌──────────────────────────────────────────────────┐
 │                  GOVERNANCE CEILING               │
 │  Vault · Queue · Undo · Monitor · Audit · DNS    │
 ├───────────┬───────────┬──────────┬───────────────┤
-│ MEMORY    │FILESYSTEM │ NETWORK  │ PROCESSOR     │
-│ PID ns    │ OverlayFS │ Net ns   │ cgroups v2    │
-│ /proc     │ COW diff/ │ veth     │ CPU cores     │
-│ masking   │ commit/   │ DNS      │ CPU affinity  │
-│ seccomp   │ rollback  │ iptables │ Memory limit  │
-│           │           │          │ PID limit     │
-└───────────┴───────────┴──────────┴───────────────┘
+│ PROCESSOR │ NETWORK   │ MEMORY   │ DEVICES       │
+│ cgroups v2│ Net ns    │ PID ns   │ GPU pass-     │
+│ CPU/mem/  │ veth      │ mount ns │  through      │
+│ PID limits│ DNS filter│ UTS ns   │ Display/Audio │
+│ seccomp   │ iptables  │ user ns  │  passthrough  │
+│ affinity  │ port fwd  │ /proc    │               │
+├───────────┴───────────┴──────────┴───────────────┤
+│               ▼ FOUNDATION ▼                     │
+│         OverlayFS Copy-on-Write                  │
+│    diff · commit · rollback · snapshots          │
+└──────────────────────────────────────────────────┘
 ```
 
 ### What the agent cannot do

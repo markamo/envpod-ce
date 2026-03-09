@@ -369,7 +369,7 @@ INSTALL_EOF
 
 **Docker isolates. Envpod governs.**
 
-Every AI agent runs inside a **pod** — an isolated environment with four walls (memory, filesystem, network, processor) and a governance ceiling (credential vault, action queue, monitoring, remote control, audit).
+Every AI agent runs inside a **pod** — an isolated environment with a foundation (OverlayFS COW), four walls (processor, network, memory, devices), and a governance ceiling (credential vault, action queue, monitoring, remote control, audit).
 
 ## What's in This Release
 

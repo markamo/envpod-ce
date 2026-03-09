@@ -67,31 +67,42 @@ The right way to combine them is envpod's Docker backend: Docker provides the co
 
 ## At what levels of isolation does envpod offer?
 
-Think of a pod as a house built on top of the host system (the foundation). Four walls provide isolation, and the governance ceiling is the roof:
+Think of a pod as a building: a COW filesystem foundation underneath, four walls for isolation, and a governance ceiling on top:
 
 ```
          ┌─────────────────────────────────────┐
          │        GOVERNANCE CEILING (roof)     │
          │  Audit · Vault · Queue · Monitoring  │
          ├─────────┬────────┬────────┬──────────┤
-         │  FILE   │NETWORK │ MEMORY │PROCESSOR │
-         │  SYSTEM │  WALL  │  WALL  │  WALL    │
-         │  WALL   │        │        │          │
+         │PROCESSOR│NETWORK │ MEMORY │ DEVICES  │
+         │  WALL   │  WALL  │  WALL  │  WALL    │
+         │         │        │        │          │
          ├─────────┴────────┴────────┴──────────┤
-         │         HOST SYSTEM (foundation)      │
+         │    ▼ FOUNDATION (OverlayFS COW) ▼    │
+         │  diff · commit · rollback · snapshots │
+         ├─────────────────────────────────────┤
+         │           HOST SYSTEM                │
          └─────────────────────────────────────┘
 ```
 
-Envpod provides **four isolation walls** plus a **governance ceiling**:
+Envpod provides a **foundation**, **four isolation walls**, and a **governance ceiling**:
+
+**Foundation:**
+
+| Layer | Mechanism | What It Protects |
+|-------|-----------|-----------------|
+| **COW Filesystem** | OverlayFS (copy-on-write) + snapshots | Host files are never modified directly. All writes go to an overlay layer that you review before committing. The foundation makes everything else reversible. |
+
+**Four Walls:**
 
 | Wall | Mechanism | What It Protects |
 |------|-----------|-----------------|
-| **Filesystem** | OverlayFS (copy-on-write) + minimal `/dev` with device masking | Host files are never modified directly. All writes go to an overlay layer that you review before committing. The agent only sees essential pseudo-devices (`/dev/null`, `/dev/urandom`, etc.) — GPU and hardware devices are hidden unless explicitly allowed. |
+| **Processor** | cgroups v2 + CPU affinity + seccomp-BPF | CPU/memory/PID limits, syscall filtering. The agent can't exhaust host resources or call dangerous syscalls. |
 | **Network** | Network namespace + veth pairs + embedded DNS resolver | Per-pod IP address, domain-level allow/deny, rate limiting. The agent can only reach domains you whitelist. |
 | **Memory** | PID namespace + /proc masking + coredump prevention | The agent can't see host processes, can't read other pods' memory, and can't dump core. |
-| **Processor** | cgroups v2 + CPU affinity + seccomp-BPF | CPU/memory/PID limits, syscall filtering. The agent can't exhaust host resources or call dangerous syscalls. |
+| **Devices** | Selective GPU, display, audio passthrough + minimal `/dev` | The agent only sees essential pseudo-devices. GPU and hardware devices are hidden unless explicitly allowed. |
 
-On top of these walls sits the **governance ceiling**: audit logging, credential vault, action staging queue, monitoring agent, and remote lockdown. No other sandbox provides this layer.
+On top sits the **governance ceiling**: audit logging, credential vault, action staging queue, monitoring agent, and remote lockdown. No other sandbox provides this layer.
 
 ---
 

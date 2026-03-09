@@ -11,7 +11,7 @@
 
 **Docker isolates. Envpod governs.**
 
-Every AI agent runs inside a **pod** — an isolated environment with four walls (memory, filesystem, network, processor) and a governance ceiling (policy engine, tool security, vault, monitoring, audit). All agent actions are isolated, monitored, and reversible.
+Every AI agent runs inside a **pod** — an isolated environment with a foundation (OverlayFS COW), four walls (processor, network, memory, devices), and a governance ceiling (vault, action queue, monitoring, remote control, audit). All agent actions are isolated, monitored, and reversible.
 
 > **Why not just Docker?** Docker isolates processes but provides zero governance. No file change review, no action queue, no credential vault, no undo. Envpod adds the governance layer on top of the same Linux primitives. See [Docker vs Envpod](docs/COMPARE-DOCKER.md) for a full comparison.
 
@@ -23,11 +23,15 @@ Existing sandboxes (Docker, E2B, Firecrackers) provide isolation but zero govern
 
 ## Features
 
-**Filesystem Isolation** — OverlayFS copy-on-write. Agent writes go to an overlay, never the host. Review changes with `diff`, accept with `commit`, discard with `rollback`.
+**COW Foundation** — OverlayFS copy-on-write. Every write lands in a private overlay — the host is untouched. Review changes with `diff`, accept with `commit`, discard with `rollback`. The foundation makes everything else reversible.
 
-**Network Isolation** — Each pod gets its own network namespace with veth pairs. Embedded DNS resolver per pod with whitelist, blacklist, or monitor modes. Every DNS query is logged.
+**Processor Wall** — cgroups v2 (CPU, memory, PID limits), seccomp-BPF syscall filtering, CPU affinity. A runaway agent cannot starve the host.
 
-**Process Isolation** — PID namespace, cgroups v2 (CPU, memory, PID limits), seccomp-BPF syscall filtering. Processes in the pod cannot see or signal host processes.
+**Network Wall** — Each pod gets its own network namespace with veth pairs. Embedded DNS resolver per pod with whitelist, blacklist, or monitor modes. Every DNS query is logged.
+
+**Memory Wall** — PID, mount, UTS, and user namespace separation. Processes in the pod cannot see or signal host processes.
+
+**Devices Wall** — Selective GPU, display, and audio passthrough. Hardware access without escaping governance.
 
 **Credential Vault** — Secrets stored encrypted (ChaCha20-Poly1305), injected as environment variables at runtime. **Vault proxy injection** (v0.2) goes further: a transparent HTTPS proxy intercepts API requests, strips dummy auth headers, and injects real credentials at the transport layer — the agent never has access to real API keys in env vars, memory, or config files.
 
@@ -47,7 +51,21 @@ Existing sandboxes (Docker, E2B, Firecrackers) provide isolation but zero govern
 
 **Display + Audio Forwarding** — GPU passthrough, Wayland/X11 display forwarding, PipeWire/PulseAudio audio forwarding for GUI agents. Auto-install desktop environments (xfce, openbox, sway) via `devices.desktop_env`.
 
-**Web Display (noVNC)** — Run a full browser desktop inside a pod, accessible from any browser at localhost:6080. Envpod auto-brands the interface, auto-connects (no click needed), and includes a file upload button (files go to `/tmp/uploads/`). Built-in audio streaming via PulseAudio + Opus/WebM. Works on headless servers, SSH sessions, no host display needed. Three desktop environments: xfce (~200MB), openbox (~50MB), sway (~150MB).
+**Web Display (noVNC)** — Run a full browser desktop inside a pod, accessible from any browser at localhost:6080. Envpod auto-brands the interface, auto-connects (no click needed), and includes a file upload button (files go to `/tmp/uploads/`). Built-in audio streaming via PulseAudio + Opus/WebM with toast notifications for upload status. All supervisor processes auto-restart on crash. Works on headless servers, SSH sessions, no host display needed. Three desktop environments: xfce (~200MB), openbox (~50MB), sway (~150MB). Default ports: 6080 (display), 6081 (audio), 5080 (upload).
+
+**Snapshots** — Save and restore the agent's overlay state at any point. `envpod snapshot create/ls/restore/destroy/prune/promote`. Auto-snapshot before every run. Promote any snapshot to a clonable base pod. Configurable retention.
+
+**Port Forwarding** — Three scopes: `ports` (localhost only), `public_ports` (all interfaces), `internal_ports` (pod-to-pod only). State-tracked for exact cleanup. Live forwarding via `-p`/`-P`/`-i` flags at run time.
+
+**Pod Discovery** — Pods find each other by name (`agent-b.pods.local`). Bilateral enforcement: both pods must opt in. Central `envpod dns-daemon` manages the registry. Live mutation via `envpod discover`.
+
+**Budget Enforcement** — `budget.max_duration` auto-kills the pod after the configured time. Logs a `budget_exceeded` audit event.
+
+**Presets & Interactive Wizard** — 18 built-in presets across 4 categories. `envpod init my-agent` launches an interactive wizard. `--preset claude-code` for non-interactive. Customize CPU, memory, GPU after selection.
+
+**Guardian Cgroup** — Display, audio, and upload processes run in a `guardian/` subcgroup that survives `envpod lock`/`envpod unlock` (cgroup freeze/thaw). The user's app runs in `app/`. Lock freezes the app but the desktop stays responsive.
+
+**Jailbreak Test** — Built-in security boundary probe (`examples/jailbreak-test.sh`). Tests filesystem escape, PID namespace, network namespace, seccomp, cgroup limits, and information leakage. Three phases: host boundary, pod boundary, hardening. Runs as root and non-root.
 
 **Host App Auto-Mount** — List apps in `pod.yaml` and envpod resolves binaries, shared libraries, and data directories via `which` + `ldd`, then bind-mounts them read-only. No reinstalling Chrome, Python, or Node inside every pod — instant, zero disk overhead.
 
@@ -95,19 +113,23 @@ See [Installation](docs/INSTALL.md), [Quickstart](docs/QUICKSTART.md), [Pod Conf
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                  GOVERNANCE CEILING                  │
-│  Credential Vault  ·  Action Queue  ·  Undo         │
-│  Monitoring Agent  ·  Remote Control ·  Audit Log   │
-├──────────┬──────────┬──────────┬────────────────────┤
-│ MEMORY   │FILESYSTEM│ NETWORK  │ PROCESSOR          │
-│ WALL     │ WALL     │ WALL     │ WALL               │
-│          │          │          │                     │
-│ PID ns   │OverlayFS │ Net ns   │ cgroups v2         │
-│ /proc    │ COW      │ veth     │ CPU cores/affinity │
-│ masking  │ diff/    │ DNS      │ Memory limit       │
-│ seccomp  │ commit/  │ filtering│ PID limit          │
-│          │ rollback │ iptables │                     │
-├──────────┴──────────┴──────────┴────────────────────┤
+│                 GOVERNANCE CEILING                   │
+│  Credential Vault · Action Queue · Undo · Audit Log │
+│  Monitoring Agent · Remote Control · Dashboard      │
+├───────────┬───────────┬───────────┬─────────────────┤
+│ PROCESSOR │ NETWORK   │ MEMORY    │ DEVICES         │
+│ WALL      │ WALL      │ WALL      │ WALL            │
+│           │           │           │                  │
+│ cgroups v2│ Net ns    │ PID ns    │ GPU passthrough  │
+│ CPU/mem/  │ veth      │ mount ns  │ Display (X11/    │
+│ PID limits│ DNS filter│ UTS ns    │  Wayland/noVNC)  │
+│ seccomp   │ iptables  │ user ns   │ Audio (PW/PA)    │
+│ affinity  │ port fwd  │ /proc mask│                  │
+├───────────┴───────────┴───────────┴─────────────────┤
+│               ▼ FOUNDATION ▼                        │
+│         OverlayFS Copy-on-Write                     │
+│    diff · commit · rollback · snapshots             │
+├─────────────────────────────────────────────────────┤
 │              ISOLATION BACKEND (pluggable)           │
 │                  native (Linux)                      │
 └─────────────────────────────────────────────────────┘
@@ -429,12 +451,16 @@ sudo ./tests/benchmark-scale.sh 50   # scale test (create + run + destroy N)
 | | Docker Sandbox | E2B | Envpod |
 |---|---|---|---|
 | **Isolation** | Container (namespaces + cgroups) | Cloud microVM | Container (namespaces + cgroups + seccomp-BPF) |
-| **Reversibility** | None — changes permanent | None | COW overlay + diff/commit/rollback + undo registry |
+| **Reversibility** | None — changes permanent | None | COW overlay + diff/commit/rollback + undo registry + snapshots |
 | **Governance** | None | None | Vault, action queue, monitoring, remote control, audit |
 | **DNS Control** | None | None | Per-pod whitelist/blacklist/monitor with query logging |
 | **Display/Audio** | Manual volume mounts | N/A | Auto-detect Wayland/X11, PipeWire/PulseAudio |
-| **Web Display** | None | Manual | noVNC with auto-branding, auto-connect, file upload |
-| **Security Audit** | None | None | Static analysis of pod config (`--security`) |
+| **Web Display** | None | Manual | noVNC with audio streaming, file upload, auto-branding |
+| **Security Audit** | None | None | Static config analysis + runtime jailbreak test |
+| **Snapshots** | None | None | Create, restore, auto-checkpoint, promote to base |
+| **Pod Discovery** | Docker DNS | N/A | Bilateral `*.pods.local` with central daemon |
+| **Budget** | None | None | Auto-kill after max_duration |
+| **Presets** | Dockerfiles | Templates | 18 built-in + interactive wizard |
 
 ## Development
 

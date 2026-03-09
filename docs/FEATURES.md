@@ -2,17 +2,18 @@
 
 > "Docker isolates. Envpod governs."
 
-envpod gives every AI agent four hard walls and a governance ceiling.
+envpod gives every AI agent a foundation, four hard walls, and a governance ceiling.
 The agent runs inside a **pod** — isolated, auditable, and fully reversible.
 You stay in control of every change it makes.
 
 ---
 
-## Filesystem Governance
+## Foundation — Copy-on-Write Filesystem
 
-**Copy-on-write overlay (OverlayFS)** — every file the agent writes goes into
+**OverlayFS copy-on-write** — every file the agent writes goes into
 a private overlay. The host filesystem is untouched until you explicitly approve
-the changes.
+the changes. The COW foundation is what makes everything else reversible — the
+entire pod sits on top of it.
 
 ```bash
 envpod diff   my-agent        # see exactly what the agent changed
