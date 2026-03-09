@@ -181,7 +181,7 @@ pub fn read_usage(cgroup: &Path) -> Result<ResourceUsage> {
 
 /// Known display process names that should be migrated to the guardian cgroup.
 /// Matched against both /proc/{pid}/comm and /proc/{pid}/cmdline.
-const DISPLAY_PROCESS_NAMES: &[&str] = &["Xvfb", "x11vnc", "websockify", "gst-launch", "pulseaudio", "socat"];
+const DISPLAY_PROCESS_NAMES: &[&str] = &["Xvfb", "x11vnc", "websockify", "gst-launch", "pulseaudio", "socat", "upload-server"];
 
 /// Create app/ and guardian/ subcgroups for web display guardian mode.
 ///

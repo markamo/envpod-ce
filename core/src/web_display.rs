@@ -104,13 +104,13 @@ pactl set-source-volume envpod.monitor 65536
     case "$line" in *source*) pactl set-source-volume envpod.monitor 65536 2>/dev/null;; esac
 done) &
 
-# Start audio proxy (GStreamer: raw PCM → Opus/WebM)
-/usr/local/bin/envpod-audio-proxy.sh -l 5711 &
+# Start audio proxy (GStreamer: raw PCM → Opus/WebM, auto-restart on crash)
+(while true; do /usr/local/bin/envpod-audio-proxy.sh -l 5711; sleep 1; done) &
 AUDIO_PROXY_PID=$!
 sleep 0.5
 
-# Start websockify for audio WebSocket on port {audio_port}
-websockify 0.0.0.0:{audio_port} localhost:5711 &
+# Start websockify for audio WebSocket on port {audio_port} (auto-restart on crash)
+(while true; do websockify 0.0.0.0:{audio_port} localhost:5711; sleep 1; done) &
 AUDIO_WS_PID=$!
 "#)
     } else {
@@ -124,7 +124,7 @@ AUDIO_WS_PID=$!
     };
 
     let upload_block = if config.file_upload {
-        "\n# --- File upload server ---\nmkdir -p /tmp/uploads\npython3 /usr/local/bin/envpod-upload-server.py &\nUPLOAD_PID=$!\n".to_string()
+        "\n# --- File upload server (auto-restart on crash) ---\nmkdir -p /tmp/uploads\n(while true; do python3 /usr/local/bin/envpod-upload-server.py 2>/dev/null; sleep 1; done) &\nUPLOAD_PID=$!\n".to_string()
     } else {
         "\nUPLOAD_PID=\n".to_string()
     };
@@ -150,8 +150,8 @@ cleanup() {{
 }}
 trap cleanup EXIT
 
-# Start Xvfb virtual display
-Xvfb :99 -screen 0 {resolution}x24 -ac -noreset 2>/dev/null &
+# Start Xvfb virtual display (auto-restart on crash)
+(while true; do Xvfb :99 -screen 0 {resolution}x24 -ac -noreset 2>/dev/null; sleep 1; done) &
 XVFB_PID=$!
 
 # Wait for Xvfb to be ready (check for X socket)
@@ -160,13 +160,13 @@ for i in $(seq 1 20); do
     sleep 0.25
 done
 
-# Start x11vnc connecting to the virtual display
-x11vnc -display :99 -forever -nopw -shared -noshm -rfbport 5900 -q &
+# Start x11vnc connecting to the virtual display (auto-restart on crash)
+(while true; do x11vnc -display :99 -forever -nopw -shared -noshm -rfbport 5900 -q; sleep 1; done) &
 X11VNC_PID=$!
 sleep 1
 
-# Start websockify to bridge VNC to WebSocket
-websockify --web /usr/share/novnc 0.0.0.0:6080 localhost:5900 &
+# Start websockify to bridge VNC to WebSocket (auto-restart on crash)
+(while true; do websockify --web /usr/share/novnc 0.0.0.0:6080 localhost:5900; sleep 1; done) &
 WEBSOCKIFY_PID=$!
 {audio_block}{upload_block}
 # Execute the user command, redirecting its output to a log file
@@ -661,15 +661,41 @@ http.server.HTTPServer(('0.0.0.0', PORT), H).serve_forever()
 const UPLOAD_PLUGIN_JS: &str = r##"/**
  * envpod upload plugin for noVNC
  * File upload via fetch() to Python upload server inside pod
+ * Toast notifications for upload status
  */
 
 const EnvpodUpload = {
     btn: null,
     uploadPort: __ENVPOD_UPLOAD_PORT__,
+    toastContainer: null,
 
     init() {
+        this.createToastContainer();
         this.addControls();
         console.log('[envpod-upload] initialized, upload port:', this.uploadPort);
+    },
+
+    createToastContainer() {
+        const c = document.createElement('div');
+        c.id = 'envpod_toast_container';
+        c.style.cssText = 'position:fixed;top:12px;right:12px;z-index:99999;display:flex;flex-direction:column;gap:8px;pointer-events:none;';
+        document.body.appendChild(c);
+        this.toastContainer = c;
+    },
+
+    toast(msg, type) {
+        const t = document.createElement('div');
+        const bg = type === 'ok' ? '#1a7f37' : type === 'err' ? '#cf222e' : '#2d333b';
+        t.style.cssText = 'pointer-events:auto;padding:10px 16px;border-radius:8px;color:#fff;font:13px/1.4 -apple-system,system-ui,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.4);max-width:340px;word-break:break-word;opacity:0;transition:opacity .2s;background:' + bg;
+        t.textContent = msg;
+        this.toastContainer.appendChild(t);
+        requestAnimationFrame(() => { t.style.opacity = '1'; });
+        const dur = type === 'ok' ? 4000 : type === 'err' ? 6000 : 2000;
+        setTimeout(() => {
+            t.style.opacity = '0';
+            setTimeout(() => t.remove(), 300);
+        }, dur);
+        return t;
     },
 
     addControls() {
@@ -720,8 +746,8 @@ const EnvpodUpload = {
 
     async upload(file) {
         const url = `${location.protocol}//${location.hostname}:${this.uploadPort}/`;
-        this.btn.title = `Uploading ${file.name}...`;
         this.btn.classList.add('noVNC_selected');
+        const progressToast = this.toast(`Uploading ${file.name} (${this.fmtSize(file.size)})...`, 'info');
         try {
             const resp = await fetch(url, {
                 method: 'POST',
@@ -729,19 +755,18 @@ const EnvpodUpload = {
                 body: file,
             });
             const data = await resp.json();
+            progressToast.remove();
             if (data.ok) {
-                this.btn.title = `Uploaded: ${data.file} (${this.fmtSize(data.size)}) \u2192 /tmp/uploads/`;
+                this.toast(`\u2713 ${data.file} (${this.fmtSize(data.size)}) \u2192 /tmp/uploads/`, 'ok');
             } else {
-                this.btn.title = 'Upload failed';
+                this.toast(`\u2717 Upload failed: ${file.name}`, 'err');
             }
         } catch (err) {
             console.error('[envpod-upload] failed:', err);
-            this.btn.title = 'Upload failed \u2014 server not reachable';
+            progressToast.remove();
+            this.toast(`\u2717 Upload failed \u2014 server not reachable`, 'err');
         }
-        setTimeout(() => {
-            this.btn.classList.remove('noVNC_selected');
-            this.btn.title = 'Upload file to pod';
-        }, 3000);
+        this.btn.classList.remove('noVNC_selected');
     },
 
     fmtSize(b) {

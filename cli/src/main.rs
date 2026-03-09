@@ -2058,15 +2058,23 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
     let quiet_log_path = std::env::var("ENVPOD_QUIET_LOG").ok().map(std::path::PathBuf::from);
     let proc_handle = backend.start(&handle, command, effective_user, env_vars, quiet_log_path.as_deref())?;
 
-    // Guardian cgroup: migrate display PIDs (Xvfb, x11vnc, websockify) from
-    // app/ to guardian/ so they survive freeze/thaw (envpod lock/unlock).
+    // Guardian cgroup: migrate display/audio/upload PIDs from app/ to guardian/
+    // so they survive freeze/thaw (envpod lock/unlock).
     if web_display_type != envpod_core::config::WebDisplayType::None {
         if let Some(ref cg) = state.cgroup_path {
-            let min_expected = match web_display_type {
+            let mut min_expected = match web_display_type {
                 envpod_core::config::WebDisplayType::Novnc => 3,   // Xvfb + x11vnc + websockify
                 envpod_core::config::WebDisplayType::Webrtc => 2,  // Xvfb + gst-launch
                 _ => 1,
             };
+            if let Some(ref cfg) = pod_config {
+                if cfg.web_display.audio {
+                    min_expected += 3; // pulseaudio + socat (audio-proxy) + audio websockify
+                }
+                if cfg.web_display.file_upload {
+                    min_expected += 1; // upload server
+                }
+            }
             let mut total_migrated = 0;
             for _ in 0..30 {
                 match envpod_core::backend::native::migrate_display_pids(cg) {
