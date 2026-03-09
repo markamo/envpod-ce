@@ -323,6 +323,16 @@ Compare security findings with `sudo envpod audit --security -c examples/browser
 | `browser-wayland.yaml` (Wayland + PipeWire) | LOW | MEDIUM |
 <!-- pause 2 -->
 
+**Alternative: Browser Desktop via noVNC** — No host display needed. Run a full desktop in the browser:
+
+```bash
+sudo envpod init web-demo --preset desktop
+sudo envpod run web-demo -b -- startxfce4
+# Open http://localhost:6080 — auto-connects, envpod-branded, with audio + file upload
+```
+
+The noVNC interface includes an upload button (files → `/tmp/uploads/`) and an audio toggle (speaker icon). Works on headless servers and SSH sessions.
+
 ---
 
 ## 7. Verify Isolation (Jailbreak Test)
@@ -508,6 +518,16 @@ Update network policy without restarting:
 ```bash
 sudo envpod dns claude-code --allow newdomain.com
 sudo envpod dns claude-code --deny suspicious.io
+```
+
+### Snapshots
+
+Save and restore pod state at any point:
+
+```bash
+sudo envpod snapshot claude-code create before-refactor
+sudo envpod snapshot claude-code ls
+sudo envpod snapshot claude-code restore <id>
 ```
 
 ---

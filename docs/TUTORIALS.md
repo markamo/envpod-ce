@@ -28,6 +28,7 @@ Step-by-step guides for common envpod use cases. Each tutorial is self-contained
 - [Tutorial 11: Live Discovery Mutations](#tutorial-11-live-discovery-mutations)
 - [Tutorial 12: Action Catalog — Governed Tool Use](#tutorial-12-action-catalog--governed-tool-use)
 - [Tutorial 13: Web Display — Browser Desktop via noVNC](#tutorial-13-web-display--browser-desktop-via-novnc)
+- [Tutorial 14: Desktop Web — Chrome + VS Code in a Browser](#tutorial-14-desktop-web--chrome--vs-code-in-a-browser)
 
 ---
 
@@ -1942,8 +1943,12 @@ The banner shows:
 
 <!-- output -->
 ```
-Display   noVNC → http://localhost:6080
+Display   noVNC → http://localhost:6080/vnc.html
+Audio     Opus/WebM → port 6081 (click speaker icon in noVNC) [beta]
+Upload    Click upload icon in noVNC → /tmp/uploads/
 Port      [local ] 127.0.0.1:6080:6080 → pod
+Port      [local ] 127.0.0.1:6081:6081 → pod
+Port      [local ] 127.0.0.1:5080:5080 → pod
 ```
 
 ### Step 4: Open in browser
@@ -1955,7 +1960,7 @@ Navigate to:
 http://localhost:6080/vnc.html
 ```
 
-Click **Connect**. You'll see Chrome running inside the pod.
+The display auto-connects — no click needed. You'll see Chrome running inside the pod.
 
 > **Note:** The "You are using an unsupported command-line flag: --no-sandbox"
 > warning is expected. envpod's namespace isolation replaces Chrome's internal
@@ -1990,6 +1995,41 @@ All services run **inside** the pod:
 
 The supervisor script (`/usr/local/bin/envpod-display-start`) handles startup,
 cleanup, and NVIDIA GPU workarounds automatically.
+
+### Audio Streaming [beta]
+
+Enable audio in the config:
+
+```yaml
+web_display:
+  type: novnc
+  audio: true
+  audio_port: 6081
+```
+
+Click the speaker icon in the noVNC side panel to toggle audio on/off. Audio streams via PulseAudio → Opus/WebM over WebSocket.
+
+The desktop mixer shows both speaker and microphone sliders. Only the speaker slider affects volume — the microphone slider is locked at 100% by a background watchdog.
+
+### File Upload
+
+File upload is enabled by default for all noVNC display pods. Click the cloud-upload icon in the noVNC side panel to select files from your computer.
+
+Uploaded files appear in `/tmp/uploads/` inside the pod. This is upload-only — files come out through `envpod diff` / `envpod commit` (the governance layer).
+
+To disable:
+```yaml
+web_display:
+  file_upload: false
+```
+
+### noVNC Branding
+
+envpod automatically replaces the noVNC branding:
+- Side panel and connect dialog logos → "envpod"
+- Page title → "envpod — {pod-name}"
+- Favicon → envpod icon
+- Auto-connect enabled (skip connect dialog)
 
 ### Alternatives
 
@@ -2097,6 +2137,49 @@ Expected findings:
 **Xvfb crashes?** — On NVIDIA hosts, the supervisor sets `__EGL_VENDOR_LIBRARY_FILENAMES=""` to prevent NVIDIA EGL library loading. Should be automatic.
 
 See [WEB-DISPLAY.md](WEB-DISPLAY.md) for the full reference.
+
+---
+
+## Tutorial 14: Desktop Web — Chrome + VS Code in a Browser
+
+A clean desktop with Chrome and VS Code, accessible from any browser.
+
+### Step 1: Create the pod
+
+```bash
+sudo envpod init my-web -c examples/desktop-web.yaml
+```
+
+This installs XFCE desktop, Chrome, and VS Code (~3-5 min first time).
+
+### Step 2: Run the desktop
+
+```bash
+sudo envpod run my-web -b -- startxfce4
+```
+
+### Step 3: Open in browser
+
+Navigate to `http://localhost:6080` — the desktop auto-connects.
+
+Launch Chrome or VS Code from the XFCE Applications menu, or open a terminal and run:
+```bash
+google-chrome --no-sandbox &
+code --no-sandbox &
+```
+
+### File Upload
+
+Click the upload icon (cloud with arrow) in the noVNC side panel to upload files from your computer to `/tmp/uploads/` inside the pod. Useful for uploading source code, images, or documents to work with in the desktop environment.
+
+### Clone for Instant Copies
+
+After the first setup, clone the pod for instant copies (~130ms vs 3-5 min):
+
+```bash
+sudo envpod clone my-web my-web-2
+sudo envpod clone my-web my-web-3
+```
 
 ---
 

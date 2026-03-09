@@ -21,16 +21,19 @@ Comprehensive reference for envpod. This guide covers every command, configurati
 8. [Network Isolation](#network-isolation)
 9. [Process Isolation](#process-isolation)
 10. [Device Masking](#device-masking)
-11. [Security Hardening](#security-hardening)
-12. [Credential Vault](#credential-vault)
-13. [Action Queue & Undo](#action-queue--undo)
-14. [Monitoring & Alerts](#monitoring--alerts)
-15. [Remote Control](#remote-control)
-16. [Audit Trail](#audit-trail)
-17. [Live Mutation](#live-mutation)
-18. [Example Configs](#example-configs)
-19. [FAQ](FAQ.md)
-20. [Troubleshooting](#troubleshooting)
+11. [Web Display (noVNC)](#web-display-novnc)
+12. [Security Hardening](#security-hardening)
+13. [Credential Vault](#credential-vault)
+14. [Action Queue & Undo](#action-queue--undo)
+15. [Monitoring & Alerts](#monitoring--alerts)
+16. [Remote Control](#remote-control)
+17. [Audit Trail](#audit-trail)
+18. [Snapshots](#snapshots)
+19. [Live Mutation](#live-mutation)
+20. [Host App Auto-Mount](#host-app-auto-mount)
+21. [Example Configs](#example-configs)
+22. [FAQ](FAQ.md)
+23. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -1408,6 +1411,44 @@ devices:
 
 Pairs with `web_display` (noVNC/WebRTC) for browser-based access, or `devices.display: true` for host display passthrough. The `desktop` preset uses `desktop_env: xfce` with noVNC — see `examples/desktop.yaml`.
 
+---
+
+## Web Display (noVNC)
+
+Run a full graphical desktop inside a pod, accessible from any browser. No host display, Wayland, or X11 needed. Works on headless servers and SSH sessions.
+
+<!-- output -->
+```yaml
+web_display:
+  type: novnc              # none (default), novnc (CE), webrtc (Premium)
+  port: 6080               # host port for browser access
+  resolution: "1920x1080"  # virtual display resolution
+  audio: true              # PulseAudio + Opus/WebM audio streaming
+  audio_port: 6081         # audio WebSocket port
+  file_upload: true        # upload button in noVNC panel
+  upload_port: 5080        # upload server port
+```
+
+Features:
+- **Auto-branding** — envpod logo, favicon, and page title (shows pod name)
+- **Auto-connect** — skips the VNC connect dialog (opt out with `?autoconnect=false`)
+- **Audio streaming** — PulseAudio null sink -> Opus/WebM via WebSocket (click speaker icon in panel) [beta]
+- **File upload** — click upload icon in side panel to send files to `/tmp/uploads/` inside the pod (upload-only, no download — files come out via `envpod diff`/`commit`)
+- **Guardian cgroup** — display services (Xvfb, x11vnc, websockify) survive pod freeze/thaw
+
+<!-- no-exec -->
+<!-- type-delay 0.02 -->
+```bash
+# Desktop pod example
+sudo envpod init my-desktop --preset desktop
+sudo envpod run my-desktop -b -- startxfce4
+# Open http://localhost:6080 in your browser
+```
+
+Pairs with `devices.desktop_env` (xfce, openbox, sway) for a complete desktop experience.
+
+---
+
 ### Why This Matters
 
 Without device masking, a pod with access to the full host `/dev` could:
@@ -1813,6 +1854,60 @@ Every action inside a pod is logged to `{pod_dir}/audit.jsonl`. The audit log is
 
 ---
 
+## Snapshots
+
+Snapshots capture the pod's overlay (upper/) at a point in time. Use them to checkpoint work, experiment safely, and promote proven states into reusable base pods.
+
+### Configuration
+
+<!-- output -->
+```yaml
+snapshots:
+  auto_on_run: true    # auto-snapshot at the start of each `envpod run` (default: false)
+  max_keep: 10         # max auto-snapshots to retain (default: 10)
+```
+
+### CLI Commands
+
+<!-- no-exec -->
+<!-- type-delay 0.02 -->
+```bash
+# Create a named snapshot
+sudo envpod snapshot my-agent create -n "before-refactor"
+
+# List all snapshots
+sudo envpod snapshot my-agent ls
+
+# Restore a snapshot (replaces current upper/ with snapshot)
+sudo envpod snapshot my-agent restore <id>
+
+# Delete a snapshot
+sudo envpod snapshot my-agent destroy <id>
+
+# Prune old auto-snapshots (keeps named snapshots)
+sudo envpod snapshot my-agent prune
+
+# Promote a snapshot to a standalone base pod (instantly clonable)
+sudo envpod snapshot my-agent promote <id> my-base
+```
+
+### Snapshot Details
+
+| Feature | Description |
+|---------|-------------|
+| **Named snapshots** | Created manually with `-n label`. Never pruned automatically. |
+| **Auto-snapshots** | Created at start of `envpod run` when `auto_on_run: true`. Labeled `auto`. |
+| **Prune policy** | `prune` only removes auto-snapshots beyond `max_keep`. Named/manual snapshots are always preserved. |
+| **Promote** | `promote <id> <base-name>` copies the snapshot upper/ as a base pod — instantly clonable via `envpod clone`. |
+| **Restore** | Replaces the current overlay upper/ with the snapshot contents. Pod must be stopped. |
+| **Storage** | Each snapshot stored at `{pod_dir}/snapshots/{id}/` with an `index.json` manifest. |
+
+### Dashboard
+
+The web dashboard (Snapshots tab) provides a visual timeline of all snapshots with one-click Restore, Promote, and Delete actions.
+
+---
+
 ## Live Mutation
 
 All isolation walls are dynamically mutable during execution without restart or state loss:
@@ -1830,6 +1925,46 @@ This enables:
 - **Incident response without state loss** — restrict a pod while keeping it running
 - **Progressive trust** — grant capabilities as the agent earns trust
 - **Ephemeral access** — mount a directory for one operation, then unmount
+
+---
+
+## Host App Auto-Mount
+
+Mount host applications into a pod without reinstalling them. Envpod resolves each binary via `which` + `ldd`, then bind-mounts the binary, its shared libraries, and known data directories read-only.
+
+### Configuration
+
+<!-- output -->
+```yaml
+filesystem:
+  apps:
+    - google-chrome
+    - python3
+    - node
+    - git
+```
+
+Each entry is a binary name. Envpod automatically resolves:
+- The binary path (via `which`)
+- All shared library dependencies (via `ldd`)
+- Known data directories (e.g. Chrome profile dirs, Python site-packages)
+
+All mounts are **read-only** — the app runs inside the pod but cannot modify host files.
+
+### Usage
+
+<!-- no-exec -->
+<!-- type-delay 0.02 -->
+```bash
+# Init with host apps
+sudo envpod init my-pod -c examples/host-apps.yaml
+
+# Or add apps to any existing pod.yaml
+sudo envpod init my-pod
+# Then add filesystem.apps to pod.yaml and re-init
+```
+
+This avoids the overhead of reinstalling large applications (Chrome, VS Code, etc.) inside every pod.
 
 ---
 
@@ -1885,7 +2020,7 @@ sudo envpod init my-agent                          # interactive wizard
 
 ### Additional Example Configs
 
-34 example configs total in `examples/` — the 18 presets above plus configs for specialized use cases:
+42 example configs total in `examples/` — the 18 presets above plus configs for specialized use cases:
 
 | Config | Description |
 |--------|-------------|
@@ -1903,6 +2038,16 @@ sudo envpod init my-agent                          # interactive wizard
 | `jetson-orin.yaml` | NVIDIA Jetson Orin (ARM64) |
 | `raspberry-pi.yaml` | Raspberry Pi 4/5 (ARM64) |
 | `web-display-novnc.yaml` | noVNC web display |
+| `desktop-openbox.yaml` | Openbox ultra-minimal desktop |
+| `desktop-sway.yaml` | Sway Wayland-native desktop |
+| `desktop-user.yaml` | Desktop with host user environment |
+| `desktop-web.yaml` | Desktop with Chrome + VS Code |
+| `workstation.yaml` | Standard workstation |
+| `workstation-full.yaml` | Full workstation (desktop, GPU, audio) |
+| `workstation-gpu.yaml` | GPU-focused workstation |
+| `gimp.yaml` | GIMP image editor in desktop pod |
+| `host-apps.yaml` | Auto-mount host apps (no reinstall) |
+| `clone-user.yaml` | Clone host user environment |
 
 ### Security Testing
 

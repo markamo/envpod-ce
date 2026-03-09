@@ -47,6 +47,8 @@ Existing sandboxes (Docker, E2B, Firecrackers) provide isolation but zero govern
 
 **Display + Audio Forwarding** — GPU passthrough, Wayland/X11 display forwarding, PipeWire/PulseAudio audio forwarding for GUI agents. Auto-install desktop environments (xfce, openbox, sway) via `devices.desktop_env`.
 
+**Web Display (noVNC)** — Run a full browser desktop inside a pod, accessible from any browser at localhost:6080. Envpod auto-brands the interface, auto-connects (no click needed), and includes a file upload button (files go to `/tmp/uploads/`). Built-in audio streaming via PulseAudio + Opus/WebM. Works on headless servers, SSH sessions, no host display needed. Three desktop environments: xfce (~200MB), openbox (~50MB), sway (~150MB).
+
 **Host App Auto-Mount** — List apps in `pod.yaml` and envpod resolves binaries, shared libraries, and data directories via `which` + `ldd`, then bind-mounts them read-only. No reinstalling Chrome, Python, or Node inside every pod — instant, zero disk overhead.
 
 **Clone Host User** — `host_user: { clone_host: true }` clones your username, shell, dotfiles, and workspace directories into the pod with COW isolation. The agent works in your real environment — your files, your tools, your config — but every change is staged for review. Sensitive paths (`.ssh`, `.gnupg`, `.aws`) excluded by default.
@@ -141,6 +143,9 @@ See [Installation](docs/INSTALL.md), [Quickstart](docs/QUICKSTART.md), [Pod Conf
 | `envpod dashboard [--port 9090]` | Start web dashboard (v0.2) |
 | `envpod mount <name> <path>` | Bind-mount a host path into a pod |
 | `envpod unmount <name> <path>` | Unmount a path from a pod |
+| `envpod snapshot <name> create/ls/restore/destroy/prune/promote` | Manage pod snapshots |
+| `envpod discover <pod>` | Mutate pod discovery settings |
+| `envpod dns-daemon` | Start central pod discovery daemon |
 | `envpod dns <name>` | Update DNS policy on a running pod |
 | `envpod remote <name> <cmd>` | Send remote control command |
 | `envpod monitor <name>` | Manage monitoring policy |
@@ -205,6 +210,15 @@ devices:
   audio_protocol: auto      # auto, pipewire, pulseaudio
   desktop_env: none         # auto-install desktop: none, xfce, openbox, sway
   extra: ["/dev/fuse"]      # additional devices
+
+web_display:
+  type: novnc            # none (default), novnc (CE), webrtc (Premium)
+  port: 6080
+  resolution: "1280x720"
+  audio: true             # PulseAudio + Opus/WebM audio streaming
+  audio_port: 6081
+  file_upload: true       # upload button in noVNC panel (files → /tmp/uploads/)
+  upload_port: 5080
 
 vault:                       # v0.2 — vault proxy injection
   proxy: true                # enable transparent HTTPS proxy
@@ -276,7 +290,7 @@ The interactive wizard also lets you customize CPU cores, memory, and GPU after 
 
 ## Additional Examples
 
-34 example configs total in `examples/` — the 18 presets above plus:
+42 example configs total in `examples/` — the 18 presets above plus:
 
 | Example | Description |
 |---------|-------------|
@@ -296,6 +310,14 @@ The interactive wizard also lets you customize CPU cores, memory, and GPU after 
 | [`web-display-novnc.yaml`](examples/web-display-novnc.yaml) | noVNC web display |
 | [`host-apps.yaml`](examples/host-apps.yaml) | Auto-mount host apps (Chrome, Python, Node) |
 | [`clone-user.yaml`](examples/clone-user.yaml) | Clone host user environment |
+| [`desktop-openbox.yaml`](examples/desktop-openbox.yaml) | Openbox ultra-minimal desktop |
+| [`desktop-sway.yaml`](examples/desktop-sway.yaml) | Sway Wayland-native desktop |
+| [`desktop-user.yaml`](examples/desktop-user.yaml) | Desktop with host user environment |
+| [`desktop-web.yaml`](examples/desktop-web.yaml) | Desktop with Chrome + VS Code |
+| [`workstation.yaml`](examples/workstation.yaml) | Standard workstation |
+| [`workstation-full.yaml`](examples/workstation-full.yaml) | Full workstation (desktop, GPU, audio) |
+| [`workstation-gpu.yaml`](examples/workstation-gpu.yaml) | GPU-focused workstation |
+| [`gimp.yaml`](examples/gimp.yaml) | GIMP image editor in desktop pod |
 
 ## Performance
 
@@ -411,6 +433,7 @@ sudo ./tests/benchmark-scale.sh 50   # scale test (create + run + destroy N)
 | **Governance** | None | None | Vault, action queue, monitoring, remote control, audit |
 | **DNS Control** | None | None | Per-pod whitelist/blacklist/monitor with query logging |
 | **Display/Audio** | Manual volume mounts | N/A | Auto-detect Wayland/X11, PipeWire/PulseAudio |
+| **Web Display** | None | Manual | noVNC with auto-branding, auto-connect, file upload |
 | **Security Audit** | None | None | Static analysis of pod config (`--security`) |
 
 ## Development

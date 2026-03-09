@@ -186,13 +186,18 @@ Save and restore the agent's overlay state at any point.
 envpod snapshot my-agent create before-refactor
 envpod snapshot my-agent ls
 envpod snapshot my-agent restore before-refactor
+envpod snapshot my-agent promote <id> my-base   # promote snapshot to base pod
 ```
 
 Auto-snapshot before every run — a checkpoint always exists from before
 the last execution. Configurable retention (`keep_last: 5`).
 
+Promote any snapshot to a base pod with `promote` — the snapshot's overlay
+becomes an instantly-clonable base, ready for `envpod clone`.
+
 **Impact:** experiment freely. The agent tried something destructive?
-Restore to before the run with one command.
+Restore to before the run with one command. Found a good state? Promote it
+to a base and clone a fleet from that exact checkpoint.
 
 ---
 
@@ -258,20 +263,39 @@ Access a pod's graphical desktop from any browser — no X11 or Wayland needed.
 web_display:
   type: novnc
   port: 6080
-  resolution: "1280x720"
+  resolution: "1920x1080"
+  audio: true              # PulseAudio + Opus/WebM streaming via WebSocket
+  audio_port: 6081         # audio WebSocket port (default: 6081)
+  file_upload: true        # upload button in noVNC panel (default: true)
+  upload_port: 5080        # Python HTTP upload server port (default: 5080)
 ```
 
 ```bash
-sudo envpod run my-agent -- google-chrome --no-sandbox --start-maximized
-# Open http://localhost:6080/vnc.html in your browser
+sudo envpod run my-agent -b -- startxfce4
+# Open http://localhost:6080 in your browser — auto-connects, no click needed
 ```
 
 A virtual display (Xvfb) + VNC server (x11vnc) + WebSocket bridge (websockify)
 run inside the pod. Port forwarded to localhost automatically. Works on headless
 servers, SSH sessions, and remote machines.
 
+**Audio streaming** — when `audio: true`, PulseAudio runs inside the pod and
+streams audio via Opus/WebM over a WebSocket on the audio port. A speaker button
+appears in the noVNC sidebar to toggle audio on/off. Works with Chrome, Firefox,
+and any application that outputs to PulseAudio.
+
+**File upload** — when `file_upload: true` (the default), an upload button
+appears in the noVNC sidebar. Click it to upload files from your host into the
+pod at `/tmp/uploads/`. Uses a lightweight Python HTTP server on the upload port.
+
+**Auto-branding** — envpod automatically replaces the noVNC logo with the envpod
+logo, sets a custom favicon, updates the page title to "envpod -- <pod-name>",
+and injects auto-connect so the VNC session starts immediately without clicking
+a connect button.
+
 **Impact:** run browser agents, GUI applications, or desktop environments
-inside governed pods — accessible from any browser. No host display required.
+inside governed pods — accessible from any browser with audio and file transfer.
+No host display required.
 
 See [WEB-DISPLAY.md](WEB-DISPLAY.md) for the full guide.
 
@@ -307,6 +331,96 @@ The same static binary runs on x86\_64 and ARM64 with no runtime dependencies.
 - **NVIDIA Jetson Orin** — JetPack 6 (cgroups v2 default, GPU passthrough via `/dev/nvhost-*`)
 
 Single `musl`-linked binary — copies anywhere, runs anywhere.
+
+---
+
+## Host App Auto-Mount
+
+Use host-installed applications inside a pod without reinstalling them.
+List binaries in `filesystem.apps` and envpod resolves each one via `which`
+and `ldd`, then bind-mounts the binary, all shared libraries, and known
+data directories read-only into the pod.
+
+```yaml
+filesystem:
+  system_access: safe
+  apps:
+    - google-chrome
+    - python3
+    - node
+```
+
+Supported applications include Chrome/Chromium, Python, Node.js, VS Code,
+and any binary on the host `$PATH`. Each app is resolved at init time —
+symlinks are followed, library directories are deduplicated, and known
+data paths (e.g. `/opt/google`, `/usr/lib/python3.*`) are included
+automatically.
+
+**Impact:** skip lengthy `apt-get install` steps in setup. The host already
+has Chrome? The pod gets it instantly via read-only bind mounts — no
+download, no disk duplication, no version drift.
+
+---
+
+## Clone Host User
+
+Mirror your host user environment into the pod. Same username, shell,
+dotfiles, and workspace directories — but isolated under UID 60000 with
+sensitive paths excluded by default.
+
+```yaml
+host_user:
+  clone_host: true
+  dirs:                       # workspace dirs to bind-mount (read-only)
+    - Documents
+    - Projects
+    - src
+  # include_dotfiles:         # extra dotfiles beyond the defaults
+  #   - .cargo
+  # exclude:                  # override default exclusions
+  #   - .ssh
+```
+
+When `clone_host: true`, envpod:
+1. Reads your host username and shell from `/etc/passwd`
+2. Creates a matching user in the pod (UID 60000, same home path)
+3. Copies dotfiles (`.bashrc`, `.gitconfig`, `.vimrc`, `.tmux.conf`, etc.)
+4. Bind-mounts workspace directories read-only into the pod
+
+Sensitive paths are excluded by default: `.ssh`, `.gnupg`, `.aws`,
+`.docker`, `.kube`, `.netrc`, `.npmrc`, and others. Override with the
+`exclude` list.
+
+**Impact:** the agent works in an environment that looks like yours —
+same shell, same git config, same editor settings — without exposing
+private keys, cloud credentials, or browser profiles.
+
+---
+
+## Mount Working Directory
+
+The simplest way to give an agent access to your project.
+
+```yaml
+filesystem:
+  mount_cwd: true    # captures $PWD at init time
+```
+
+When enabled, `envpod init` captures your current working directory and
+`envpod run` bind-mounts it read-only into the pod at the same path.
+Writes go to the COW overlay — review with `envpod diff`, apply with
+`envpod commit`.
+
+Or use the `-w` flag at run time (no config needed):
+
+```bash
+sudo envpod run my-agent -w -- claude         # mount CWD on-the-fly
+sudo envpod run my-agent --no-mount-cwd -- sh # skip even if pod.yaml enables it
+```
+
+**Impact:** point an agent at your project directory in one flag. It sees
+your files read-only, writes go to the overlay, and you approve changes
+before they touch disk.
 
 ---
 

@@ -1,0 +1,76 @@
+# Desktop Web — browser-based desktop with Chrome + VS Code
+#
+# Minimal desktop environment (XFCE) with Chrome and VS Code pre-installed.
+# Access via browser at http://localhost:6080.
+# No other apps — clean starting point for web/dev work.
+#
+# First init takes 3-5 min (XFCE + Chrome + VS Code install).
+# After setup, `envpod clone` for instant copies.
+#
+# Usage:
+#   sudo envpod init my-web -c examples/desktop-web.yaml
+#   sudo envpod setup my-web
+#   sudo envpod run my-web -b -- startxfce4
+#   # Open http://localhost:6080 in your browser
+
+name: desktop-web
+type: standard
+user: root
+
+web_display:
+  type: novnc
+  port: 6080
+  resolution: "1920x1080"
+  audio: true             # [beta] Opus/WebM audio streaming on port 6081
+
+devices:
+  desktop_env: xfce
+
+filesystem:
+  system_access: advanced
+
+network:
+  mode: Monitored
+  dns:
+    mode: Blacklist
+    deny:
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+
+processor:
+  cores: 4.0
+  memory: "4GB"
+  max_pids: 2048
+
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"
+
+budget:
+  max_duration: "8h"
+
+audit:
+  action_log: true
+
+setup:
+  # Chrome
+  - |
+    if command -v google-chrome >/dev/null 2>&1; then
+      echo "Chrome already installed"
+    else
+      apt-get install -y wget gnupg
+      wget -qO- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+      apt-get update && apt-get install -y google-chrome-stable
+    fi
+  # VS Code
+  - |
+    if command -v code >/dev/null 2>&1; then
+      echo "VS Code already installed"
+    else
+      apt-get install -y wget gpg
+      wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/packages.microsoft.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list
+      apt-get update && apt-get install -y code
+    fi
