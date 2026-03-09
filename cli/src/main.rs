@@ -2416,8 +2416,10 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
         }
     }
 
-    // Clear init_pid and set Stopped status now that process has exited
-    {
+    // Clear init_pid and set Stopped status now that process has exited.
+    // Skip if the pod was destroyed while we were running (e.g. `envpod destroy`
+    // killed our child and removed the pod dir + handle).
+    if state.pod_dir.exists() {
         let mut updated_state = NativeState::from_handle(&handle)?;
         updated_state.init_pid = None;
         updated_state.status = NativeStatus::Stopped;
@@ -3815,9 +3817,29 @@ async fn cmd_destroy(store: &PodStore, base_dir: &std::path::Path, name: &str, r
         daemon.unregister(name).await.ok();
     }
 
+    // Kill the supervisor process (background `envpod run -b`) before destroying,
+    // so it can't re-create the handle file during cleanup.
+    if let Some(ref s) = native_state {
+        let supervisor_pid_path = s.pod_dir.join("supervisor.pid");
+        if let Ok(pid_str) = std::fs::read_to_string(&supervisor_pid_path) {
+            if let Ok(pid) = pid_str.trim().parse::<i32>() {
+                let nix_pid = nix::unistd::Pid::from_raw(pid);
+                // SIGKILL the supervisor — it must not run cleanup after us
+                nix::sys::signal::kill(nix_pid, nix::sys::signal::Signal::SIGKILL).ok();
+                // Brief wait for it to die
+                for _ in 0..10 {
+                    if nix::sys::signal::kill(nix_pid, None).is_err() {
+                        break;
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(50));
+                }
+            }
+        }
+    }
+
     let backend = create_backend(&handle.backend, base_dir)?;
 
-    // Best-effort stop before destroying
+    // Best-effort stop before destroying (kills processes inside the cgroup)
     backend.stop(&handle).ok();
 
     let destroy_result = if full {
@@ -5430,7 +5452,7 @@ fn format_bytes(bytes: u64) -> String {
 
 /// Subcommands whose first positional argument is a pod name.
 const POD_SUBCOMMANDS: &[&str] = &[
-    "init", "setup", "run", "diff", "commit", "rollback", "audit", "lock", "unlock",
+    "init", "setup", "run", "fg", "diff", "commit", "rollback", "audit", "lock", "unlock",
     "kill", "destroy", "queue", "approve", "cancel", "status", "logs", "vault",
     "mount", "unmount", "undo", "remote", "monitor", "dns", "clone", "actions",
     "ports", "discover", "snapshot",
@@ -5498,6 +5520,25 @@ _envpod() {{
                 fi
             fi
             ;;
+        base)
+            # Find the base sub-subcommand (create, ls, destroy)
+            local base_sub=""
+            for ((j=i+1; j < COMP_CWORD; j++)); do
+                case "${{COMP_WORDS[j]}}" in
+                    -*) ;;
+                    *) base_sub="${{COMP_WORDS[j]}}"; break ;;
+                esac
+            done
+            if [[ "$base_sub" == "destroy" ]]; then
+                compopt +o default +o bashdefault 2>/dev/null
+                local bases_dir="${{ENVPOD_DIR:-{base_dir_str}}}/bases"
+                if [[ -d "$bases_dir" ]]; then
+                    local bases
+                    bases=$(cd "$bases_dir" 2>/dev/null && for d in */; do [[ -d "$d" ]] && echo "${{d%/}}"; done)
+                    COMPREPLY+=($(compgen -W "$bases" -- "$cur"))
+                fi
+            fi
+            ;;
     esac
 }}
 complete -o nosort -o bashdefault -o default -F _envpod envpod
@@ -5546,6 +5587,25 @@ _envpod() {{
                 compadd -a pods
             fi
         fi
+    elif [[ "$subcmd" == "base" ]]; then
+        # Find base sub-subcommand
+        local base_sub=""
+        for ((j=i+1; j < CURRENT; j++)); do
+            case "${{words[j]}}" in
+                -*) ;;
+                *) base_sub="${{words[j]}}"; break ;;
+            esac
+        done
+        if [[ "$base_sub" == "destroy" ]]; then
+            local bases_dir="${{ENVPOD_DIR:-{base_dir_str}}}/bases"
+            if [[ -d "$bases_dir" ]]; then
+                local bases=()
+                for d in "$bases_dir"/*(N/); do
+                    bases+=("${{d:t}}")
+                done
+                compadd -a bases
+            fi
+        fi
     fi
 }}
 compdef _envpod envpod
@@ -5576,6 +5636,22 @@ complete -c envpod -n "__fish_seen_subcommand_from {subcmd}" -f -a "(
 "#
         );
     }
+
+    // Add dynamic base pod name completion for `envpod base destroy`
+    print!(
+        r#"
+complete -c envpod -n "__fish_seen_subcommand_from base; and __fish_seen_subcommand_from destroy" -f -a "(
+    set -l bases_dir (set -q ENVPOD_DIR; and echo \$ENVPOD_DIR/bases; or echo '{base_dir_str}/bases')
+    if test -d \$bases_dir
+        for d in \$bases_dir/*/
+            if test -d \$d
+                basename \$d
+            end
+        end
+    end
+)"
+"#
+    );
 }
 
 #[cfg(test)]

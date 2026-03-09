@@ -451,7 +451,7 @@ sudo envpod remote myagent resume
 
 ## destroy
 
-Remove a pod completely: tears down the namespace (if running), removes cgroup, deletes overlay and state.
+Remove a pod completely: tears down the namespace (if running), removes cgroup, deletes overlay and state. Safe to run on background pods — automatically terminates the supervisor process and in-pod processes before cleanup.
 
 ```
 envpod destroy <name> [name2...] [--base] [--full]
@@ -467,6 +467,9 @@ envpod destroy <name> [name2...] [--base] [--full]
 
 ```bash
 # Remove one pod
+sudo envpod destroy myagent
+
+# Remove a running background pod (stops it first)
 sudo envpod destroy myagent
 
 # Remove multiple at once
@@ -1461,6 +1464,12 @@ envpod completions <shell>
 ```
 
 Supported shells: `bash`, `zsh`, `fish`, `elvish`, `powershell`
+
+Completions include:
+- **All subcommands** — `envpod <TAB>` lists every command
+- **Pod names** — all pod subcommands (`run`, `diff`, `commit`, `destroy`, `fg`, `snapshot`, etc.) dynamically complete pod names from the state directory
+- **Base pod names** — `envpod base destroy <TAB>` dynamically completes base pod names
+- **Flags and options** — `--<TAB>` lists available flags per subcommand
 
 **Install:**
 

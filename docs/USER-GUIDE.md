@@ -765,7 +765,13 @@ sudo envpod remote my-agent status
 
 #### `envpod completions <shell>`
 
-Generate tab completions for your shell.
+Generate tab completions for your shell. Supports bash, zsh, and fish.
+
+Completions include:
+- **All subcommands** — `envpod <TAB>` lists every command
+- **Pod names** — `envpod run <TAB>`, `envpod diff <TAB>`, etc. dynamically complete from existing pods
+- **Base pod names** — `envpod base destroy <TAB>` completes from existing base pods
+- **Flags and options** — `envpod run --<TAB>` lists available flags
 
 <!-- no-exec -->
 <!-- type-delay 0.02 -->
@@ -778,6 +784,9 @@ sudo envpod completions zsh > /usr/local/share/zsh/site-functions/_envpod
 
 # Fish
 sudo envpod completions fish > ~/.config/fish/completions/envpod.fish
+
+# One-liner (bash) — add to ~/.bashrc
+eval "$(sudo envpod completions bash)"
 ```
 
 ---
