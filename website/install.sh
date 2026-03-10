@@ -49,7 +49,7 @@ fi
 MACHINE=$(uname -m)
 case "$MACHINE" in
     x86_64|amd64)   ARCH="x86_64" ;;
-    aarch64|arm64)  ARCH="arm64"  ;;
+    aarch64|arm64)  ARCH="aarch64"  ;;
     *)
         fail "Unsupported architecture: $MACHINE (envpod supports x86_64 and arm64)"
         ;;

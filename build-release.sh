@@ -541,6 +541,11 @@ README_EOF
     tar czf "${TARBALL}" -C "${SCRIPT_DIR}/release" "${RELEASE_NAME}"
     info "Created ${TARBALL}"
 
+    # Create unversioned copy for stable download URL (envpod.dev/install.sh)
+    local LATEST_TARBALL="${SCRIPT_DIR}/envpod-linux-${ARCH_LABEL}.tar.gz"
+    cp "${TARBALL}" "${LATEST_TARBALL}"
+    info "Created ${LATEST_TARBALL} (unversioned copy for install script)"
+
     # -----------------------------------------------------------------------
     # 8. Summary for this arch
     # -----------------------------------------------------------------------
