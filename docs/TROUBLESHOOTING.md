@@ -3,7 +3,7 @@
 Consolidated solutions for every known issue. Organized by category — jump to the relevant section.
 
 **Contents:**
-[Installation](#installation) | [APT & Packages](#apt--packages) | [Filesystem & Overlay](#filesystem--overlay) | [Network & DNS](#network--dns) | [cgroups & Resources](#cgroups--resources) | [Web Display & noVNC](#web-display--novnc) | [Devices & GPU](#devices--gpu) | [Pod Lifecycle](#pod-lifecycle) | [Port Forwarding](#port-forwarding) | [Base Pods & Cloning](#base-pods--cloning) | [Docker Testing](#docker-testing)
+[Installation](#installation) | [APT & Packages](#apt--packages) | [Filesystem & Overlay](#filesystem--overlay) | [Network & DNS](#network--dns) | [cgroups & Resources](#cgroups--resources) | [Web Display & noVNC](#web-display--novnc) | [Devices & GPU](#devices--gpu) | [Pod Lifecycle](#pod-lifecycle) | [Port Forwarding](#port-forwarding) | [Base Pods & Cloning](#base-pods--cloning) | [Docker Testing](#docker-testing) | [Nested envpod](#nested-envpod-envpod-in-envpod)
 
 ---
 
@@ -589,6 +589,24 @@ Base `ubuntu:24.04` images are minimal. Install tools first:
 ```bash
 apt-get update && apt-get install -y curl dnsutils iproute2
 ```
+
+---
+
+## Nested envpod (envpod-in-envpod)
+
+Running envpod inside a pod is **not supported**. Like Docker-in-Docker, nested
+container runtimes require relaxing isolation to the point where the inner pod
+has no meaningful governance:
+
+- **seccomp** blocks `unshare`/`clone` (namespace creation)
+- **Nested OverlayFS** is fragile (kernel 5.11+ only, known bugs)
+- **cgroups** require delegation from the outer pod
+- **Network namespaces** need `CAP_NET_ADMIN` to create veth pairs
+
+**Recommended alternative:** Run multiple pods side-by-side on the host. Use
+[pod discovery](USER-GUIDE.md) (`network.allow_pods`) so pods can communicate
+without nesting. If your agent spawns sub-agents, give each sub-agent its own
+first-class pod with full governance.
 
 ---
 
