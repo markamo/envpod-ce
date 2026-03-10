@@ -399,9 +399,9 @@ pub enum AudioProtocol {
 
 /// Desktop environment to install inside the pod.
 ///
-/// - **None** (default): no desktop — CLI only.
-/// - **Xfce**: XFCE4 + xfce4-terminal + dbus-x11 (~200MB). Familiar, lightweight.
-/// - **Openbox**: Openbox + tint2 + xterm (~50MB). Ultra-minimal window manager.
+/// - **None** (default): no desktop — CLI-only pods (coding agents, scripts).
+/// - **Openbox**: Openbox + tint2 + xterm (~50MB). Agent pods (browser automation).
+/// - **Xfce**: XFCE4 + xfce4-terminal + dbus-x11 (~200MB). Desktop pods (human use).
 /// - **Sway**: Sway + foot terminal (~150MB). Wayland-native compositor.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]

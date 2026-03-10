@@ -51,6 +51,9 @@ security:
   seccomp_profile: browser
   shm_size: "256MB"
 
+devices:
+  desktop_env: openbox    # lightweight WM for agent browser windows (~50MB)
+
 budget:
   max_duration: "1h"
 

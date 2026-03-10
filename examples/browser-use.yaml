@@ -52,6 +52,7 @@ security:
 
 devices:
   gpu: true
+  desktop_env: openbox    # lightweight WM for agent browser windows (~50MB)
 
 budget:
   max_duration: "30m"

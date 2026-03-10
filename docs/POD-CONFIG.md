@@ -573,19 +573,28 @@ Override automatic audio protocol detection:
 
 Auto-install a desktop environment during `envpod init`. Packages are installed into the pod's overlay so the host is never modified.
 
-| Value | Packages | Size | Notes |
-|-------|----------|------|-------|
-| `none` (default) | — | — | No desktop environment |
-| `xfce` | xfce4, xfce4-terminal, dbus-x11 | ~200 MB | Full-featured, lightweight desktop |
-| `openbox` | openbox, tint2, xterm | ~50 MB | Minimal window manager |
+| Value | Packages | Size | Best for |
+|-------|----------|------|----------|
+| `none` (default) | — | — | CLI-only pods (coding agents, scripts) |
+| `openbox` | openbox, tint2, xterm | ~50 MB | Agent pods (browser automation, web agents) |
+| `xfce` | xfce4, xfce4-terminal, dbus-x11 | ~200 MB | Desktop pods (human interaction, workstations) |
 | `sway` | sway, foot terminal | ~150 MB | Wayland-native tiling compositor |
+
+**Choosing a desktop:**
+- **CLI agents** (Claude Code, Codex, SWE-agent): no desktop needed — leave as `none`
+- **Browser agents** (browser-use, Playwright): use `openbox` — minimal WM, just enough to tile browser windows
+- **Desktop/workstation pods** (human use, GUI apps): use `xfce` — full desktop with file manager, settings, and taskbar
 
 Pairs with `web_display` (noVNC/WebRTC) for browser-based access, or `devices.display` for host display passthrough.
 
 ```yaml
+# Agent pod — minimal WM for browser windows
+devices:
+  desktop_env: openbox
+
+# Desktop pod — full DE for human use
 devices:
   desktop_env: xfce
-  display: true
 
 web_display:
   type: novnc

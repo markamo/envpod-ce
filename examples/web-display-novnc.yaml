@@ -39,6 +39,9 @@ processor:
   memory: "4GB"
   max_pids: 1024
 
+devices:
+  desktop_env: openbox    # lightweight WM (~50MB); use xfce for full desktop
+
 security:
   seccomp_profile: browser
   shm_size: "256MB"

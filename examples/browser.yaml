@@ -69,6 +69,7 @@ devices:
   gpu: true
   display: true
   audio: true
+  desktop_env: openbox    # lightweight WM for browser windows (~50MB)
 
 budget:
   max_duration: "30m"
