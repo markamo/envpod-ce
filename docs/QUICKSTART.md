@@ -378,13 +378,13 @@ The default non-root user passes all 17 pod boundary tests. Running with `--root
 
 ### Cloning from a Pod
 
-Every `envpod init` automatically creates a **base snapshot** (the state after init + setup). Clone from it:
+Use `--create-base` during `envpod init` to create a **base snapshot** (the state after init + setup). Clone from it:
 
 <!-- no-exec -->
 <!-- type-delay 0.02 -->
 ```bash
-# Create a coding agent (takes ~1.3s + setup time)
-sudo envpod init coder -c examples/coding-agent.yaml
+# Create a coding agent with a base snapshot (takes ~1.3s + setup time)
+sudo envpod init coder -c examples/coding-agent.yaml --create-base
 
 # Clone it — 10x faster (~130ms), inherits all setup
 sudo envpod clone coder coder-2

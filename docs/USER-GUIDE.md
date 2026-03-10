@@ -164,7 +164,7 @@ All commands require root (`sudo`). Override the state directory with `--dir <pa
 
 ### Pod Lifecycle
 
-#### `envpod init <name> [-c <config>] [--preset <name>] [--backend <backend>] [-v]`
+#### `envpod init <name> [-c <config>] [--preset <name>] [--backend <backend>] [--create-base [base-name]] [-v]`
 
 Create a new pod. Three ways to configure:
 
@@ -174,6 +174,7 @@ Create a new pod. Three ways to configure:
 | `-p`, `--preset <preset>` | Use a built-in preset (18 available — see `envpod presets`) |
 | `-c`, `--config <path>` | Path to pod.yaml config file |
 | `--backend <backend>` | Isolation backend: `native` (default) |
+| `--create-base [name]` | Create a base snapshot after init (for `envpod clone`). Uses pod name if no name given. Auto-increments on collision. |
 | `-v`, `--verbose` | Show verbose output during setup |
 
 If neither `--preset` nor `-c` is given and stdin is a terminal, an **interactive wizard** launches — showing all presets by category with resource customization (CPU, memory, GPU).
@@ -190,6 +191,12 @@ sudo envpod init my-agent
 
 # Use a config file directly
 sudo envpod init my-agent -c examples/coding-agent.yaml
+
+# Create pod + base snapshot (for fast cloning later)
+sudo envpod init my-agent -c examples/coding-agent.yaml --create-base
+
+# Create pod + base snapshot with custom name
+sudo envpod init my-agent -c examples/coding-agent.yaml --create-base ubuntu-dev
 ```
 
 #### `envpod presets`
@@ -245,13 +252,19 @@ Reattach to a background or detached pod. Shows existing log output and tails ne
 
 **User precedence:** `--user` > `--root` > pod.yaml `user:` field > default `agent`
 
-#### `envpod setup <name>`
+#### `envpod setup <name> [--create-base [base-name]]`
 
 Re-run setup commands and setup script from the pod's config. Useful if setup was interrupted or failed partway through (e.g., a `pip install` failed due to a network timeout). The pod remains usable even if setup is incomplete — you can re-run `envpod setup` at any time to retry.
+
+| Option | Description |
+|--------|-------------|
+| `--create-base [name]` | Create a base snapshot after setup (for `envpod clone`). Uses pod name if no name given. Auto-increments on collision. |
 
 <!-- no-exec -->
 ```bash
 sudo envpod setup my-agent
+sudo envpod setup my-agent --create-base                  # base named "my-agent"
+sudo envpod setup my-agent --create-base python-base      # base named "python-base"
 ```
 
 #### `envpod destroy <name> [name2 ...] [--base] [--full]`

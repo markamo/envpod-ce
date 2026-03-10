@@ -96,6 +96,10 @@ enum Commands {
         /// Use a built-in preset (run `envpod presets` to list)
         #[arg(short = 'p', long, conflicts_with = "config")]
         preset: Option<String>,
+        /// Create a base pod after successful setup (for fast cloning).
+        /// Optionally specify a name (default: pod name).
+        #[arg(long, num_args = 0..=1, default_missing_value = "")]
+        create_base: Option<String>,
         /// Show live output from setup commands
         #[arg(short, long)]
         verbose: bool,
@@ -351,6 +355,10 @@ enum Commands {
     Setup {
         /// Pod name
         name: String,
+        /// Create a base pod after successful setup (for fast cloning).
+        /// Optionally specify a name (default: pod name).
+        #[arg(long, num_args = 0..=1, default_missing_value = "")]
+        create_base: Option<String>,
         /// Show live output from setup commands
         #[arg(short, long)]
         verbose: bool,
@@ -631,8 +639,9 @@ async fn run(cli: Cli) -> Result<()> {
             backend,
             config,
             preset,
+            create_base,
             verbose,
-        } => cmd_init(&store, base_dir, &name, &backend, config.as_deref(), preset.as_deref(), verbose).await,
+        } => cmd_init(&store, base_dir, &name, &backend, config.as_deref(), preset.as_deref(), create_base.as_deref(), verbose).await,
         Commands::Presets => {
             eprint!("{}", presets::format_table());
             Ok(())
@@ -698,7 +707,7 @@ async fn run(cli: Cli) -> Result<()> {
             remove_allow,
             remove_deny,
         } => cmd_dns(&store, &name, &allow, &deny, &remove_allow, &remove_deny).await,
-        Commands::Setup { name, verbose } => cmd_setup(&store, base_dir, &name, verbose).await,
+        Commands::Setup { name, create_base, verbose } => cmd_setup(&store, base_dir, &name, create_base.as_deref(), verbose).await,
         Commands::Clone { source, name, current } => cmd_clone(&store, base_dir, &source, &name, current),
         Commands::Base { action } => cmd_base(&store, base_dir, action).await,
         Commands::Dashboard { port, no_open } => dashboard::run(base_dir.clone(), port, no_open).await,
@@ -752,6 +761,7 @@ async fn cmd_init(
     backend_name: &str,
     config_path: Option<&std::path::Path>,
     preset_name: Option<&str>,
+    create_base: Option<&str>,
     verbose: bool,
 ) -> Result<()> {
     if store.exists(name) {
@@ -972,9 +982,9 @@ async fn cmd_init(
                         "  Pod created but setup incomplete. Fix and re-run:"
                     );
                     eprintln!("  sudo envpod setup {name}");
-                } else {
-                    // Snapshot base state for fast cloning
-                    snapshot_base_quiet(&handle, base_dir);
+                } else if let Some(base_arg) = create_base {
+                    let base_name = if base_arg.is_empty() { name } else { base_arg };
+                    snapshot_base_quiet(&handle, base_dir, base_name);
                 }
                 Some((completed, total, success, log_path))
             }
@@ -989,9 +999,12 @@ async fn cmd_init(
                 None
             }
         }
-    } else {
+    } else if let Some(base_arg) = create_base {
         // No setup commands — snapshot immediately after create
-        snapshot_base_quiet(&handle, base_dir);
+        let base_name = if base_arg.is_empty() { name } else { base_arg };
+        snapshot_base_quiet(&handle, base_dir, base_name);
+        None
+    } else {
         None
     };
 
@@ -1030,7 +1043,7 @@ async fn cmd_init(
 // setup
 // ---------------------------------------------------------------------------
 
-async fn cmd_setup(store: &PodStore, base_dir: &std::path::Path, name: &str, verbose: bool) -> Result<()> {
+async fn cmd_setup(store: &PodStore, base_dir: &std::path::Path, name: &str, create_base: Option<&str>, verbose: bool) -> Result<()> {
     let divider = color::dim("  ────────────────────────────────────────");
     let setup_start = std::time::Instant::now();
 
@@ -1049,9 +1062,11 @@ async fn cmd_setup(store: &PodStore, base_dir: &std::path::Path, name: &str, ver
             color::bold("Setup complete"),
             color::green("✓"),
         );
-        // Snapshot base state for fast cloning
-        let handle = store.load(name)?;
-        snapshot_base_quiet(&handle, base_dir);
+        if let Some(base_arg) = create_base {
+            let base_name = if base_arg.is_empty() { name } else { base_arg };
+            let handle = store.load(name)?;
+            snapshot_base_quiet(&handle, base_dir, base_name);
+        }
     } else {
         eprintln!(
             "  {} (failed at step {completed}/{total} {})  {elapsed}",
@@ -1338,17 +1353,37 @@ fn run_setup_script(
 }
 
 /// Save a base pod (rootfs + upper snapshot) for fast cloning.
+/// If a base with the same name exists, auto-increments (e.g. my-agent-2, my-agent-3).
 /// Best-effort — logs warnings on failure but never propagates errors.
-fn snapshot_base_quiet(handle: &envpod_core::types::PodHandle, base_dir: &std::path::Path) {
+fn snapshot_base_quiet(handle: &envpod_core::types::PodHandle, base_dir: &std::path::Path, requested_name: &str) {
     if let Ok(state) = NativeState::from_handle(handle) {
         let bases_dir = base_dir.join("bases");
-        let base_path = bases_dir.join(&handle.name);
-        if base_path.exists() {
-            eprintln!("  {} Overwriting existing base '{}' (existing clones still work)",
-                color::yellow("⚠"), handle.name);
-        }
-        if let Err(e) = snapshot_base(&state.pod_dir, &bases_dir, &handle.name) {
-            tracing::warn!(error = %e, "base pod save failed");
+        let base_name = if bases_dir.join(requested_name).exists() {
+            // Auto-increment: name-2, name-3, ...
+            let mut n = 2u32;
+            loop {
+                let candidate = format!("{requested_name}-{n}");
+                if !bases_dir.join(&candidate).exists() {
+                    break candidate;
+                }
+                n += 1;
+            }
+        } else {
+            requested_name.to_string()
+        };
+        match snapshot_base(&state.pod_dir, &bases_dir, &base_name) {
+            Ok(()) => {
+                eprintln!(
+                    "  {} Base '{}' created  (clone: envpod clone {} <name>)",
+                    color::green("✓"),
+                    color::bold(&base_name),
+                    color::dim(&base_name),
+                );
+            }
+            Err(e) => {
+                tracing::warn!(error = %e, "base pod save failed");
+                eprintln!("  {} Base creation failed: {e}", color::red("✗"));
+            }
         }
     }
 }
@@ -1451,7 +1486,7 @@ async fn cmd_base(store: &PodStore, base_dir: &std::path::Path, action: BaseActi
             }
 
             // Init a temporary pod
-            cmd_init(store, base_dir, &tmp_pod, "native", config.as_deref(), None, verbose).await?;
+            cmd_init(store, base_dir, &tmp_pod, "native", config.as_deref(), None, None, verbose).await?;
 
             // Snapshot it as a base pod
             let handle = store.load(&tmp_pod)?;

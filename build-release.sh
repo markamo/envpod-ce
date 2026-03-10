@@ -252,8 +252,8 @@ See [docs/INSTALL.md](docs/INSTALL.md), [docs/QUICKSTART.md](docs/QUICKSTART.md)
 
 | Command | Description |
 |---------|-------------|
-| \`envpod init <name> [-c config.yaml]\` | Create a new pod |
-| \`envpod setup <name>\` | Re-run setup commands |
+| \`envpod init <name> [-c config.yaml] [--create-base [name]]\` | Create a new pod |
+| \`envpod setup <name> [--create-base [name]]\` | Re-run setup commands |
 | \`envpod run <name> [--root] [-d] [-a] -- <cmd>\` | Run a command inside a pod |
 | \`envpod diff <name>\` | Show filesystem changes |
 | \`envpod commit <name> [paths...] [--exclude ...]\` | Apply changes to host |

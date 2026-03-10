@@ -68,7 +68,7 @@ Example: `sudo ENVPOD_DIR=/opt/envpod envpod ls`
 Create a new pod: builds rootfs, overlay, cgroup hierarchy, network namespace, and DNS resolver. Runs `setup:` commands if defined in pod.yaml.
 
 ```
-envpod init <name> [--config <pod.yaml>] [--backend native] [-v]
+envpod init <name> [--config <pod.yaml>] [--backend native] [--create-base [base-name]] [-v]
 ```
 
 | Flag | Default | Description |
@@ -76,6 +76,7 @@ envpod init <name> [--config <pod.yaml>] [--backend native] [-v]
 | `name` | required | Pod name (alphanumeric, hyphens) |
 | `-c, --config <path>` | auto-detect | Path to pod.yaml. If omitted, looks for `<name>/pod.yaml` or `pod.yaml` in CWD |
 | `--backend <name>` | `native` | Isolation backend (`native` only in v0.2) |
+| `--create-base [name]` | none | Create a base snapshot after init (for `envpod clone`). Uses pod name if no name given. Auto-increments on collision (e.g. `my-agent-2`). |
 | `-v, --verbose` | false | Stream live output from setup commands |
 
 **Use cases:**
@@ -90,6 +91,12 @@ sudo envpod init myagent -c configs/myagent.yaml
 # With live setup output (useful for debugging setup: commands)
 sudo envpod init myagent -c pod.yaml --verbose
 
+# Create pod + base snapshot named "myagent" (for envpod clone)
+sudo envpod init myagent -c pod.yaml --create-base
+
+# Create pod + base snapshot with custom name
+sudo envpod init myagent -c pod.yaml --create-base ubuntu-dev
+
 # Create and immediately inspect what's there
 sudo envpod init myagent -c pod.yaml && sudo envpod diff myagent
 ```
@@ -97,7 +104,7 @@ sudo envpod init myagent -c pod.yaml && sudo envpod diff myagent
 **After init:**
 - Pod directory: `/var/lib/envpod/pods/myagent/`
 - Overlay ready at `upper/`, `work/`, `merged/`
-- Base snapshot created (for `envpod clone`)
+- Base snapshot created only if `--create-base` was used (for `envpod clone`)
 - Security brief printed if findings exist
 
 **pod.yaml minimum:**
@@ -112,12 +119,13 @@ name: myagent
 Re-run the `setup:` commands from pod.yaml on an already-created pod. Use this to add packages or tools after init without destroying and re-initializing.
 
 ```
-envpod setup <name> [-v]
+envpod setup <name> [--create-base [base-name]] [-v]
 ```
 
 | Flag | Description |
 |---|---|
 | `name` | Pod name |
+| `--create-base [name]` | Create a base snapshot after setup (for `envpod clone`). Uses pod name if no name given. Auto-increments on collision. |
 | `-v, --verbose` | Stream live output |
 
 **Use cases:**
@@ -126,9 +134,15 @@ envpod setup <name> [-v]
 # Add a package after the pod already exists
 sudo envpod setup myagent --verbose
 
+# Re-run setup and create a base snapshot named "myagent"
+sudo envpod setup myagent -v --create-base
+
+# Re-run setup and create a base snapshot with custom name
+sudo envpod setup myagent -v --create-base myagent-v2
+
 # Typical workflow after editing pod.yaml setup block:
-# Edit pod.yaml → envpod setup → envpod base create
-sudo envpod setup myagent -v && sudo envpod base create myagent-v2 -c pod.yaml
+# Edit pod.yaml → envpod setup --create-base
+sudo envpod setup myagent -v --create-base myagent-v2
 ```
 
 ---
@@ -621,7 +635,7 @@ sudo envpod clone myagent myagent-checkpoint --current
 sudo envpod clone myagent session-$(date +%s) && sudo envpod run session-... -- python3 agent.py
 ```
 
-**Requires:** Source pod must have a base snapshot (created automatically during `init`; or manually via `envpod base create`).
+**Requires:** Source pod must have a base snapshot (created via `--create-base` during `init`/`setup`, or manually via `envpod base create`).
 
 ---
 

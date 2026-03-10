@@ -82,7 +82,7 @@ The result: envpod is **1.4–15x faster** depending on the operation, while add
 
 | Command | Work Performed |
 |---------|---------------|
-| `init` | Create rootfs (copy /etc + apt state), set up OverlayFS, create cgroup, create network namespace + veth pair, start DNS resolver, snapshot base |
+| `init` | Create rootfs (copy /etc + apt state), set up OverlayFS, create cgroup, create network namespace + veth pair, start DNS resolver. Optionally snapshot base with `--create-base`. |
 | `clone` | Symlink rootfs, copy base overlay (~1 KB), create cgroup + netns (skip rootfs rebuild + DNS cold start) |
 | `run` | Enter namespaces via `clone()`, set up seccomp filter, exec command |
 | `diff` | Walk OverlayFS upper directory, compare against lower |

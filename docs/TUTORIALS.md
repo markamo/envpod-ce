@@ -1501,7 +1501,7 @@ can read the catalog via the queue socket but cannot write to it.
   audit.jsonl         ← audit log
   upper/              ← agent's COW overlay (writes land here)
   merged/             ← agent's view of the filesystem
-  rootfs/             ← base snapshot (from envpod init)
+  rootfs/             ← base snapshot (from envpod init --create-base)
 ```
 
 With a custom `--dir`:

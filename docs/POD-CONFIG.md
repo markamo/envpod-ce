@@ -1185,15 +1185,21 @@ If setup hangs or fails with connection errors, the domain is probably not in yo
 
 ### Base snapshots
 
-After `envpod init` (including setup), a base snapshot is automatically created. This freezes the fully-configured state — rootfs, installed packages, symlinks, `.bashrc` modifications, everything. Use `envpod clone` to create new pods from this snapshot in ~130ms — 10x faster than `envpod init`.
+Use `--create-base` with `envpod init` or `envpod setup` to create a base snapshot. This freezes the fully-configured state — rootfs, installed packages, symlinks, `.bashrc` modifications, everything. Use `envpod clone` to create new pods from this snapshot in ~130ms — 10x faster than `envpod init`.
+
+`--create-base` accepts an optional name. If omitted, the pod name is used. If a base with that name already exists, envpod auto-increments (e.g. `my-agent-2`, `my-agent-3`) and prints the actual name used.
 
 ```bash
 # Slow: full init + setup (~1.3s + download time)
-sudo envpod init my-agent -c my-config.yaml
+sudo envpod init my-agent -c my-config.yaml --create-base
 
 # Fast: clone from snapshot (~130ms, all setup already done)
 sudo envpod clone my-agent my-agent-2
 sudo envpod clone my-agent my-agent-3
+
+# Custom base name
+sudo envpod init my-agent -c my-config.yaml --create-base ubuntu-dev
+sudo envpod clone ubuntu-dev worker-1
 ```
 
 This is especially valuable for Node.js agents where nvm + npm install can take 30+ seconds. Set up once, clone instantly.
