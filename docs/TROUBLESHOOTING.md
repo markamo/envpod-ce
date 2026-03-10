@@ -268,6 +268,36 @@ If controllers are missing, you may need to enable them in the parent cgroup:
 echo "+cpu +memory +io +pids" > /sys/fs/cgroup/cgroup.subtree_control
 ```
 
+### Disk full during package install (e.g. PyTorch)
+
+**Cause:** `/tmp` is a 100MB tmpfs by default. Large package downloads (pip, npm) use `/tmp` and run out of space.
+
+**Fix:** Increase `tmp_size` in pod.yaml:
+
+```yaml
+processor:
+  tmp_size: "4GB"
+```
+
+Then destroy and reinit the pod. For an existing pod without reinit, use a workaround:
+
+```bash
+TMPDIR=/opt/tmp pip install torch    # redirect pip's temp dir to overlay
+```
+
+### Pod fills host disk
+
+**Cause:** Without `disk_size`, the overlay upper dir writes directly to the host filesystem with no limit.
+
+**Fix:** Set `disk_size` to cap overlay storage:
+
+```yaml
+processor:
+  disk_size: "20GB"
+```
+
+Takes effect on `envpod init` only (creates a loopback ext4 device). The pod gets a real `ENOSPC` error when full instead of filling the host disk.
+
 ---
 
 ## Web Display & noVNC

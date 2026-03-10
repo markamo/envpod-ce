@@ -924,6 +924,8 @@ processor:
   cores: 2.0                             # CPU core limit (e.g., 2.0, 0.5)
   memory: "4GB"                          # RAM limit (KB, MB, GB)
   cpu_affinity: "0-3"                    # Pin to specific CPUs (cpuset.cpus)
+  tmp_size: "2GB"                        # /tmp tmpfs size (default: "100MB")
+  disk_size: "20GB"                      # Overlay disk cap via loopback (default: unlimited)
 
 # ─── Devices ──────────────────────────────────────────────
 devices:
@@ -1323,7 +1325,13 @@ processor:
   cores: 2.0            # CPU bandwidth limit (cpu.max)
   memory: "4GB"          # Hard memory limit (memory.max)
   cpu_affinity: "0-3"    # Pin to specific CPUs (cpuset.cpus)
+  tmp_size: "2GB"        # /tmp tmpfs size (default: 100MB)
+  disk_size: "20GB"      # Overlay disk cap (default: unlimited)
 ```
+
+**`tmp_size`** — Size of the pod's `/tmp` tmpfs. Default is 100MB, which is too small for large package installs (e.g. PyTorch). Increase for ML/data workloads. Takes effect on each `start`/`run`.
+
+**`disk_size`** — Maximum disk space the pod's overlay can use. When set, creates a loopback ext4 device. The pod gets a real `ENOSPC` error when full instead of filling the host disk. When not set (default), the overlay writes directly to the host filesystem with **no limit** — a runaway pod can fill the entire host disk. Takes effect on `init` only (the disk image is created once).
 
 ### /proc Masking
 

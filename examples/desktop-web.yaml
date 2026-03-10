@@ -42,6 +42,7 @@ processor:
   cores: 4.0
   memory: "4GB"
   max_pids: 2048
+  tmp_size: "2GB"         # Large enough for pip/npm installs
 
 security:
   seccomp_profile: browser
