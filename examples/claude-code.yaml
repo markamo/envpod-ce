@@ -11,7 +11,12 @@
 # Usage:
 #   sudo envpod init claude-code -c examples/claude-code.yaml
 #   sudo envpod setup claude-code
-#   sudo envpod run claude-code -- claude
+#   sudo envpod run claude-code -e ANTHROPIC_API_KEY=sk-ant-... -- claude
+#
+# Auth: Claude Code requires an API key. OAuth login won't work in a
+#   headless pod (no browser). Pass the key via -e or use the vault:
+#     sudo envpod vault claude-code set ANTHROPIC_API_KEY sk-ant-...
+#     sudo envpod run claude-code -- claude
 
 name: claude-code
 type: standard

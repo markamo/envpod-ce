@@ -11,7 +11,11 @@
 # Usage:
 #   sudo envpod init aider -c examples/aider.yaml
 #   sudo envpod setup aider
-#   sudo envpod run aider -- aider --model sonnet
+#   sudo envpod run aider -e ANTHROPIC_API_KEY=sk-ant-... -- aider --model sonnet
+#
+# Auth: Aider requires an LLM API key. Pass via -e or use the vault:
+#     sudo envpod vault aider set ANTHROPIC_API_KEY sk-ant-...
+#     sudo envpod run aider -- aider --model sonnet
 
 name: aider
 type: standard

@@ -12,7 +12,11 @@
 # Usage:
 #   sudo envpod init codex -c examples/codex.yaml
 #   sudo envpod setup codex
-#   sudo envpod run codex -- codex
+#   sudo envpod run codex -e OPENAI_API_KEY=sk-... -- codex
+#
+# Auth: Codex requires an API key. Pass via -e or use the vault:
+#     sudo envpod vault codex set OPENAI_API_KEY sk-...
+#     sudo envpod run codex -- codex
 
 name: codex
 type: standard

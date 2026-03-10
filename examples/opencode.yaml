@@ -10,7 +10,11 @@
 # Usage:
 #   sudo envpod init opencode -c examples/opencode.yaml
 #   sudo envpod setup opencode
-#   sudo envpod run opencode -- opencode
+#   sudo envpod run opencode -e ANTHROPIC_API_KEY=sk-ant-... -- opencode
+#
+# Auth: OpenCode requires an LLM API key. Pass via -e or use the vault:
+#     sudo envpod vault opencode set ANTHROPIC_API_KEY sk-ant-...
+#     sudo envpod run opencode -- opencode
 
 name: opencode
 type: standard
