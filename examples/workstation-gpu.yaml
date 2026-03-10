@@ -97,33 +97,8 @@ setup:
     fi
   # Python + CUDA tools
   - "apt-get install -y --no-install-recommends python3-pip python3-venv"
-  # Wrapper scripts (adds --no-sandbox for root) and desktop entries
-  # Overwrites system .desktop files so XFCE menu launches with --no-sandbox
+  # Fix desktop shortcuts: add --no-sandbox (envpod namespaces replace app sandboxes)
   - |
-    cat > /usr/local/bin/chrome << 'WRAPPER'
-    #!/bin/bash
-    exec google-chrome --no-sandbox "$@"
-    WRAPPER
-    chmod +x /usr/local/bin/chrome
-    cat > /usr/local/bin/vscode << 'WRAPPER'
-    #!/bin/bash
-    exec code --no-sandbox "$@"
-    WRAPPER
-    chmod +x /usr/local/bin/vscode
-    mkdir -p /usr/share/applications
-    cat > /usr/share/applications/google-chrome.desktop << 'EOF'
-    [Desktop Entry]
-    Name=Chrome
-    Exec=google-chrome --no-sandbox %U
-    Icon=google-chrome
-    Type=Application
-    Categories=Network;WebBrowser;
-    EOF
-    cat > /usr/share/applications/code.desktop << 'EOF'
-    [Desktop Entry]
-    Name=VS Code
-    Exec=code --no-sandbox %F
-    Icon=vscode
-    Type=Application
-    Categories=Development;IDE;
-    EOF
+    sed -i 's|Exec=/usr/bin/google-chrome-stable|Exec=/usr/bin/google-chrome-stable --no-sandbox|g' /usr/share/applications/google-chrome.desktop 2>/dev/null
+    sed -i 's|Exec=/usr/share/code/code|Exec=/usr/share/code/code --no-sandbox|g' /usr/share/applications/code.desktop 2>/dev/null
+    sed -i 's|Exec=/usr/share/code/code|Exec=/usr/share/code/code --no-sandbox|g' /usr/share/applications/code-url-handler.desktop 2>/dev/null

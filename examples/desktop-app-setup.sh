@@ -94,14 +94,9 @@ install_vscode() {
 exec code --no-sandbox "$@"
 EOF
     chmod +x /usr/local/bin/vscode
-    cat > /usr/share/applications/code.desktop << 'EOF'
-[Desktop Entry]
-Name=VS Code
-Exec=code --no-sandbox %F
-Icon=vscode
-Type=Application
-Categories=Development;IDE;
-EOF
+    # Patch original .desktop files (preserves icons, paths, and flags)
+    sed -i 's|Exec=/usr/share/code/code|Exec=/usr/share/code/code --no-sandbox|g' /usr/share/applications/code.desktop 2>/dev/null
+    sed -i 's|Exec=/usr/share/code/code|Exec=/usr/share/code/code --no-sandbox|g' /usr/share/applications/code-url-handler.desktop 2>/dev/null
 }
 
 install_gimp() {
