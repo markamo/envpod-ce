@@ -2831,6 +2831,15 @@ fn print_run_banner(
             color::dim("·"),
         );
 
+        // Disk + Tmp
+        let disk = cfg.processor.disk_size.as_deref().unwrap_or("unlimited");
+        let tmp = cfg.processor.tmp_size.as_deref().unwrap_or("100MB");
+        eprintln!(
+            "  {}  {disk} {} /tmp {tmp}",
+            color::dim("Disk    "),
+            color::dim("·"),
+        );
+
         // GPU
         let gpu_status = if cfg.devices.gpu {
             color::green("allowed")
@@ -2903,6 +2912,15 @@ fn print_pod_info(
     eprintln!(
         "  {}  {cores_str} {} {mem}",
         color::dim("CPU    "),
+        color::dim("·"),
+    );
+
+    // Disk + Tmp
+    let disk = config.processor.disk_size.as_deref().unwrap_or("unlimited");
+    let tmp = config.processor.tmp_size.as_deref().unwrap_or("100MB");
+    eprintln!(
+        "  {}  {disk} {} /tmp {tmp}",
+        color::dim("Disk   "),
         color::dim("·"),
     );
 
