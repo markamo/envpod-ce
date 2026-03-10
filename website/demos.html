@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demos — envpod</title>
+<meta name="description" content="Video demos of envpod: install in 60 seconds, govern Claude Code, browser pods with GPU, fleet dashboard, and more.">
+<meta property="og:title" content="envpod Demos — See It in Action">
+<meta property="og:description" content="Docker isolates. Envpod governs. Watch video demos of zero-trust governance for AI agents.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0b;--surface:#111113;--surface2:#16161a;--border:#1e1e24;--border-hi:#2a2a32;--text:#e8e8ed;--muted:#8b8b98;--dim:#5a5a66;--green:#22c55e;--green-dim:#16a34a;--green-glow:rgba(34,197,94,0.08);--blue:#58a6ff;--orange:#f59e0b;--red:#ef4444;--purple:#bc8cff;--mono:'JetBrains Mono','SF Mono','Cascadia Code',monospace;--sans:'DM Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+code{font-family:var(--mono);font-size:0.85em;background:rgba(88,166,255,0.08);color:var(--blue);padding:2px 7px;border-radius:4px}
+nav{position:fixed;top:0;width:100%;z-index:100;padding:14px 0;background:rgba(10,10,11,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1100px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--mono);font-weight:700;font-size:18px;color:var(--text);text-decoration:none;letter-spacing:-0.5px}
+.logo span{color:var(--green)}
+.logo-ce{font-size:10px;font-weight:700;color:var(--green);background:var(--green-glow);border:1px solid rgba(34,197,94,0.2);padding:2px 8px;border-radius:100px;letter-spacing:1.5px;margin-left:6px;vertical-align:2px}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-links a{font-size:14px;color:var(--muted);padding:6px 12px;border-radius:6px;transition:color .15s,background .15s}
+.nav-links a:hover{color:var(--text);background:var(--surface);text-decoration:none}
+.nav-links a.active{color:var(--text);background:var(--surface)}
+.nav-gh{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)!important;font-size:13px;font-weight:500;margin-left:8px;transition:border-color .15s!important}
+.nav-gh:hover{border-color:var(--green)!important;text-decoration:none!important}
+.nav-toggle{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:8px;z-index:101}
+.nav-toggle span{display:block;width:20px;height:2px;background:var(--text);border-radius:2px;transition:all 0.2s}
+.wrap{max-width:1100px;margin:0 auto;padding:120px 32px 80px}
+h1{font-size:36px;font-weight:700;letter-spacing:-0.03em;margin-bottom:8px}
+.subtitle{color:var(--muted);font-size:16px;margin-bottom:48px}
+.demo-grid{display:flex;flex-direction:column;gap:48px}
+.demo-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:border-color .2s}
+.demo-card:hover{border-color:var(--border-hi)}
+.demo-video{position:relative;width:100%;padding-bottom:56.25%;background:#000}
+.demo-video iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+.demo-placeholder{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(88,166,255,0.06));cursor:default}
+.demo-placeholder-icon{font-size:48px;color:var(--dim);margin-bottom:12px}
+.demo-placeholder-text{font-family:var(--mono);font-size:13px;color:var(--dim)}
+.demo-info{padding:24px 28px}
+.demo-header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.demo-number{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green);background:var(--green-glow);border:1px solid rgba(34,197,94,0.2);padding:3px 10px;border-radius:100px;flex-shrink:0}
+.demo-title{font-size:20px;font-weight:700;letter-spacing:-0.02em}
+.demo-meta{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap}
+.demo-tag{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:3px 10px;border-radius:6px}
+.demo-desc{color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:16px}
+.demo-features{list-style:none;display:flex;flex-wrap:wrap;gap:8px;padding:0}
+.demo-features li{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--surface2);padding:4px 10px;border-radius:4px}
+.demo-features li::before{content:'>';color:var(--green);margin-right:6px}
+.cta-section{text-align:center;margin-top:64px;padding:48px 0;border-top:1px solid var(--border)}
+.cta-section h2{font-size:24px;font-weight:700;letter-spacing:-0.02em;margin-bottom:12px}
+.cta-section p{color:var(--muted);font-size:15px;margin-bottom:24px}
+.btn-p{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;background:var(--green);color:var(--bg);font-family:var(--mono);font-weight:700;font-size:14px;border-radius:8px;border:none;cursor:pointer;transition:all .2s;text-decoration:none}
+.btn-p:hover{background:#2dd468;transform:translateY(-1px);text-decoration:none;color:var(--bg)}
+.btn-s{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;background:var(--surface);color:var(--text);font-family:var(--mono);font-size:14px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all .2s;text-decoration:none;margin-left:12px}
+.btn-s:hover{border-color:var(--border-hi);color:var(--text);text-decoration:none}
+footer{border-top:1px solid var(--border);padding:44px 0;margin-top:80px}
+.footer-inner{max-width:1100px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.footer-logo{font-family:var(--mono);font-weight:700;font-size:16px;letter-spacing:-0.02em}
+.footer-logo em{color:var(--green);font-style:normal}
+.footer-copy{color:var(--dim);font-size:12px;margin-top:4px}
+.footer-links{display:flex;gap:6px;flex-wrap:wrap}
+.footer-links a{color:var(--muted);font-size:13px;padding:4px 10px;border-radius:4px;transition:color .15s,background .15s}
+.footer-links a:hover{color:var(--text);background:var(--surface);text-decoration:none}
+@media(max-width:768px){
+  .nav-toggle{display:flex}
+  .nav-links{position:fixed;top:0;right:-100%;width:280px;height:100vh;flex-direction:column;background:var(--bg);border-left:1px solid var(--border);padding:80px 24px 32px;gap:4px;transition:right 0.3s ease;z-index:100}
+  .nav-links.open{right:0}
+  .nav-links a{padding:12px 16px!important;font-size:15px!important;display:block;width:100%}
+  .wrap{padding:100px 16px 60px!important}
+  h1{font-size:28px!important}
+  .demo-info{padding:20px!important}
+  .demo-title{font-size:17px!important}
+  .demo-meta{gap:8px}
+  .footer-inner{flex-direction:column;text-align:center;gap:20px}
+  .footer-links{justify-content:center}
+  .cta-section .btn-s{margin-left:0;margin-top:8px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="logo"><span>env</span>pod<span class="logo-ce">CE</span></a>
+    <button class="nav-toggle" onclick="this.classList.toggle('active');document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links">
+      <a href="/#features">Features</a>
+      <a href="/#agents">Agents</a>
+      <a href="/demos" class="active">Demos</a>
+      <a href="/#compare">Compare</a>
+      <a href="/#install">Quick Start</a>
+      <a href="https://github.com/markamo/envpod-ce" class="nav-gh">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="wrap">
+  <h1>Demos</h1>
+  <p class="subtitle">See envpod in action. Each demo shows a real workflow — no simulations.</p>
+
+  <div class="demo-grid">
+
+    <!-- DEMO 1 -->
+    <div class="demo-card" id="install">
+      <div class="demo-video">
+        <!-- Replace YOUTUBE_ID_1 with the actual YouTube video ID -->
+        <!--<iframe src="https://www.youtube.com/embed/YOUTUBE_ID_1" title="Install to First Pod in 60 Seconds" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>-->
+        <div class="demo-placeholder">
+          <div class="demo-placeholder-icon">&#9654;</div>
+          <div class="demo-placeholder-text">Video coming soon</div>
+        </div>
+      </div>
+      <div class="demo-info">
+        <div class="demo-header">
+          <span class="demo-number">01</span>
+          <h2 class="demo-title">Install to First Pod in 60 Seconds</h2>
+        </div>
+        <div class="demo-meta">
+          <span class="demo-tag">60s</span>
+          <span class="demo-tag">Teaser</span>
+          <span class="demo-tag">Getting Started</span>
+        </div>
+        <p class="demo-desc">One curl command installs envpod. Pick a preset, create a pod, run a command, review the diff, commit or rollback. The full governance loop in under a minute.</p>
+        <ul class="demo-features">
+          <li>One-line install</li>
+          <li>18 built-in presets</li>
+          <li>diff / commit / rollback</li>
+          <li>Audit trail</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- DEMO 2 -->
+    <div class="demo-card" id="claude-code">
+      <div class="demo-video">
+        <!--<iframe src="https://www.youtube.com/embed/YOUTUBE_ID_2" title="Claude Code — Governed" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>-->
+        <div class="demo-placeholder">
+          <div class="demo-placeholder-icon">&#9654;</div>
+          <div class="demo-placeholder-text">Video coming soon</div>
+        </div>
+      </div>
+      <div class="demo-info">
+        <div class="demo-header">
+          <span class="demo-number">02</span>
+          <h2 class="demo-title">Claude Code — Governed</h2>
+        </div>
+        <div class="demo-meta">
+          <span class="demo-tag">3 min</span>
+          <span class="demo-tag">Coding Agent</span>
+          <span class="demo-tag">Vault</span>
+        </div>
+        <p class="demo-desc">Run Claude Code inside an envpod. API key stored in an encrypted vault. Every file write captured in the overlay. Review changes before they touch your codebase. Clone the pod in 130ms for parallel agents.</p>
+        <ul class="demo-features">
+          <li>Encrypted vault (ChaCha20)</li>
+          <li>Real-time audit log</li>
+          <li>Security analysis</li>
+          <li>130ms clone</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- DEMO 3 -->
+    <div class="demo-card" id="openclaw">
+      <div class="demo-video">
+        <!--<iframe src="https://www.youtube.com/embed/YOUTUBE_ID_3" title="OpenClaw — Messaging Agent, Governed" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>-->
+        <div class="demo-placeholder">
+          <div class="demo-placeholder-icon">&#9654;</div>
+          <div class="demo-placeholder-text">Video coming soon</div>
+        </div>
+      </div>
+      <div class="demo-info">
+        <div class="demo-header">
+          <span class="demo-number">03</span>
+          <h2 class="demo-title">OpenClaw — Messaging Agent, Governed</h2>
+        </div>
+        <div class="demo-meta">
+          <span class="demo-tag">2.5 min</span>
+          <span class="demo-tag">Autonomous Agent</span>
+          <span class="demo-tag">Interactive Wizard</span>
+        </div>
+        <p class="demo-desc">OpenClaw connects to WhatsApp, Telegram, and Discord. Lots of power that needs governance. Use the interactive wizard to pick a preset and customize resources. Snapshots checkpoint the overlay state. Freeze and resume on demand.</p>
+        <ul class="demo-features">
+          <li>Interactive wizard</li>
+          <li>Overlay snapshots</li>
+          <li>Freeze / resume</li>
+          <li>Multi-key vault</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- DEMO 4 -->
+    <div class="demo-card" id="browser">
+      <div class="demo-video">
+        <!--<iframe src="https://www.youtube.com/embed/YOUTUBE_ID_4" title="Chrome in a Pod — Wayland + GPU" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>-->
+        <div class="demo-placeholder">
+          <div class="demo-placeholder-icon">&#9654;</div>
+          <div class="demo-placeholder-text">Video coming soon</div>
+        </div>
+      </div>
+      <div class="demo-info">
+        <div class="demo-header">
+          <span class="demo-number">04</span>
+          <h2 class="demo-title">Chrome in a Pod — Wayland + GPU</h2>
+        </div>
+        <div class="demo-meta">
+          <span class="demo-tag">90s</span>
+          <span class="demo-tag">Browser Agent</span>
+          <span class="demo-tag">GPU</span>
+        </div>
+        <p class="demo-desc">Launch Chrome with full GPU acceleration, Wayland display forwarding, and PipeWire audio — all inside a governed pod. Every cookie, cache file, and network call captured. Rollback everything in one command.</p>
+        <ul class="demo-features">
+          <li>GPU passthrough</li>
+          <li>Wayland display</li>
+          <li>PipeWire audio</li>
+          <li>Browser seccomp</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- DEMO 5 -->
+    <div class="demo-card" id="dashboard">
+      <div class="demo-video">
+        <!--<iframe src="https://www.youtube.com/embed/YOUTUBE_ID_5" title="Dashboard — Fleet Control" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>-->
+        <div class="demo-placeholder">
+          <div class="demo-placeholder-icon">&#9654;</div>
+          <div class="demo-placeholder-text">Video coming soon</div>
+        </div>
+      </div>
+      <div class="demo-info">
+        <div class="demo-header">
+          <span class="demo-number">05</span>
+          <h2 class="demo-title">Dashboard — Fleet Control</h2>
+        </div>
+        <div class="demo-meta">
+          <span class="demo-tag">90s</span>
+          <span class="demo-tag">Web UI</span>
+          <span class="demo-tag">Fleet Management</span>
+        </div>
+        <p class="demo-desc">Spin up four agents with presets, then manage them from the browser. Fleet overview with live resource usage, audit timeline, diff review, commit/rollback, snapshots, and one-click freeze — all from localhost:9090.</p>
+        <ul class="demo-features">
+          <li>Fleet overview</li>
+          <li>Live resources</li>
+          <li>Browser commit/rollback</li>
+          <li>One-click freeze</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Try it yourself</h2>
+    <p>One command. 12 MB. Zero dependencies.</p>
+    <a href="/#install" class="btn-p">Get started</a>
+    <a href="https://github.com/markamo/envpod-ce" class="btn-s">View on GitHub</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo"><em>env</em>pod</div>
+      <div class="footer-copy">Copyright 2026 Mark Amo-Boateng / Xtellix Inc. &middot; BSL 1.1</div>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/markamo/envpod-ce">GitHub</a>
+      <a href="https://github.com/markamo/envpod-ce/blob/main/docs/FEATURES.md">Features</a>
+      <a href="/tutorials">Tutorials</a>
+      <a href="/demos">Demos</a>
+      <a href="https://github.com/markamo/envpod-ce/blob/main/docs/CLI-BLACKBOOK.md">CLI Ref</a>
+      <a href="https://github.com/markamo/envpod-ce/issues">Issues</a>
+      <a href="/cla">CLA</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
