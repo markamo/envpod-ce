@@ -10,8 +10,10 @@
 #
 # Usage:
 #   curl -fsSL https://envpod.dev/install.sh | sh
+#   curl -fsSL https://envpod.dev/install.sh | sh -s -- --version 0.2.0
 #   curl -fsSL https://envpod.dev/install.sh | sh -s -- --examples-dir /opt/myproject/examples
 #   curl -fsSL https://envpod.dev/install.sh | sh -s -- --no-examples
+#   ENVPOD_VERSION=0.2.0 curl -fsSL https://envpod.dev/install.sh | sh
 #   ENVPOD_EXAMPLES_DIR=/opt/myproject/examples curl -fsSL https://envpod.dev/install.sh | sh
 #
 # Supports: Linux x86_64 and ARM64 (Raspberry Pi, Jetson Orin, etc.)
@@ -19,7 +21,32 @@
 set -e
 
 REPO="markamo/envpod-ce"
-BASE_URL="https://github.com/${REPO}/releases/latest/download"
+VERSION="${ENVPOD_VERSION:-}"
+
+# Parse --version from args (pass remaining args to bundled installer)
+INSTALLER_ARGS=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --version)
+            VERSION="$2"
+            shift 2
+            ;;
+        --version=*)
+            VERSION="${1#*=}"
+            shift
+            ;;
+        *)
+            INSTALLER_ARGS="${INSTALLER_ARGS} $1"
+            shift
+            ;;
+    esac
+done
+
+if [ -n "$VERSION" ]; then
+    BASE_URL="https://github.com/${REPO}/releases/download/v${VERSION}"
+else
+    BASE_URL="https://github.com/${REPO}/releases/latest/download"
+fi
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -33,8 +60,12 @@ fail()  { printf "${RED}[✗]${NC} %s\n" "$*"; exit 1; }
 
 printf "${BOLD}"
 printf "  ┌──────────────────────────────────────┐\n"
-printf "  │      envpod — downloading installer  │\n"
-printf "  │    https://envpod.dev                │\n"
+if [ -n "$VERSION" ]; then
+printf "  │   envpod — downloading v%-13s│\n" "${VERSION}"
+else
+printf "  │   envpod — downloading latest        │\n"
+fi
+printf "  │   https://envpod.dev                 │\n"
 printf "  └──────────────────────────────────────┘\n"
 printf "${NC}\n"
 
@@ -107,4 +138,4 @@ if [ -n "${ENVPOD_EXAMPLES_DIR:-}" ]; then
     EXTRA_ARGS="--examples-dir ${ENVPOD_EXAMPLES_DIR}"
 fi
 
-sudo bash "${RELEASE_DIR}/install.sh" "$@" ${EXTRA_ARGS}
+sudo bash "${RELEASE_DIR}/install.sh" ${INSTALLER_ARGS} ${EXTRA_ARGS}

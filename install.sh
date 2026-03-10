@@ -26,9 +26,8 @@
 #
 set -euo pipefail
 
-ENVPOD_VERSION="0.1.0"
+ENVPOD_CURRENT_VERSION="0.1.0"
 ENVPOD_REPO="https://github.com/markamo/envpod-ce"
-ENVPOD_RELEASES="${ENVPOD_REPO}/releases/latest/download"
 
 INSTALL_DIR="/usr/local/bin"
 STATE_DIR="/var/lib/envpod"
@@ -39,22 +38,28 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" 2>/dev/null)" && pwd 2>/dev/null
 AUTO_DEPS=0
 SKIP_DEPS=0
 
+ENVPOD_VERSION="${ENVPOD_VERSION:-}"
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --version)        ENVPOD_VERSION="$2"; shift 2 ;;
+        --version=*)      ENVPOD_VERSION="${1#*=}"; shift ;;
         --auto-deps)      AUTO_DEPS=1; shift ;;
         --no-deps)        SKIP_DEPS=1; shift ;;
         --examples-dir)   EXAMPLES_DIR="$2"; shift 2 ;;
         --examples-dir=*) EXAMPLES_DIR="${1#*=}"; shift ;;
         --no-examples)    EXAMPLES_DIR=""; shift ;;
         --help|-h)
-            echo "envpod installer v${ENVPOD_VERSION}"
+            echo "envpod installer v${ENVPOD_CURRENT_VERSION}"
             echo ""
             echo "Usage:"
-            echo "  curl -fsSL https://envpod.dev/install.sh | sudo bash           # online"
-            echo "  cd envpod-*-linux-x86_64 && sudo bash install.sh               # from tarball"
-            echo "  sudo bash install.sh --auto-deps                                # no prompts"
+            echo "  curl -fsSL https://envpod.dev/install.sh | sudo bash                    # latest"
+            echo "  curl -fsSL https://envpod.dev/install.sh | sudo bash -s -- --version 0.2.0  # specific"
+            echo "  cd envpod-*-linux-x86_64 && sudo bash install.sh                        # from tarball"
+            echo "  sudo bash install.sh --auto-deps                                         # no prompts"
             echo ""
             echo "Options:"
+            echo "  --version <ver>        Download and install a specific version (e.g. 0.2.0)"
             echo "  --auto-deps            Auto-install missing prerequisites"
             echo "  --no-deps              Skip prerequisite checks"
             echo "  --examples-dir <path>  Install examples to custom path"
@@ -64,6 +69,14 @@ while [[ $# -gt 0 ]]; do
         *) echo "Unknown argument: $1. Use --help for usage."; exit 1 ;;
     esac
 done
+
+# Set download URL based on version
+if [[ -n "$ENVPOD_VERSION" ]]; then
+    ENVPOD_RELEASES="${ENVPOD_REPO}/releases/download/v${ENVPOD_VERSION}"
+else
+    ENVPOD_VERSION="$ENVPOD_CURRENT_VERSION"
+    ENVPOD_RELEASES="${ENVPOD_REPO}/releases/latest/download"
+fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Output helpers
