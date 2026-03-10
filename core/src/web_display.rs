@@ -10,7 +10,7 @@
 //! All display services run inside the pod. The host only sets up port forwarding
 //! and (for WebRTC) provides a signaling relay in the dashboard.
 
-use crate::config::{WebDisplayConfig, WebDisplayType};
+use crate::config::{DesktopEnv, WebDisplayConfig, WebDisplayType};
 
 /// Generate apt-get install commands for the selected web display type.
 pub fn generate_setup_commands(config: &WebDisplayConfig) -> Vec<String> {
@@ -24,14 +24,14 @@ pub fn generate_setup_commands(config: &WebDisplayConfig) -> Vec<String> {
             if config.audio {
                 cmds.push(concat!(
                     "DEBIAN_FRONTEND=noninteractive apt-get install -y ",
-                    "xvfb x11vnc novnc websockify screen dbus-x11 numlockx ",
+                    "xvfb x11vnc novnc websockify screen dbus-x11 numlockx x11-xserver-utils ",
                     "pulseaudio socat ",
                     "gstreamer1.0-tools gstreamer1.0-plugins-base ",
                     "gstreamer1.0-plugins-good gstreamer1.0-plugins-bad"
                 ).into());
             } else {
                 cmds.push(
-                    "DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb x11vnc novnc websockify screen dbus-x11 numlockx".into()
+                    "DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb x11vnc novnc websockify screen dbus-x11 numlockx x11-xserver-utils".into()
                 );
             }
             cmds
@@ -70,17 +70,17 @@ pub fn generate_supervisor_script(config: &WebDisplayConfig) -> String {
 
 /// Generate the background display services daemon script.
 /// Written to `upper/usr/local/bin/envpod-display-services` during init.
-pub fn generate_services_daemon(config: &WebDisplayConfig) -> String {
+pub fn generate_services_daemon(config: &WebDisplayConfig, desktop_env: DesktopEnv) -> String {
     match config.display_type {
         WebDisplayType::None => String::new(),
-        WebDisplayType::Novnc => generate_novnc_daemon(config),
-        WebDisplayType::Webrtc => generate_webrtc_daemon(config),
+        WebDisplayType::Novnc => generate_novnc_daemon(config, desktop_env),
+        WebDisplayType::Webrtc => generate_webrtc_daemon(config, desktop_env),
     }
 }
 
 /// Generate the noVNC services daemon script.
 /// Runs as a background process managing all display services with auto-restart.
-fn generate_novnc_daemon(config: &WebDisplayConfig) -> String {
+fn generate_novnc_daemon(config: &WebDisplayConfig, desktop_env: DesktopEnv) -> String {
     let resolution = &config.resolution;
     let audio_port = config.audio_port;
 
@@ -118,6 +118,13 @@ sleep 0.5
         "\n# --- File upload server ---\nmkdir -p /tmp/uploads\n(while true; do python3 /usr/local/bin/envpod-upload-server.py 2>/dev/null; sleep 1; done) &\n".to_string()
     } else {
         String::new()
+    };
+
+    let desktop_block = match desktop_env {
+        DesktopEnv::Openbox => "\n# --- Desktop environment (openbox) ---\n(openbox-session &) 2>/dev/null\necho \"Desktop: openbox started\"\n".to_string(),
+        DesktopEnv::Xfce => "\n# --- Desktop environment (xfce) ---\n(startxfce4 &) 2>/dev/null\necho \"Desktop: xfce started\"\n".to_string(),
+        DesktopEnv::Sway => "\n# --- Desktop environment (sway) ---\n(sway &) 2>/dev/null\necho \"Desktop: sway started\"\n".to_string(),
+        DesktopEnv::None => String::new(),
     };
 
     format!(
@@ -162,8 +169,12 @@ fi
 command -v numlockx >/dev/null 2>&1 && numlockx on 2>/dev/null
 command -v xdotool >/dev/null 2>&1 && xdotool key --clearmodifiers Num_Lock 2>/dev/null
 
-# Start x11vnc (auto-restart on crash)
-(while true; do x11vnc -display :99 -forever -nopw -shared -noshm -rfbport 5900 -q; sleep 1; done) &
+# Enable key repeat (delay 250ms, rate 30 keys/sec)
+xset r on 2>/dev/null
+xset r rate 250 30 2>/dev/null
+{desktop_block}
+# Start x11vnc (auto-restart on crash, key repeat enabled)
+(while true; do x11vnc -display :99 -forever -nopw -shared -noshm -rfbport 5900 -q -repeat; sleep 1; done) &
 sleep 1
 
 # Start websockify (auto-restart on crash)
@@ -218,7 +229,7 @@ fi
 }
 
 /// Generate the WebRTC services daemon script.
-fn generate_webrtc_daemon(config: &WebDisplayConfig) -> String {
+fn generate_webrtc_daemon(config: &WebDisplayConfig, desktop_env: DesktopEnv) -> String {
     let resolution = &config.resolution;
     let codec_pipeline = match config.codec.as_str() {
         "h264" => "x264enc tune=zerolatency speed-preset=ultrafast ! video/x-h264,profile=baseline ! rtph264pay",
@@ -228,6 +239,13 @@ fn generate_webrtc_daemon(config: &WebDisplayConfig) -> String {
         "\n# Start audio capture pipeline\n(while true; do gst-launch-1.0 -q pulsesrc ! opusenc ! rtpopuspay ! webrtcbin name=audio-send; sleep 1; done) &"
     } else {
         ""
+    };
+
+    let desktop_block = match desktop_env {
+        DesktopEnv::Openbox => "\n# --- Desktop environment (openbox) ---\n(openbox-session &) 2>/dev/null\necho \"Desktop: openbox started\"\n",
+        DesktopEnv::Xfce => "\n# --- Desktop environment (xfce) ---\n(startxfce4 &) 2>/dev/null\necho \"Desktop: xfce started\"\n",
+        DesktopEnv::Sway => "\n# --- Desktop environment (sway) ---\n(sway &) 2>/dev/null\necho \"Desktop: sway started\"\n",
+        DesktopEnv::None => "",
     };
 
     format!(
@@ -261,6 +279,10 @@ if [ ! -e /tmp/.X11-unix/X99 ]; then
     exit 1
 fi
 
+# Enable key repeat (delay 250ms, rate 30 keys/sec)
+xset r on 2>/dev/null
+xset r rate 250 30 2>/dev/null
+{desktop_block}
 # Start video capture pipeline (auto-restart on crash)
 (while true; do gst-launch-1.0 -q ximagesrc use-damage=0 ! videoconvert ! {codec_pipeline} ! webrtcbin name=video-send; sleep 1; done) &
 {audio_pipeline}
@@ -902,81 +924,53 @@ window.addEventListener('load', () => EnvpodUpload.init());
 /// - Falls back gracefully if clipboard permission is denied.
 const CLIPBOARD_PLUGIN_JS: &str = r##"/**
  * envpod clipboard plugin for noVNC
- * Bidirectional clipboard sync: host browser <-> VNC session
+ *
+ * Enhances the built-in clipboard panel (sidebar clipboard icon):
+ * 1. Auto-sends clipboard text on paste/input (not just on blur)
+ * 2. Host→Pod: Ctrl+V on canvas reads browser clipboard into the panel
+ *    and sends it to VNC clipboard, then simulates Ctrl+V in the session
+ * 3. Pod→Host: copies VNC clipboard to browser clipboard automatically
+ *
+ * Requires: ui.js patched to set window.rfb = UI.rfb after connect.
  */
-const EnvpodClipboard = {
-    rfb: null,
-    ready: false,
+(function() {
+    function init() {
+        const rfb = window.rfb;
+        if (!rfb || rfb._rfbConnectionState !== 'connected') {
+            setTimeout(init, 500);
+            return;
+        }
 
-    init() {
-        // Wait for noVNC to connect, then hook into the RFB object
-        const check = setInterval(() => {
-            // noVNC stores the RFB instance on the UI object or as a global
-            const rfb = window.rfb || (window.UI && window.UI.rfb);
-            if (rfb && rfb._rfbConnectionState === 'connected') {
-                this.rfb = rfb;
-                this.ready = true;
-                clearInterval(check);
-                this.attach();
-                console.log('[envpod-clipboard] attached to RFB');
+        const clipText = document.getElementById('noVNC_clipboard_text');
+        if (!clipText) return;
+
+        // Make the built-in clipboard textarea send on every input (not just blur)
+        clipText.addEventListener('input', () => {
+            rfb.clipboardPasteFrom(clipText.value);
+        });
+
+        // When pasting into the textarea, replace all content (don't append to old pod text)
+        clipText.addEventListener('paste', (e) => {
+            const text = e.clipboardData && e.clipboardData.getData('text/plain');
+            if (text) {
+                e.preventDefault();
+                clipText.value = text;
+                rfb.clipboardPasteFrom(text);
             }
-        }, 500);
-    },
+        });
 
-    attach() {
-        // Pod→Host: VNC server sends clipboard content
-        this.rfb.addEventListener('clipboard', (e) => {
+        // Pod→Host: also write to browser clipboard when VNC sends clipboard
+        rfb.addEventListener('clipboard', (e) => {
             if (e.detail && e.detail.text) {
                 navigator.clipboard.writeText(e.detail.text).catch(() => {});
             }
         });
 
-        // Host→Pod: intercept paste on the noVNC canvas
-        const canvas = document.getElementById('noVNC_canvas') ||
-                       document.querySelector('canvas');
-        if (!canvas) return;
-
-        // Listen on the document for paste events (works when canvas is focused)
-        document.addEventListener('paste', async (e) => {
-            if (!this.ready) return;
-            let text = '';
-            if (e.clipboardData) {
-                text = e.clipboardData.getData('text/plain');
-            }
-            if (!text) {
-                try { text = await navigator.clipboard.readText(); } catch (_) {}
-            }
-            if (text) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.rfb.clipboardPasteFrom(text);
-                // Simulate Ctrl+V in the VNC session so the app receives the paste
-                this.rfb.sendKey(0xffe3, 'ControlLeft', true);   // Ctrl down
-                this.rfb.sendKey(0x0076, 'KeyV', true);          // v down
-                this.rfb.sendKey(0x0076, 'KeyV', false);         // v up
-                this.rfb.sendKey(0xffe3, 'ControlLeft', false);  // Ctrl up
-            }
-        });
-
-        // Also handle Ctrl+V keydown as a trigger to read clipboard
-        // (some browsers fire keydown before paste event)
-        document.addEventListener('keydown', async (e) => {
-            if (!this.ready) return;
-            if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-                try {
-                    const text = await navigator.clipboard.readText();
-                    if (text) {
-                        this.rfb.clipboardPasteFrom(text);
-                    }
-                } catch (_) {
-                    // Clipboard permission denied — fall through to normal paste
-                }
-            }
-        });
+        console.log('[envpod-clipboard] ready — use sidebar clipboard panel to paste');
     }
-};
 
-window.addEventListener('load', () => EnvpodClipboard.init());
+    window.addEventListener('load', () => setTimeout(init, 1000));
+})();
 "##;
 
 /// Parse resolution string into (width, height). Returns None if invalid.
@@ -1058,7 +1052,7 @@ mod tests {
         assert!(wrapper.contains("envpod-display-services"));
         assert!(wrapper.contains("exec \"$@\""));
         // Daemon script: manages display services
-        let daemon = generate_services_daemon(&config);
+        let daemon = generate_services_daemon(&config, DesktopEnv::None);
         assert!(daemon.contains("Xvfb :99"));
         assert!(daemon.contains("1920x1080"));
         assert!(daemon.contains("x11vnc"));
@@ -1077,7 +1071,7 @@ mod tests {
             audio_port: 6081,
             ..Default::default()
         };
-        let daemon = generate_services_daemon(&config);
+        let daemon = generate_services_daemon(&config, DesktopEnv::None);
         assert!(daemon.contains("pulseaudio"));
         assert!(daemon.contains("envpod-audio-proxy"));
         assert!(daemon.contains("0.0.0.0:6081"));
@@ -1146,7 +1140,7 @@ mod tests {
             file_upload: true,
             ..Default::default()
         };
-        let daemon = generate_services_daemon(&config);
+        let daemon = generate_services_daemon(&config, DesktopEnv::None);
         assert!(daemon.contains("envpod-upload-server.py"));
         assert!(daemon.contains("/tmp/uploads"));
     }
@@ -1158,7 +1152,7 @@ mod tests {
             file_upload: false,
             ..Default::default()
         };
-        let daemon = generate_services_daemon(&config);
+        let daemon = generate_services_daemon(&config, DesktopEnv::None);
         assert!(!daemon.contains("envpod-upload-server.py"));
     }
 
@@ -1170,7 +1164,7 @@ mod tests {
             audio: true,
             ..Default::default()
         };
-        let daemon = generate_services_daemon(&config);
+        let daemon = generate_services_daemon(&config, DesktopEnv::None);
         assert!(daemon.contains("ximagesrc"));
         assert!(daemon.contains("vp8enc"));
         assert!(daemon.contains("pulsesrc"));
@@ -1189,7 +1183,7 @@ mod tests {
             audio: false,
             ..Default::default()
         };
-        let daemon = generate_services_daemon(&config);
+        let daemon = generate_services_daemon(&config, DesktopEnv::None);
         assert!(daemon.contains("x264enc"));
         assert!(!daemon.contains("pulsesrc"));
     }
@@ -1198,6 +1192,40 @@ mod tests {
     fn none_script_empty() {
         let config = WebDisplayConfig::default();
         assert!(generate_supervisor_script(&config).is_empty());
+    }
+
+    #[test]
+    fn daemon_autostart_openbox() {
+        let config = WebDisplayConfig {
+            display_type: WebDisplayType::Novnc,
+            ..Default::default()
+        };
+        let daemon = generate_services_daemon(&config, DesktopEnv::Openbox);
+        assert!(daemon.contains("openbox-session"));
+        assert!(daemon.contains("Desktop: openbox started"));
+    }
+
+    #[test]
+    fn daemon_autostart_xfce() {
+        let config = WebDisplayConfig {
+            display_type: WebDisplayType::Novnc,
+            ..Default::default()
+        };
+        let daemon = generate_services_daemon(&config, DesktopEnv::Xfce);
+        assert!(daemon.contains("startxfce4"));
+        assert!(daemon.contains("Desktop: xfce started"));
+    }
+
+    #[test]
+    fn daemon_autostart_none() {
+        let config = WebDisplayConfig {
+            display_type: WebDisplayType::Novnc,
+            ..Default::default()
+        };
+        let daemon = generate_services_daemon(&config, DesktopEnv::None);
+        assert!(!daemon.contains("openbox-session"));
+        assert!(!daemon.contains("startxfce4"));
+        assert!(!daemon.contains("sway"));
     }
 
     #[test]

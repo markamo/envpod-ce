@@ -19,12 +19,15 @@ All commands require `sudo` (namespace operations need root). The state director
 | [`init`](#init) | Create a pod from pod.yaml |
 | [`setup`](#setup) | Re-run setup commands on existing pod |
 | [`run`](#run) | Start pod namespace and execute a command |
+| [`start`](#start) | Start a pod in the background |
+| [`stop`](#stop) | Gracefully stop a running pod |
 | [`diff`](#diff) | Show what the agent changed |
 | [`commit`](#commit) | Apply agent changes to host filesystem |
 | [`rollback`](#rollback) | Discard all agent changes |
 | [`audit`](#audit) | View action log or run security scan |
 | [`lock`](#lock) | Freeze pod processes |
 | [`destroy`](#destroy) | Remove pod entirely |
+| [`prune`](#prune) | Remove all stopped/created pods |
 | [`ls`](#ls) | List all pods |
 | [`status`](#status) | Pod status and resource usage |
 | [`logs`](#logs) | Pod stdout/stderr |
@@ -244,6 +247,90 @@ sudo envpod fg myagent
 # Or: start interactive, Ctrl+Z to detach, then reattach
 sudo envpod fg myagent
 ```
+
+---
+
+## start
+
+Start a pod in the background. Services auto-start (display, desktop, audio, upload). Connect via noVNC at `http://localhost:6080` or open a shell with `envpod run <pod> -- bash`. The pod keeps running until explicitly stopped.
+
+```
+envpod start <name> [flags]
+```
+
+| Flag | Short | Description |
+|---|---|---|
+| `name` | | Pod name |
+| `--root` | | Run as root inside pod (default: non-root `agent` user, UID 60000) |
+| `--user <uid\|name>` | `-u` | Run as specific user inside pod |
+| `--env KEY=VALUE` | `-e` | Set extra env vars (repeatable) |
+| `--enable-display` | `-d` | Forward display (Wayland preferred, X11 fallback) |
+| `--enable-audio` | `-a` | Forward audio (PipeWire preferred, PulseAudio fallback) |
+| `--publish host:pod` | `-p` | Port forward — localhost only |
+| `--publish-all host:pod` | `-P` | Port forward — all interfaces |
+| `--internal pod_port` | `-i` | Pod-to-pod port only |
+
+**Use cases:**
+
+```bash
+# Start a desktop pod (connect via noVNC)
+sudo envpod start my-desktop
+
+# Start with display and audio forwarding
+sudo envpod start my-agent -d -a
+
+# Start as root with extra ports
+sudo envpod start my-agent --root -p 8080:3000
+
+# Start, then connect with a shell
+sudo envpod start my-agent
+sudo envpod run my-agent -- bash
+
+# Start, do work, stop, start again later
+sudo envpod start my-agent
+# ... work ...
+sudo envpod stop my-agent
+# ... later ...
+sudo envpod start my-agent
+```
+
+**Difference from `run`:** `start` launches the pod in the background without executing a specific command. Services (display, audio, upload) auto-start. Use `run` to execute commands inside an already-started pod, or to run a one-shot command.
+
+---
+
+## stop
+
+Gracefully stop one or more running pods. Preserves overlay data — the pod can be started again later with `envpod start`. Accepts multiple pod names for batch operations.
+
+```
+envpod stop <name> [name2...]
+```
+
+| Flag | Description |
+|---|---|
+| `names...` | One or more pod names to stop |
+
+**Use cases:**
+
+```bash
+# Stop one pod
+sudo envpod stop my-agent
+
+# Stop multiple pods
+sudo envpod stop agent-1 agent-2 agent-3
+
+# Stop all running pods (shell loop)
+sudo envpod ls --json | jq -r '.[] | select(.status == "running") | .name' \
+  | xargs -r sudo envpod stop
+
+# Stop and restart cycle
+sudo envpod stop my-agent
+sudo envpod start my-agent
+```
+
+**Difference from `destroy`:** `stop` preserves the pod's overlay, snapshots, vault, and configuration. `destroy` removes everything permanently.
+
+**Difference from `lock`:** `lock` freezes processes in place (SIGSTOP) — they resume exactly where they left off. `stop` fully tears down the namespace and services.
 
 ---
 
@@ -503,6 +590,41 @@ sudo envpod ls --json | jq -r '.[].name' | grep "^test-" | xargs sudo envpod des
 
 ---
 
+## prune
+
+Remove all stopped and created (never started) pods in one pass. Running and frozen pods are preserved. Use this to clean up after batch operations or abandoned experiments.
+
+```
+envpod prune [--bases]
+```
+
+| Flag | Description |
+|---|---|
+| `--bases` | Also prune base pods that are not referenced by any remaining pod |
+
+**Use cases:**
+
+```bash
+# Remove all stopped pods
+sudo envpod prune
+
+# Remove stopped pods and unreferenced bases
+sudo envpod prune --bases
+
+# Typical fleet cleanup after a batch run
+sudo envpod stop worker-1 worker-2 worker-3
+sudo envpod prune
+sudo envpod gc
+
+# Preview what would be pruned (check ls first)
+sudo envpod ls
+sudo envpod prune
+```
+
+**What it preserves:** Running pods, frozen (locked) pods, and their base pods. Only stopped and created pods are removed.
+
+---
+
 ## ls
 
 List all pods with status.
@@ -647,6 +769,7 @@ Manage reusable base pods. A base is a rootfs + overlay snapshot that clones are
 envpod base create <name> [-c pod.yaml] [-v]
 envpod base ls [--json]
 envpod base destroy <name> [name2...] [--force]
+envpod base prune
 ```
 
 ### base create
@@ -686,6 +809,19 @@ sudo envpod base destroy base1 base2 base3
 
 # Force destroy even if pods still reference it
 sudo envpod base destroy python-agent --force
+```
+
+### base prune
+
+Remove all base pods that are not referenced by any existing pod. Safe cleanup — only removes orphaned bases.
+
+```bash
+# Remove all unreferenced bases
+sudo envpod base prune
+
+# See what bases exist before pruning
+sudo envpod base ls
+sudo envpod base prune
 ```
 
 **Use cases:**
@@ -1544,6 +1680,28 @@ sudo envpod commit myagent   # OR: sudo envpod rollback myagent
 
 ---
 
+### Desktop Pod (Start/Stop)
+
+```bash
+# Create a desktop pod
+sudo envpod init my-desktop --preset desktop
+
+# Start it in the background (services auto-start)
+sudo envpod start my-desktop
+
+# Open http://localhost:6080 in your browser
+# Open shells as needed
+sudo envpod run my-desktop -- bash
+
+# Stop when done (preserves everything)
+sudo envpod stop my-desktop
+
+# Resume tomorrow — same state, same overlay
+sudo envpod start my-desktop
+```
+
+---
+
 ### Parallel Agent Fleet
 
 ```bash
@@ -1569,8 +1727,8 @@ sudo envpod commit worker-7
 # Others:
 for i in $(seq 1 20); do sudo envpod rollback worker-$i 2>/dev/null; done
 
-# Destroy fleet
-sudo envpod ls --json | jq -r '.[].name' | grep "^worker-" | xargs sudo envpod destroy
+# Clean up: prune all stopped pods and unused bases
+sudo envpod prune --bases
 sudo envpod gc
 ```
 

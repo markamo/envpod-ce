@@ -58,11 +58,11 @@ security:
   shm_size: "256MB"
 ```
 
-### 2. Init and run
+### 2. Init and start
 
 ```bash
 sudo envpod init my-desktop -c web-display.yaml
-sudo envpod run my-desktop -- google-chrome --no-sandbox --start-maximized
+sudo envpod start my-desktop
 ```
 
 ### 3. Open in browser
@@ -71,8 +71,28 @@ sudo envpod run my-desktop -- google-chrome --no-sandbox --start-maximized
 http://localhost:6080/vnc.html
 ```
 
-Click **Connect** in the noVNC interface. You'll see Chrome running inside
-the governed pod.
+Click **Connect** in the noVNC interface. Display services auto-start
+with `envpod start` — the desktop is ready immediately.
+
+### 4. Run commands inside the pod
+
+```bash
+sudo envpod run my-desktop -- google-chrome --no-sandbox --start-maximized
+sudo envpod run my-desktop -- bash
+```
+
+### 5. Stop when done
+
+```bash
+sudo envpod stop my-desktop
+# Start again later — overlay is preserved
+sudo envpod start my-desktop
+```
+
+> **Tip:** `envpod start` is the recommended way to launch desktop pods.
+> It starts the pod in the background with all services (display, audio,
+> upload) running automatically. Use `envpod run` to execute commands
+> inside the already-running pod.
 
 ---
 
@@ -95,13 +115,13 @@ Browser ──WebSocket──→ websockify:6080 ──VNC──→ x11vnc:5900 
    - `/usr/local/bin/envpod-display-start` — lightweight wrapper that starts the daemon if not already running, exports `DISPLAY=:99` and `DBUS_SESSION_BUS_ADDRESS`, then `exec`s your command.
 4. Your `setup:` commands run after
 
-### At `envpod run`
+### At `envpod start` or `envpod run`
 
 1. The wrapper script starts the display services daemon if it is not already running
 2. `DISPLAY=:99` and `DBUS_SESSION_BUS_ADDRESS` are exported
 3. Port forward `localhost:{port}` → `pod_ip:6080` is set up via iptables
-4. Your command launches on the virtual display
-5. Display services run independently of your command — they persist across multiple `envpod run` sessions in the same pod
+4. Your command launches on the virtual display (with `run`), or the pod waits for connections (with `start`)
+5. Display services run independently of your command — they persist across multiple `envpod run` sessions and survive `envpod stop`/`envpod start` cycles
 
 ---
 
@@ -138,6 +158,24 @@ Virtual display resolution. Common values:
 
 ---
 
+## Clipboard
+
+**Pod to host (copy):** Works automatically. Text copied inside the pod (e.g., Ctrl+C in a text editor) appears in the host clipboard.
+
+**Host to pod (paste):** Use the **sidebar clipboard panel** in the noVNC interface. Click the clipboard icon in the left sidebar, paste your text into the panel (Ctrl+V), and it is sent to the VNC clipboard. Direct Ctrl+V on the desktop canvas does not work -- browsers block clipboard access to canvas elements for security reasons.
+
+**Pasting into terminals:** After sending text via the sidebar panel, use Ctrl+Shift+V in xfce4-terminal (or middle-click in xterm). Terminals do not respond to Ctrl+V -- that is interpreted as a literal control character.
+
+**Note:** Pasting into the sidebar panel **replaces** the pod clipboard contents (it does not append to previous text).
+
+---
+
+## Key Repeat
+
+Holding a key to repeat characters works out of the box. The display services configure `xset r rate 250 30` (250ms delay, 30 repeats/sec) and x11vnc runs with the `-repeat` flag.
+
+---
+
 ## Use Cases
 
 ### Browser Agent (Chrome from host)
@@ -165,16 +203,96 @@ sudo envpod run my-agent -- google-chrome --no-sandbox --start-maximized
 
 ### GUI Desktop
 
-Install a window manager for a full desktop experience:
+Three desktop tiers are available via `devices.desktop_env`:
+
+| Tier | `desktop_env` | Install size | Best for |
+|------|---------------|-------------|----------|
+| CLI only | `none` (default) | 0 MB | Headless agents, scripts |
+| Lightweight | `openbox` | ~50 MB | Agent pods, browser automation |
+| Full desktop | `xfce` | ~200 MB | Interactive desktop sessions |
+
+The `desktop_env` setting auto-installs the window manager during `envpod init`
+and **auto-starts it** when display services launch — no manual commands needed.
+
+#### Openbox (lightweight — recommended for agents)
 
 ```yaml
-setup:
-  - "DEBIAN_FRONTEND=noninteractive apt-get install -y openbox xterm"
+# pod.yaml
+name: my-agent
+web_display:
+  type: novnc
+  port: 6080
+  resolution: "1280x720"
+devices:
+  desktop_env: openbox
+filesystem:
+  system_access: advanced
+processor:
+  cores: 2.0
+  memory: "2GB"
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"
 ```
 
 ```bash
-sudo envpod run my-desktop -- openbox-session
+sudo envpod init my-agent -c pod.yaml
+sudo envpod start my-agent             # desktop auto-starts in noVNC
+sudo envpod run my-agent -- bash       # open a shell (optional)
 ```
+
+Open `http://localhost:6080/vnc.html` — openbox is already running with
+right-click context menu. Lightweight and fast.
+
+#### XFCE (full desktop — recommended for interactive use)
+
+```yaml
+# pod.yaml
+name: my-desktop
+web_display:
+  type: novnc
+  port: 6080
+  resolution: "1920x1080"
+devices:
+  desktop_env: xfce
+filesystem:
+  system_access: advanced
+processor:
+  cores: 4.0
+  memory: "4GB"
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"
+```
+
+```bash
+sudo envpod init my-desktop -c pod.yaml
+sudo envpod start my-desktop           # XFCE auto-starts in noVNC
+sudo envpod run my-desktop -- bash     # open a shell (optional)
+```
+
+Open `http://localhost:6080/vnc.html` — full desktop with taskbar, file manager,
+terminal emulator, and settings. Use 1920x1080 resolution for best experience.
+
+#### Desktop without `desktop_env` (manual start)
+
+If you prefer to start a WM manually (e.g., installed via `setup:` commands):
+
+```bash
+sudo envpod run my-desktop -b -- openbox-session   # start desktop in background
+sudo envpod run my-desktop -- bash                  # shell in same pod
+```
+
+#### Tips
+
+- **Auto-start**: The configured desktop starts automatically as part of the
+  display services daemon — just `envpod run <pod> -- bash` and connect via noVNC
+- **Multiple sessions**: All sessions share the same virtual display — commands
+  run from bash appear on the noVNC desktop
+- **Browser inside desktop**: Launch Chrome from the openbox right-click menu
+  or from bash: `google-chrome --no-sandbox --start-maximized &`
+- **Screen resolution**: Match `web_display.resolution` to your monitor for best
+  results. Change at runtime: `xrandr --output SCREEN --mode 1920x1080`
 
 ### Quick Visual Test
 
@@ -251,11 +369,15 @@ local machine with a running desktop.
 
 ### Black screen
 
-The display starts empty. Run a GUI application:
+If `desktop_env` is set, the desktop auto-starts — you should see it immediately.
+If using `envpod start`, services launch automatically.
+
+If not using `desktop_env`, run a GUI application or start a desktop manually:
 ```bash
-sudo envpod run my-pod -- xeyes              # quick test
+sudo envpod run my-pod -- xeyes                      # quick test
 sudo envpod run my-pod -- google-chrome --no-sandbox  # browser
-sudo envpod run my-pod -- openbox-session    # window manager
+sudo envpod run my-pod -b -- openbox-session          # openbox desktop (manual)
+sudo envpod run my-pod -b -- startxfce4               # XFCE desktop (manual)
 ```
 
 ### apt-get fails during setup
@@ -299,14 +421,20 @@ If connecting from another machine, use `public_ports` instead of `ports`
 ## Multiple Sessions & Resumable Terminals
 
 Display services (Xvfb, x11vnc, websockify, audio, upload) run as a
-background daemon inside the pod. Each `envpod run` command gets its own
-independent terminal — you can run multiple commands simultaneously in
-the same pod:
+background daemon inside the pod. Use `envpod start` to launch the pod
+with all services, then run multiple commands simultaneously:
+
+```bash
+sudo envpod start my-pod                          # start pod, services auto-launch
+sudo envpod run my-pod -- bash                    # get a shell
+sudo envpod run my-pod -- python3 agent.py        # run an agent (another session)
+```
+
+Or use the traditional approach with `envpod run -b`:
 
 ```bash
 sudo envpod run my-pod -b -- startxfce4          # start desktop in background
 sudo envpod run my-pod -- bash                    # get a shell (separate session)
-sudo envpod run my-pod -- python3 agent.py        # run an agent (another session)
 ```
 
 ### Resumable sessions with screen

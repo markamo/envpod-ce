@@ -24,7 +24,7 @@ web_display:
   audio: true             # [beta] Opus/WebM audio streaming on port 6081
 
 devices:
-  desktop_env: xfce
+  desktop_env: xfce 
 
 filesystem:
   system_access: advanced

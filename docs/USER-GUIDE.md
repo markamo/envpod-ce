@@ -85,17 +85,19 @@ A pod is a self-contained execution environment with a foundation (COW filesyste
 
 <!-- output -->
 ```
-init  →  run  →  diff  →  commit  or  rollback  →  destroy
-                   ↑                                  ↑
-                   └── review changes ────────────────┘
+init  →  start / run  →  diff  →  commit  or  rollback  →  stop / destroy
+                           ↑                                     ↑
+                           └── review changes ───────────────────┘
 ```
 
 1. **init** — Create the pod (overlay dirs, cgroup, network namespace)
-2. **run** — Execute commands inside the pod
-3. **diff** — See what the agent changed
-4. **commit** — Accept changes to host filesystem
-5. **rollback** — Discard all changes
-6. **destroy** — Remove pod entirely
+2. **start** — Start the pod in the background (services auto-start, connect via noVNC or `run`)
+3. **run** — Execute commands inside the pod (or start + run a one-shot command)
+4. **diff** — See what the agent changed
+5. **commit** — Accept changes to host filesystem
+6. **rollback** — Discard all changes
+7. **stop** — Gracefully stop the pod (preserves overlay for later `start`)
+8. **destroy** — Remove pod entirely
 
 ### Pod Types
 
@@ -252,6 +254,44 @@ Reattach to a background or detached pod. Shows existing log output and tails ne
 
 **User precedence:** `--user` > `--root` > pod.yaml `user:` field > default `agent`
 
+#### `envpod start <name> [options]`
+
+Start a pod in the background. Services auto-start (display, desktop, audio, upload). Connect via noVNC at `http://localhost:6080` or open a shell with `envpod run <name> -- bash`.
+
+| Option | Description |
+|--------|-------------|
+| `--root` | Run as root inside the pod |
+| `--user <name\|uid>` | Run as a specific user inside the pod |
+| `--env <KEY=VALUE>` | Set environment variables (repeatable) |
+| `-d`, `--enable-display` | Forward display |
+| `-a`, `--enable-audio` | Forward audio |
+| `-p`, `--publish <host:pod>` | Port forward — localhost only |
+| `-P`, `--publish-all <host:pod>` | Port forward — all interfaces |
+| `-i`, `--internal <pod_port>` | Pod-to-pod port only |
+
+<!-- no-exec -->
+```bash
+# Start a desktop pod (connect via noVNC)
+sudo envpod start my-desktop
+
+# Start with display and audio
+sudo envpod start my-agent -d -a
+
+# Start, then connect with a shell
+sudo envpod start my-agent
+sudo envpod run my-agent -- bash
+```
+
+#### `envpod stop <name> [name2 ...]`
+
+Gracefully stop one or more running pods. Preserves overlay data — the pod can be started again later with `envpod start`.
+
+<!-- no-exec -->
+```bash
+sudo envpod stop my-agent
+sudo envpod stop agent-1 agent-2 agent-3    # batch stop
+```
+
 #### `envpod setup <name> [--create-base [base-name]]`
 
 Re-run setup commands and setup script from the pod's config. Useful if setup was interrupted or failed partway through (e.g., a `pip install` failed due to a network timeout). The pod remains usable even if setup is incomplete — you can re-run `envpod setup` at any time to retry.
@@ -310,6 +350,20 @@ sudo envpod gc
 <!-- pause 2 -->
 
 Run periodically on hosts that create and destroy many pods, or after a system crash.
+
+#### `envpod prune [--bases]`
+
+Remove all stopped and created (never started) pods in one pass. Running and frozen pods are preserved.
+
+| Option | Description |
+|--------|-------------|
+| `--bases` | Also prune base pods not referenced by any remaining pod |
+
+<!-- no-exec -->
+```bash
+sudo envpod prune                # remove all stopped/created pods
+sudo envpod prune --bases        # also remove unreferenced base pods
+```
 
 ### Clone & Base Pod Management
 
@@ -377,6 +431,15 @@ sudo envpod base destroy python-base --force   # even if pods still reference it
 | Option | Description |
 |--------|-------------|
 | `--force` | Force removal even if pods still reference this base |
+
+#### `envpod base prune`
+
+Remove all base pods that are not referenced by any existing pod.
+
+<!-- no-exec -->
+```bash
+sudo envpod base prune
+```
 
 ### Filesystem Operations
 
@@ -1461,14 +1524,20 @@ Features:
 - **Audio streaming** — PulseAudio null sink -> Opus/WebM via WebSocket (click speaker icon in panel) [beta]
 - **File upload** — click upload icon in side panel to send files to `/tmp/uploads/` inside the pod (upload-only, no download — files come out via `envpod diff`/`commit`)
 - **Guardian cgroup** — display services (Xvfb, x11vnc, websockify) survive pod freeze/thaw
+- **Clipboard** — pod-to-host copy works automatically; host-to-pod paste uses the sidebar clipboard panel (direct Ctrl+V on canvas is blocked by browsers). Terminals use Ctrl+Shift+V after pasting into the sidebar panel.
+- **Key repeat** — holding a key repeats characters (250ms delay, 30/sec via `xset r rate` + `x11vnc -repeat`)
 
 <!-- no-exec -->
 <!-- type-delay 0.02 -->
 ```bash
-# Desktop pod example
+# Desktop pod example (recommended: use envpod start)
 sudo envpod init my-desktop --preset desktop
-sudo envpod run my-desktop -b -- startxfce4
+sudo envpod start my-desktop
 # Open http://localhost:6080 in your browser
+# Services (display, audio, upload) auto-start
+
+# Or use envpod run for a one-shot command
+sudo envpod run my-desktop -- google-chrome --no-sandbox
 ```
 
 Pairs with `devices.desktop_env` (xfce, openbox, sway) for a complete desktop experience.

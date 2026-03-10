@@ -1269,7 +1269,25 @@ impl IsolationBackend for NativeBackend {
 
         // Determine live status: check if the process is still alive
         let status = match state.status {
-            NativeStatus::Created => PodStatus::Created,
+            NativeStatus::Created => {
+                // Check if a supervisor is running (e.g. `envpod start` launched
+                // but state file hasn't been updated yet, or background run)
+                let supervisor_pid_path = state.pod_dir.join("supervisor.pid");
+                if let Ok(pid_str) = std::fs::read_to_string(&supervisor_pid_path) {
+                    if let Ok(pid) = pid_str.trim().parse::<i32>() {
+                        let nix_pid = nix::unistd::Pid::from_raw(pid);
+                        if nix::sys::signal::kill(nix_pid, None).is_ok() {
+                            PodStatus::Running
+                        } else {
+                            PodStatus::Created
+                        }
+                    } else {
+                        PodStatus::Created
+                    }
+                } else {
+                    PodStatus::Created
+                }
+            }
             NativeStatus::Running => {
                 if let Some(pid) = state.init_pid {
                     let pid = nix::unistd::Pid::from_raw(pid as i32);
@@ -1278,7 +1296,22 @@ impl IsolationBackend for NativeBackend {
                         Err(_) => PodStatus::Stopped,
                     }
                 } else {
-                    PodStatus::Created
+                    // No init_pid but status says Running — check supervisor
+                    let supervisor_pid_path = state.pod_dir.join("supervisor.pid");
+                    if let Ok(pid_str) = std::fs::read_to_string(&supervisor_pid_path) {
+                        if let Ok(pid) = pid_str.trim().parse::<i32>() {
+                            let nix_pid = nix::unistd::Pid::from_raw(pid);
+                            if nix::sys::signal::kill(nix_pid, None).is_ok() {
+                                PodStatus::Running
+                            } else {
+                                PodStatus::Stopped
+                            }
+                        } else {
+                            PodStatus::Created
+                        }
+                    } else {
+                        PodStatus::Created
+                    }
                 }
             }
             NativeStatus::Frozen => PodStatus::Frozen,

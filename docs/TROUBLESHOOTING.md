@@ -337,6 +337,14 @@ sudo iptables -t nat -L OUTPUT -n | grep 6080
 sudo iptables -t nat -L PREROUTING -n | grep 6080   # only with public_ports
 ```
 
+### Ctrl+V does not paste into the pod desktop
+
+**Cause:** Browsers restrict direct clipboard access to canvas elements. Ctrl+V on the noVNC canvas is blocked by the browser.
+
+**Fix:** Use the **sidebar clipboard panel** -- click the clipboard icon on the left side of the noVNC interface, paste your text into the panel with Ctrl+V, and it is sent to the VNC clipboard automatically.
+
+For terminals inside the pod, use Ctrl+Shift+V (xfce4-terminal) or middle-click (xterm) after pasting via the sidebar panel.
+
 ### Display terminal blocks user terminal
 
 **Cause:** Old versions ran display services in the foreground.
@@ -420,6 +428,21 @@ sudo iptables -t nat -L -n | grep envpod
 sudo envpod gc
 ```
 
+### Too many stopped pods accumulating
+
+After batch operations or experiments, stopped pods can accumulate. Use `prune` to clean up:
+
+```bash
+# Remove all stopped/created pods (preserves running and frozen pods)
+sudo envpod prune
+
+# Also remove unreferenced base pods
+sudo envpod prune --bases
+
+# Or just prune orphaned bases
+sudo envpod base prune
+```
+
 ### `envpod run` shows "pod not found"
 
 The pod wasn't initialized or was destroyed.
@@ -430,6 +453,20 @@ sudo envpod ls
 
 # Re-initialize if needed
 sudo envpod init my-pod -c pod.yaml
+```
+
+### Pod won't start after `envpod stop`
+
+If `envpod start` fails after a previous `envpod stop`, the pod may have stale mounts or processes:
+
+```bash
+# Check what's still mounted
+grep "my-pod" /proc/mounts
+
+# Try destroying and re-creating
+sudo envpod destroy my-pod
+sudo envpod init my-pod -c pod.yaml
+sudo envpod start my-pod
 ```
 
 ### Queue socket permission denied

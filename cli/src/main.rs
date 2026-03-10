@@ -147,6 +147,41 @@ enum Commands {
         #[arg(last = true)]
         command: Vec<String>,
     },
+    /// Start a pod in the background (services auto-start, connect via noVNC or `envpod run <pod> -- bash`)
+    Start {
+        /// Pod name
+        name: String,
+        /// Run as root inside the pod (default is non-root 'agent' user)
+        #[arg(long)]
+        root: bool,
+        /// Run as this user (name or numeric uid) inside the pod
+        #[arg(short, long)]
+        user: Option<String>,
+        /// Set environment variables (KEY=VALUE), can be repeated
+        #[arg(short, long = "env")]
+        env_vars: Vec<String>,
+        /// Enable display forwarding
+        #[arg(short = 'd', long)]
+        enable_display: bool,
+        /// Enable audio forwarding
+        #[arg(short = 'a', long)]
+        enable_audio: bool,
+        /// Publish port to localhost only: host_port:container_port[/proto]
+        #[arg(short = 'p', long = "publish")]
+        ports: Vec<String>,
+        /// Publish port to all interfaces: host_port:container_port[/proto]
+        #[arg(short = 'P', long = "publish-all")]
+        public_ports: Vec<String>,
+        /// Open port to other pods only: container_port[/proto]
+        #[arg(short = 'i', long = "internal")]
+        internal_ports: Vec<String>,
+    },
+    /// Stop a running pod (preserves data, can `start` again)
+    Stop {
+        /// Pod name(s) to stop
+        #[arg(required = true)]
+        names: Vec<String>,
+    },
     /// Bring a background pod to the foreground (attach to running process)
     Fg {
         /// Pod name
@@ -437,6 +472,12 @@ enum Commands {
         #[arg(long)]
         socket: Option<PathBuf>,
     },
+    /// Remove all stopped pods (preserves running/frozen pods and base pods)
+    Prune {
+        /// Also prune unused base pods
+        #[arg(long)]
+        bases: bool,
+    },
     /// Clean up stale iptables rules from destroyed pods
     Gc,
     /// Manage pod overlay snapshots (checkpoints of the filesystem state)
@@ -559,6 +600,8 @@ enum BaseAction {
         #[arg(long)]
         force: bool,
     },
+    /// Remove all base pods not used by any pod
+    Prune,
 }
 
 #[derive(Subcommand)]
@@ -653,6 +696,15 @@ async fn run(cli: Cli) -> Result<()> {
                 cmd_run(&store, base_dir, &name, &command, root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports, mount_cwd, no_mount_cwd).await
             }
         }
+        Commands::Start { name, root, user, env_vars, enable_display, enable_audio, ports, public_ports, internal_ports } => {
+            cmd_run_background(base_dir, &name, &["sleep".into(), "infinity".into()], root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports)
+        }
+        Commands::Stop { names } => {
+            for name in &names {
+                cmd_stop(&store, base_dir, name).await?;
+            }
+            Ok(())
+        }
         Commands::Fg { name } => cmd_fg(&store, base_dir, &name).await,
         Commands::Diff { name, json, all } => cmd_diff(&store, base_dir, &name, json, all),
         Commands::Commit { name, paths, exclude, output, all, include_system } => cmd_commit(&store, base_dir, &name, &paths, &exclude, output.as_deref(), all, include_system),
@@ -717,6 +769,7 @@ async fn run(cli: Cli) -> Result<()> {
             cmd_discover(&store, base_dir, &name, on, off, &add_pods, &remove_pods).await,
         Commands::DnsDaemon { socket } => cmd_dns_daemon(base_dir, socket).await,
         Commands::Snapshot { name, action } => cmd_snapshot(&store, base_dir, &name, action),
+        Commands::Prune { bases } => cmd_prune(&store, base_dir, bases).await,
         Commands::Gc => {
             let result = gc_all(&base_dir, &store)?;
             if result.total() == 0 {
@@ -836,7 +889,7 @@ async fn cmd_init(
     if config.web_display.display_type != envpod_core::config::WebDisplayType::None {
         if let Ok(state) = NativeState::from_handle(&handle) {
             let wrapper = envpod_core::web_display::generate_supervisor_script(&config.web_display);
-            let daemon = envpod_core::web_display::generate_services_daemon(&config.web_display);
+            let daemon = envpod_core::web_display::generate_services_daemon(&config.web_display, config.devices.desktop_env);
             // With advanced/dangerous system_access, /usr gets its own COW overlay
             // backed by sys_upper/usr/, so we must write there instead of upper/
             let script_dir = if matches!(config.filesystem.system_access, envpod_core::config::SystemAccess::Advanced | envpod_core::config::SystemAccess::Dangerous) {
@@ -917,7 +970,7 @@ async fn cmd_init(
             // - Auto-connect (skip the connect dialog)
             // - Load audio/upload plugin scripts (if enabled)
             if config.web_display.display_type == envpod_core::config::WebDisplayType::Novnc {
-                let favicon_svg = r#"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 32 32\"><rect width=\"32\" height=\"32\" rx=\"6\" fill=\"%2324292e\"/><text x=\"16\" y=\"22\" text-anchor=\"middle\" font-family=\"monospace\" font-weight=\"bold\" font-size=\"14\" fill=\"%2358a6ff\">ep</text></svg>"#;
+                let favicon_svg = r#"%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%2324292e%27/%3E%3Ctext x=%2716%27 y=%2722%27 text-anchor=%27middle%27 font-family=%27monospace%27 font-weight=%27bold%27 font-size=%2714%27 fill=%27%2358a6ff%27%3Eep%3C/text%3E%3C/svg%3E"#;
                 let mut patches = vec![
                     // Side panel logo: "noVNC" → "envpod"
                     r#"sed -i 's|<h1 class="noVNC_logo"[^>]*><span>no</span><br>VNC</h1>|<h1 class="noVNC_logo" translate="no"><span>env</span><br>pod</h1>|' /usr/share/novnc/vnc.html"#.to_string(),
@@ -931,6 +984,9 @@ async fn cmd_init(
                     ),
                     // Auto-connect: inject autoconnect=true default so users skip the connect dialog
                     r#"sed -i 's|</body>|<script>if(!location.search.includes("autoconnect=false"))window.addEventListener("load",function(){setTimeout(function(){var b=document.getElementById("noVNC_connect_button");if(b)b.click();},500);});</script></body>|' /usr/share/novnc/vnc.html"#.to_string(),
+                    // Expose UI.rfb to window so clipboard-plugin.js can find it
+                    // (noVNC 1.3 uses ES6 modules — module scope is not on window)
+                    r#"sed -i 's|UI\.rfb\.addEventListener("connect", UI\.connectFinished);|UI.rfb.addEventListener("connect", UI.connectFinished); window.rfb = UI.rfb;|' /usr/share/novnc/app/ui.js"#.to_string(),
                     // Clipboard sync: host↔pod paste via Clipboard API + noVNC RFB
                     r#"sed -i 's|</body>|<script src="clipboard-plugin.js"></script></body>|' /usr/share/novnc/vnc.html"#.to_string(),
                 ];
@@ -1591,6 +1647,33 @@ async fn cmd_base(store: &PodStore, base_dir: &std::path::Path, action: BaseActi
                 println!("Destroyed base pod '{name}'");
             }
         }
+        BaseAction::Prune => {
+            let entries = if bases_dir.exists() {
+                std::fs::read_dir(&bases_dir)?
+                    .filter_map(|e| e.ok())
+                    .filter(|e| e.path().join("rootfs").exists())
+                    .filter_map(|e| e.file_name().into_string().ok())
+                    .collect::<Vec<_>>()
+            } else {
+                Vec::new()
+            };
+
+            let mut removed = 0;
+            for name in &entries {
+                let users = find_base_users(store, &bases_dir, name);
+                if users.is_empty() {
+                    destroy_base(&bases_dir, name)?;
+                    println!("Pruned base pod '{name}'");
+                    removed += 1;
+                }
+            }
+
+            if removed == 0 {
+                println!("No unused base pods to prune");
+            } else {
+                println!("\nPruned {} base pod{}", removed, if removed == 1 { "" } else { "s" });
+            }
+        }
     }
 
     Ok(())
@@ -1841,6 +1924,65 @@ fn cmd_run_background(base_dir: &std::path::Path, name: &str, command: &[String]
             anyhow::bail!("failed to fork background daemon: {e}");
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// stop
+// ---------------------------------------------------------------------------
+
+async fn cmd_stop(store: &PodStore, base_dir: &std::path::Path, name: &str) -> Result<()> {
+    let handle = store.load(name)?;
+    let native_state = NativeState::from_handle(&handle).ok();
+
+    // Clean up port forwards
+    if let Some(ref s) = native_state {
+        envpod_core::backend::native::cleanup_port_forwards(&s.pod_dir);
+        envpod_core::backend::native::cleanup_internal_ports(&s.pod_dir);
+    }
+
+    // Unregister from DNS daemon
+    {
+        let daemon = envpod_core::dns_daemon::DaemonClient::new(
+            envpod_core::dns_daemon::DaemonClient::default_path()
+        );
+        daemon.unregister(name).await.ok();
+    }
+
+    // Kill the supervisor process (background `envpod run -b` / `envpod start`)
+    if let Some(ref s) = native_state {
+        let supervisor_pid_path = s.pod_dir.join("supervisor.pid");
+        if let Ok(pid_str) = std::fs::read_to_string(&supervisor_pid_path) {
+            if let Ok(pid) = pid_str.trim().parse::<i32>() {
+                let nix_pid = nix::unistd::Pid::from_raw(pid);
+                nix::sys::signal::kill(nix_pid, nix::sys::signal::Signal::SIGTERM).ok();
+                for _ in 0..20 {
+                    if nix::sys::signal::kill(nix_pid, None).is_err() {
+                        break;
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+                }
+                // Force kill if still alive
+                nix::sys::signal::kill(nix_pid, nix::sys::signal::Signal::SIGKILL).ok();
+            }
+        }
+        std::fs::remove_file(s.pod_dir.join("supervisor.pid")).ok();
+    }
+
+    // Stop processes inside the cgroup
+    let backend = create_backend(&handle.backend, base_dir)?;
+    backend.stop(&handle).ok();
+
+    // Update status in store
+    if let Ok(mut updated_state) = NativeState::from_handle(&handle) {
+        updated_state.status = NativeStatus::Stopped;
+        updated_state.init_pid = None;
+        let mut updated_handle = handle.clone();
+        updated_handle.backend_state = updated_state.to_json();
+        store.save(&updated_handle).ok();
+    }
+
+    println!("Stopped pod '{name}'");
+    Ok(())
 }
 
 // ---------------------------------------------------------------------------
@@ -3977,6 +4119,74 @@ async fn cmd_destroy(store: &PodStore, base_dir: &std::path::Path, name: &str, r
     Ok(())
 }
 
+// ---------------------------------------------------------------------------
+// prune
+// ---------------------------------------------------------------------------
+
+async fn cmd_prune(store: &PodStore, base_dir: &std::path::Path, prune_bases: bool) -> Result<()> {
+    let pods = store.list()?;
+    let mut removed = 0;
+
+    for handle in &pods {
+        let backend = match create_backend(&handle.backend, base_dir) {
+            Ok(b) => b,
+            Err(_) => continue,
+        };
+        let info = match backend.info(handle) {
+            Ok(i) => i,
+            Err(_) => continue,
+        };
+
+        // Only prune stopped or created (never-started) pods
+        match info.status {
+            envpod_core::types::PodStatus::Running | envpod_core::types::PodStatus::Frozen => continue,
+            _ => {}
+        }
+
+        let name = &handle.name;
+        cmd_destroy(store, base_dir, name, false, false).await?;
+        removed += 1;
+    }
+
+    if removed == 0 {
+        println!("No stopped pods to prune");
+    } else {
+        println!("\nPruned {} pod{}", removed, if removed == 1 { "" } else { "s" });
+    }
+
+    // Optionally prune unused bases too
+    if prune_bases {
+        let bases_dir = base_dir.join("bases");
+        if bases_dir.exists() {
+            let entries: Vec<String> = std::fs::read_dir(&bases_dir)?
+                .filter_map(|e| e.ok())
+                .filter(|e| e.path().join("rootfs").exists())
+                .filter_map(|e| e.file_name().into_string().ok())
+                .collect();
+
+            let mut base_removed = 0;
+            for name in &entries {
+                let users = find_base_users(store, &bases_dir, name);
+                if users.is_empty() {
+                    destroy_base(&bases_dir, name)?;
+                    println!("Pruned base pod '{name}'");
+                    base_removed += 1;
+                }
+            }
+
+            if base_removed == 0 && removed == 0 {
+                // already printed "No stopped pods" above
+            } else if base_removed == 0 {
+                println!("No unused base pods to prune");
+            } else {
+                println!("Pruned {} base pod{}", base_removed, if base_removed == 1 { "" } else { "s" });
+            }
+        }
+    }
+
+    Ok(())
+}
+
 /// Find pods whose rootfs symlink points into the given base pod.
 fn find_base_users(store: &PodStore, bases_dir: &Path, base_name: &str) -> Vec<String> {
     let base_rootfs = bases_dir.join(base_name).join("rootfs");
@@ -5543,9 +5753,9 @@ fn format_bytes(bytes: u64) -> String {
 
 /// Subcommands whose first positional argument is a pod name.
 const POD_SUBCOMMANDS: &[&str] = &[
-    "init", "setup", "run", "fg", "diff", "commit", "rollback", "audit", "lock", "unlock",
-    "kill", "destroy", "queue", "approve", "cancel", "status", "logs", "vault",
-    "mount", "unmount", "undo", "remote", "monitor", "dns", "clone", "actions",
+    "init", "setup", "run", "start", "stop", "fg", "diff", "commit", "rollback", "audit",
+    "lock", "unlock", "kill", "destroy", "queue", "approve", "cancel", "status", "logs",
+    "vault", "mount", "unmount", "undo", "remote", "monitor", "dns", "clone", "actions",
     "ports", "discover", "snapshot",
 ];
 
