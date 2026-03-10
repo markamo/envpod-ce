@@ -3531,6 +3531,17 @@ fn security_findings(config: &PodConfig) -> Vec<SecurityFinding> {
         });
     }
 
+    // S-04: No seccomp filter (all syscalls allowed)
+    if config.security.seccomp_profile == "none" {
+        findings.push(SecurityFinding {
+            id: "S-04",
+            severity: "CRITICAL",
+            title: "No seccomp filter — all syscalls allowed",
+            explanation: "seccomp_profile is none — no syscall filtering applied. The agent can invoke any syscall including mount, reboot, and kexec_load. Use only for debugging.".into(),
+            fix: "set seccomp_profile to default (or browser if needed).",
+        });
+    }
+
     // I-04: Display forwarding (protocol-aware)
     if config.devices.display {
         use envpod_core::config::DisplayProtocol;
@@ -6160,6 +6171,51 @@ mod tests {
         assert!(!ids.contains(&"C-01"));
         assert!(!ids.contains(&"C-02"));
         assert!(!ids.contains(&"C-03"));
+    }
+
+    // S-03 / P-03: browser seccomp profile
+    #[test]
+    fn security_browser_seccomp_triggers_s03_p03() {
+        let mut config = PodConfig::default();
+        config.security.seccomp_profile = "browser".to_string();
+        let ids = findings_ids(&config);
+        assert!(ids.contains(&"S-03"), "S-03 fires for browser seccomp");
+        assert!(ids.contains(&"P-03"), "P-03 fires for browser seccomp");
+    }
+
+    #[test]
+    fn security_default_seccomp_no_s03_p03() {
+        let config = PodConfig::default(); // default seccomp
+        let ids = findings_ids(&config);
+        assert!(!ids.contains(&"S-03"));
+        assert!(!ids.contains(&"P-03"));
+    }
+
+    // S-04: no seccomp filter
+    #[test]
+    fn security_none_seccomp_triggers_s04() {
+        let mut config = PodConfig::default();
+        config.security.seccomp_profile = "none".to_string();
+        let findings = security_findings(&config);
+        let s04 = findings_by_id(&findings, "S-04");
+        assert!(!s04.is_empty(), "S-04 fires for seccomp_profile: none");
+        assert_eq!(s04[0].severity, "CRITICAL");
+    }
+
+    #[test]
+    fn security_none_seccomp_no_s03_p03() {
+        // "none" should NOT trigger S-03/P-03 (those are browser-specific)
+        let mut config = PodConfig::default();
+        config.security.seccomp_profile = "none".to_string();
+        let ids = findings_ids(&config);
+        assert!(!ids.contains(&"S-03"), "S-03 should not fire for none profile");
+        assert!(!ids.contains(&"P-03"), "P-03 should not fire for none profile");
+    }
+
+    #[test]
+    fn security_default_seccomp_no_s04() {
+        let config = PodConfig::default();
+        assert!(!findings_ids(&config).contains(&"S-04"));
     }
 
     // D-01: allow_discovery + Unsafe network mode
