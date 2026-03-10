@@ -88,18 +88,20 @@ Browser ──WebSocket──→ websockify:6080 ──VNC──→ x11vnc:5900 
 
 ### At `envpod init`
 
-1. Third-party apt sources are cleaned (prevents GPG failures from host repos)
-2. `apt-get install xvfb x11vnc novnc websockify` runs inside the pod
-3. A supervisor script is written to `/usr/local/bin/envpod-display-start`
+1. Third-party apt sources are cleaned and `/var/lib/apt/lists/*` is cleared (prevents GPG failures from stale host apt cache leaking through OverlayFS)
+2. `apt-get install xvfb x11vnc novnc websockify screen dbus-x11` runs inside the pod
+3. Two scripts are written:
+   - `/usr/local/bin/envpod-display-services` — background daemon that manages Xvfb, x11vnc, websockify, audio, and upload services with auto-restart loops. Writes a PID file and starts a D-Bus session bus.
+   - `/usr/local/bin/envpod-display-start` — lightweight wrapper that starts the daemon if not already running, exports `DISPLAY=:99` and `DBUS_SESSION_BUS_ADDRESS`, then `exec`s your command.
 4. Your `setup:` commands run after
 
 ### At `envpod run`
 
-1. Supervisor script starts Xvfb → x11vnc → websockify as background processes
-2. `DISPLAY=:99` is exported
+1. The wrapper script starts the display services daemon if it is not already running
+2. `DISPLAY=:99` and `DBUS_SESSION_BUS_ADDRESS` are exported
 3. Port forward `localhost:{port}` → `pod_ip:6080` is set up via iptables
 4. Your command launches on the virtual display
-5. On exit, all display services are cleaned up
+5. Display services run independently of your command — they persist across multiple `envpod run` sessions in the same pod
 
 ---
 
@@ -259,14 +261,25 @@ sudo envpod run my-pod -- openbox-session    # window manager
 ### apt-get fails during setup
 
 Host apt sources (CUDA, Chrome, VirtualBox repos) leak into the pod overlay
-and cause GPG errors. envpod auto-removes third-party sources before
-`apt-get update`. If your custom `setup:` commands add repos, ensure they
-have valid GPG keys.
+and cause GPG errors. envpod auto-removes third-party sources and clears
+`/var/lib/apt/lists/*` before `apt-get update` to prevent stale package
+lists from causing GPG signature failures. If your custom `setup:` commands
+add repos, ensure they have valid GPG keys.
 
 ### Xvfb crashes on NVIDIA hosts
 
-The supervisor script prevents this by setting `__EGL_VENDOR_LIBRARY_FILENAMES=""`
+The display services daemon prevents this by setting `__EGL_VENDOR_LIBRARY_FILENAMES=""`
 to block NVIDIA EGL library loading. Xvfb runs with mesa software rendering.
+
+### Terminal says "Could not connect to bus"
+
+D-Bus session bus is auto-started by the display services daemon. If you
+see this error when running commands manually (outside `envpod run`), set
+the D-Bus address explicitly:
+
+```bash
+export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/envpod-dbus
+```
 
 ### x11vnc dies immediately
 

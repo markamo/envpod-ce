@@ -19,6 +19,20 @@ Add `--auto-deps` to skip the interactive prompt:
 curl -fsSL https://envpod.dev/install.sh | sudo bash -s -- --auto-deps
 ```
 
+Install a specific version:
+
+<!-- no-exec -->
+```bash
+curl -fsSL https://envpod.dev/install.sh | sudo bash -s -- --version 0.1.0
+```
+
+Or set the version via environment variable:
+
+<!-- no-exec -->
+```bash
+ENVPOD_VERSION=0.1.0 curl -fsSL https://envpod.dev/install.sh | sudo bash
+```
+
 ## Install from Tarball
 
 If you already downloaded the release:

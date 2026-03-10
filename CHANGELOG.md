@@ -10,6 +10,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 - `devices.desktop_env` — auto-install a desktop environment during `envpod init`. Options: `none` (default), `xfce` (xfce4 + xfce4-terminal + dbus-x11, ~200 MB), `openbox` (openbox + tint2 + xterm, ~50 MB), `sway` (sway + foot, ~150 MB, Wayland-native). Pairs with `web_display` or `devices.display` for browser-based or host display access.
 - `filesystem.mount_cwd` — mount the working directory into the pod with COW isolation. `envpod init` captures `$PWD`; `envpod run` bind-mounts it read-only. Agent sees real files, writes go to overlay. CLI: `-w`/`--mount-cwd` to force, `--no-mount-cwd` to skip.
+- `screen` auto-installed in all web display and desktop pods for resumable sessions
+- Multiple simultaneous `envpod run` sessions in the same web display pod (each gets an independent terminal, display services are shared)
+- `--version` flag for install scripts to pin a specific release version
+- `uninstall.sh` bundled in release tarballs
+- Universal installer (distro detection, container support) in release tarballs
+
+### Fixed
+
+- APT GPG signature failures in OverlayFS pods (`rm -rf /var/lib/apt/lists/*` before update)
+- Display services blocking user terminal (split into background daemon + lightweight wrapper)
+- D-Bus "Could not connect to bus" error in web display pods (auto-start `dbus-daemon --session`)
 
 ## [0.1.0] - 2026-03-03
 

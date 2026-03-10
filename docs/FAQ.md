@@ -573,14 +573,26 @@ Network namespaces and cgroups are re-created automatically on the next `envpod 
 
 ## Can multiple agents share a pod?
 
-Not concurrently. Each `envpod run` starts one process in the pod and waits for it to exit. You can run commands **sequentially** in the same pod — they share the same overlay, network namespace, and cgroup:
+It depends on the pod type.
+
+**Web display pods** (`web_display.type: novnc` or `devices.desktop_env` set) support multiple simultaneous `envpod run` commands. Display services (Xvfb, x11vnc, websockify, audio, upload) run as a background daemon inside the pod, and each `envpod run` gets its own independent terminal while sharing the display:
+
+```bash
+sudo envpod run my-pod -b -- startxfce4          # start desktop in background
+sudo envpod run my-pod -- bash                    # get a shell (separate session)
+sudo envpod run my-pod -- python3 agent.py        # run an agent (another session)
+```
+
+All sessions share the same overlay filesystem, network namespace, and cgroup. They see each other's files and the same desktop.
+
+**Non-display pods** run one command at a time. Each `envpod run` starts one process and waits for it to exit. You can run commands **sequentially** in the same pod — they share the same overlay, network namespace, and cgroup:
 
 ```bash
 sudo envpod run my-agent -- agent-1 task.py     # runs, exits
 sudo envpod run my-agent -- agent-2 review.py   # same pod, sees agent-1's files
 ```
 
-For **concurrent** agents, create separate pods:
+For **fully isolated concurrent** agents, create separate pods:
 
 ```bash
 sudo envpod init agent-a -c pod.yaml
