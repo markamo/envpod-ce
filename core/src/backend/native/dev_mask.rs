@@ -190,18 +190,28 @@ fn bind_device_node_optional(dev_path: &Path, name: &str) {
 }
 
 /// Set up devpts for PTY support.
+///
+/// Bind-mounts the host's `/dev/pts` so inherited PTY devices (stdin) are
+/// visible inside the pod. This is required for `ttyname()` to resolve the
+/// PTY path — Node.js/libuv calls `ttyname_r()` + `open()` to re-open the
+/// TTY during `uv_tty_init()`. Without the host PTY visible, TUI apps
+/// (Claude Code, vim, etc.) can't initialize their terminal input.
+///
+/// Trade-off: the pod can see all host PTY devices. This is acceptable
+/// because pods are single-agent environments with strong network/filesystem
+/// isolation, and PTY visibility is a low-risk attack vector.
 fn setup_devpts(dev_path: &Path) -> io::Result<()> {
     let pts_path = dev_path.join("pts");
     std::fs::create_dir_all(&pts_path)?;
 
     nix::mount::mount(
-        Some("devpts"),
+        Some("/dev/pts"),
         &pts_path,
-        Some("devpts"),
-        MsFlags::MS_NOSUID | MsFlags::MS_NOEXEC,
-        Some("newinstance,ptmxmode=0666"),
+        None::<&str>,
+        MsFlags::MS_BIND,
+        None::<&str>,
     )
-    .map_err(|e| io::Error::other(format!("mount devpts: {e}")))?;
+    .map_err(|e| io::Error::other(format!("bind mount /dev/pts: {e}")))?;
 
     // Symlink /dev/ptmx → pts/ptmx
     std::os::unix::fs::symlink("pts/ptmx", dev_path.join("ptmx"))?;

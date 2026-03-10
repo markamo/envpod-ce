@@ -104,10 +104,17 @@ fn normalize_domain(domain: &str) -> String {
 
 /// Check if `domain` matches `pattern` — exact or suffix subdomain match.
 ///
+/// Supports `*.` prefix syntax (e.g., `*.anthropic.com` → matches subdomains).
+/// The `*.` is stripped before matching — suffix matching already covers it.
+///
 /// `api.anthropic.com` matches pattern `anthropic.com`
 /// `anthropic.com` matches pattern `anthropic.com`
 /// `notanthropic.com` does NOT match pattern `anthropic.com`
+/// `platform.claude.com` matches pattern `*.claude.com`
 fn domain_matches(domain: &str, pattern: &str) -> bool {
+    // Strip wildcard prefix — suffix matching handles subdomain matching.
+    let pattern = pattern.strip_prefix("*.").unwrap_or(pattern);
+
     if domain == pattern {
         return true;
     }
@@ -267,5 +274,41 @@ mod tests {
             policy.check("a.b.c.anthropic.com"),
             PolicyDecision::Allow
         );
+    }
+
+    // -- Wildcard prefix syntax --
+
+    #[test]
+    fn wildcard_prefix_matches_subdomain() {
+        let policy = whitelist_policy(&["*.claude.com"]);
+        assert_eq!(policy.check("platform.claude.com"), PolicyDecision::Allow);
+    }
+
+    #[test]
+    fn wildcard_prefix_matches_bare_domain() {
+        let policy = whitelist_policy(&["*.claude.com"]);
+        assert_eq!(policy.check("claude.com"), PolicyDecision::Allow);
+    }
+
+    #[test]
+    fn wildcard_prefix_matches_deep_subdomain() {
+        let policy = whitelist_policy(&["*.anthropic.com"]);
+        assert_eq!(
+            policy.check("a.b.anthropic.com"),
+            PolicyDecision::Allow
+        );
+    }
+
+    #[test]
+    fn wildcard_prefix_no_partial_match() {
+        let policy = whitelist_policy(&["*.claude.com"]);
+        assert_eq!(policy.check("notclaude.com"), PolicyDecision::Deny);
+    }
+
+    #[test]
+    fn blacklist_wildcard_denies_subdomain() {
+        let policy = blacklist_policy(&["*.internal"]);
+        assert_eq!(policy.check("foo.internal"), PolicyDecision::Deny);
+        assert_eq!(policy.check("bar.baz.internal"), PolicyDecision::Deny);
     }
 }

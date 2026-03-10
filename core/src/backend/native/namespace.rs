@@ -321,6 +321,17 @@ fn pre_exec_setup(
             return Err(std::io::Error::last_os_error());
         }
         if pid > 0 {
+            // Child A: reaper process — only job is waitpid + _exit.
+            // Close ALL file descriptors (including stdin/stdout/stderr and
+            // Rust's Command error pipe). The error pipe write-end MUST be
+            // closed here, otherwise cmd.spawn() in the parent blocks until
+            // this reaper exits (which is when the actual command exits),
+            // preventing post-spawn tasks (DNS server, control server, etc.)
+            // from starting. Closing stdin/stdout/stderr also ensures this
+            // process doesn't compete for the terminal with Child B.
+            for fd in 0..1024 {
+                libc::close(fd);
+            }
             let mut status: libc::c_int = 0;
             libc::waitpid(pid, &mut status, 0);
             if libc::WIFEXITED(status) {
@@ -333,6 +344,26 @@ fn pre_exec_setup(
         }
     }
     // ── Child: PID 1 in the new namespace ──────────────────────
+
+    // Create a new session — disconnects from the host's controlling terminal.
+    // This prevents SIGHUP from the host's session leader (e.g., sudo's PTY relay)
+    // from reaching the pod. stdin/stdout/stderr remain connected (inherited FDs).
+    nix::unistd::setsid()
+        .map_err(|e| std::io::Error::other(format!("setsid: {e}")))?;
+
+    // Re-establish stdin as the controlling terminal of our new session.
+    // setsid() disconnected us, but TUI apps (Node.js/Ink, vim, etc.) need
+    // /dev/tty and raw mode for keyboard input. TIOCSCTTY makes stdin's
+    // terminal the controlling terminal — only works if stdin is a TTY.
+    // arg=1 "steals" the terminal from the parent session (requires
+    // CAP_SYS_ADMIN, which we have since envpod runs as root).
+    if unsafe { libc::isatty(0) } == 1 {
+        let rc = unsafe { libc::ioctl(0, libc::TIOCSCTTY, 1) };
+        if rc != 0 {
+            let e = std::io::Error::last_os_error();
+            eprintln!("envpod: TIOCSCTTY failed: {e}");
+        }
+    }
 
     // Re-register in cgroup (new PID after fork)
     if let Some(ref cg_procs) = cgroup_procs {

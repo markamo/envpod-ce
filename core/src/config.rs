@@ -474,6 +474,7 @@ impl SecurityConfig {
     pub fn seccomp_profile(&self) -> SeccompProfile {
         match self.seccomp_profile.as_str() {
             "browser" => SeccompProfile::Browser,
+            "none" => SeccompProfile::None,
             _ => SeccompProfile::Default,
         }
     }

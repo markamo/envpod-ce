@@ -2016,6 +2016,13 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
     let mut extra_env: Vec<String> = env_vars.to_vec();
     extra_env.push(format!("ENVPOD_POD_NAME={name}"));
 
+    // Ensure TERM is set inside the pod (needed for TUI apps like vim, claude).
+    // Inherit from host if available, otherwise default to xterm-256color.
+    if !extra_env.iter().any(|e| e.starts_with("TERM=")) {
+        let term = std::env::var("TERM").unwrap_or_else(|_| "xterm-256color".to_string());
+        extra_env.push(format!("TERM={term}"));
+    }
+
     // Handle --enable-display: protocol-aware env vars
     if enable_display {
         let effective = match devices.display_protocol {
@@ -2559,9 +2566,9 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
         executor.spawn()
     };
 
-    // Wait for the child process to exit, or Ctrl+Z to detach.
-    // SIGTSTP (Ctrl+Z) detaches the terminal — the current process becomes
-    // a background daemon (keeping DNS, port forwards, etc. alive).
+    // Wait for the child process to exit, Ctrl+C to kill, or Ctrl+Z to detach.
+    // The pod runs in its own session (setsid) so terminal signals don't reach it
+    // directly — envpod must forward Ctrl+C (SIGINT) to the child.
     let pid_raw = proc_handle.pid as i32;
     let wait_task = tokio::task::spawn_blocking(move || {
         nix::sys::wait::waitpid(nix::unistd::Pid::from_raw(pid_raw), None)
@@ -2569,6 +2576,8 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
 
     let mut sigtstp = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::from_raw(20))
         .context("failed to register SIGTSTP handler")?;
+    let mut sigint = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt())
+        .context("failed to register SIGINT handler")?;
 
     let detached = tokio::select! {
         result = wait_task => {
@@ -2591,6 +2600,16 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
                     anyhow::bail!("wait failed: {e}");
                 }
             }
+            false
+        }
+        _ = sigint.recv() => {
+            // Ctrl+C: forward SIGTERM to the child (pod runs in its own session
+            // via setsid, so terminal SIGINT doesn't reach it directly).
+            let pid = nix::unistd::Pid::from_raw(proc_handle.pid as i32);
+            nix::sys::signal::kill(pid, nix::sys::signal::Signal::SIGTERM).ok();
+            // Brief wait, then SIGKILL if still alive
+            tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+            nix::sys::signal::kill(pid, nix::sys::signal::Signal::SIGKILL).ok();
             false
         }
         _ = sigtstp.recv() => {

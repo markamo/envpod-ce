@@ -5,18 +5,20 @@
 # optionally launch headless Chromium for web research (browser seccomp profile).
 #
 # Needs: api.anthropic.com (Claude API), package registries (npm/pip/cargo),
-# GitHub (code operations), sentry.io (telemetry).
+# GitHub (code operations), sentry.io (telemetry), statsig.com (feature flags).
 # Install: native installer (curl), no Node.js required.
+#
+# Authentication: Claude Code in pods requires an API key (browser OAuth
+# won't work in container environments). Set it before running:
+#   sudo envpod run claude-code --env ANTHROPIC_API_KEY=sk-ant-... -- claude-pod
 #
 # Usage:
 #   sudo envpod init claude-code -c examples/claude-code.yaml
 #   sudo envpod setup claude-code
-#   sudo envpod run claude-code -e ANTHROPIC_API_KEY=sk-ant-... -- claude
+#   sudo envpod run claude-code --env ANTHROPIC_API_KEY=sk-ant-... -- claude-pod
 #
-# Auth: Claude Code requires an API key. OAuth login won't work in a
-#   headless pod (no browser). Pass the key via -e or use the vault:
-#     sudo envpod vault claude-code set ANTHROPIC_API_KEY sk-ant-...
-#     sudo envpod run claude-code -- claude
+# The `claude-pod` wrapper sets DEVCONTAINER=true and increases Node.js heap.
+# You can also run `claude` directly if you pass --env DEVCONTAINER=true.
 
 name: claude-code
 type: standard
@@ -30,9 +32,11 @@ network:
       # Claude API
       - api.anthropic.com
       - "*.anthropic.com"
-      # Claude Code installer
+      # Claude Code (installer, platform, docs)
       - claude.ai
       - "*.claude.ai"
+      - "*.claude.com"
+      - storage.googleapis.com
       # GitHub (code, PRs, issues)
       - github.com
       - "*.github.com"
@@ -50,8 +54,14 @@ network:
       - static.crates.io
       # Telemetry (Claude Code reports errors via Sentry)
       - "*.sentry.io"
+      # Feature flags (Statsig — blocks TUI input if unreachable)
+      - "*.statsig.com"
+      - statsig.com
+      - statsigapi.net
+      - "*.statsigapi.net"
 
 filesystem:
+  system_access: advanced    # Claude Code installs to /usr/local/bin (needs writable system dirs)
   tracking:
     watch:
       - /home
@@ -90,4 +100,62 @@ audit:
   action_log: true
 
 setup:
-  - "curl -fsSL https://claude.ai/install.sh | bash"
+  # Install Claude Code (installs to ~/.local/bin as root)
+  # then symlink to /usr/local/bin so all users (including agent) can run it.
+  - |
+    curl -fsSL https://claude.ai/install.sh | bash
+    ln -sf /root/.local/bin/claude /usr/local/bin/claude
+  # Pre-configure Claude Code for container environment.
+  # Based on: github.com/anthropics/claude-code/.devcontainer
+  - |
+    # Pre-set theme/onboarding to skip interactive pickers on first run.
+    for dir in /root/.claude /home/agent/.claude; do
+      mkdir -p "$dir"
+      echo '{"theme":"dark","hasCompletedOnboarding":true}' > "$(dirname "$dir")/.claude.json"
+    done
+    # Disable Claude Code's internal sandbox — envpod IS the sandbox.
+    # Without this, Claude Code tries to create nested Linux namespaces inside
+    # envpod's namespaces, which can lock up the terminal or crash.
+    # Managed settings have highest priority and can't be overridden.
+    mkdir -p /etc/claude-code
+    cat > /etc/claude-code/managed-settings.json << 'SETTINGS'
+    {
+      "permissions": {
+        "defaultMode": "bypassPermissions"
+      },
+      "sandbox": {
+        "enabled": false,
+        "enableWeakerNestedSandbox": true
+      }
+    }
+    SETTINGS
+    # Default workspace — Claude Code skips the trust prompt inside git repos.
+    # (Non-git directories trigger a blocking interactive dialog.)
+    mkdir -p /workspace && git init -q /workspace
+    chown -R agent:agent /workspace 2>/dev/null || true
+    # Wrapper script: sets container env, ignores SIGHUP.
+    cat > /usr/local/bin/claude-pod << 'WRAPPER'
+    #!/bin/bash
+    export DEVCONTAINER=true
+    export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=4096}"
+    export CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+    # Ignore SIGHUP — preserved across exec (SIG_IGN survives execve).
+    trap '' HUP
+    # Start in a git repo to bypass the workspace trust prompt.
+    if ! git rev-parse --git-dir &>/dev/null; then
+        cd /workspace 2>/dev/null || true
+    fi
+    exec claude --dangerously-skip-permissions "$@"
+    WRAPPER
+    chmod +x /usr/local/bin/claude-pod
+    cat > /etc/profile.d/claude-code.sh << 'PROFILE'
+    export DEVCONTAINER=true
+    export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=4096}"
+    export CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+    PROFILE
+    # Verify Claude Code runs correctly inside the pod.
+    echo "--- Claude Code install check ---"
+    claude --version || { echo "FAIL: claude not found"; exit 1; }
+    claude --dangerously-skip-permissions -p "respond with: OK" --max-turns 1 2>/dev/null \
+      && echo "PASS: non-interactive mode works" \
+      || echo "WARN: non-interactive test skipped (no API key during setup)"

@@ -26,6 +26,8 @@ pub enum SeccompProfile {
     Default,
     /// Extends Default with syscalls required by headless Chromium (zygote, scheduler, I/O priority).
     Browser,
+    /// No seccomp filter — all syscalls allowed. For debugging only.
+    None,
 }
 
 /// Extra syscalls needed by Chromium beyond the default allowlist.
@@ -78,6 +80,8 @@ const ALLOWED_SYSCALLS: &[libc::c_long] = &[
     libc::SYS_pwrite64,
     libc::SYS_readv,
     libc::SYS_writev,
+    libc::SYS_preadv2,              // vectored pread with flags (RWF_NOWAIT, used by Node.js)
+    libc::SYS_pwritev2,             // vectored pwrite with flags
     #[cfg(target_arch = "x86_64")]
     libc::SYS_access,             // x86_64 only; aarch64 uses faccessat
     libc::SYS_faccessat,
@@ -243,6 +247,7 @@ const ALLOWED_SYSCALLS: &[libc::c_long] = &[
     libc::SYS_epoll_pwait,
     libc::SYS_epoll_pwait2,
     libc::SYS_eventfd2,
+    libc::SYS_signalfd4,          // signal via fd (used by script, systemd, event loops)
     libc::SYS_timerfd_create,
     libc::SYS_timerfd_settime,
     libc::SYS_timerfd_gettime,
@@ -267,6 +272,11 @@ const ALLOWED_SYSCALLS: &[libc::c_long] = &[
     libc::SYS_sysinfo,
     libc::SYS_getrandom,
     libc::SYS_futex,
+    libc::SYS_futex_waitv,        // batched futex wait (Linux 5.16+, glibc 2.39+)
+    454,                          // futex_wake  (Linux 6.7+, glibc 2.39+) — not yet in libc crate
+    455,                          // futex_wait  (Linux 6.7+, glibc 2.39+) — not yet in libc crate
+    456,                          // futex_requeue (Linux 6.7+) — not yet in libc crate
+    libc::SYS_restart_syscall,    // kernel restarts interrupted syscalls after signal delivery
     libc::SYS_ioctl,
     libc::SYS_statx,
     libc::SYS_memfd_create,
@@ -313,7 +323,11 @@ pub fn build_filter(profile: SeccompProfile) -> io::Result<BpfProgram> {
 ///
 /// Must be called AFTER all namespace/mount setup (this is the last step
 /// in the pre_exec hook) because the filter restricts mount/unshare/pivot_root.
+/// Returns immediately for `SeccompProfile::None` (no filter applied).
 pub fn install_filter(profile: SeccompProfile) -> io::Result<()> {
+    if profile == SeccompProfile::None {
+        return Ok(());
+    }
     let program = build_filter(profile)?;
     apply_filter(&program).map_err(io::Error::other)
 }
