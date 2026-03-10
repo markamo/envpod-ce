@@ -68,3 +68,5 @@ setup:
     fi
     # Fix desktop shortcut: add --no-sandbox (envpod namespaces replace Chrome's sandbox)
     sed -i 's|Exec=/usr/bin/google-chrome-stable|Exec=/usr/bin/google-chrome-stable --no-sandbox|g' /usr/share/applications/google-chrome.desktop 2>/dev/null
+  # Set Chrome as default browser (enables OAuth flows for CLI tools like Claude Code)
+  - "xdg-settings set default-web-browser google-chrome.desktop 2>/dev/null || true"

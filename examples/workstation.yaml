@@ -97,3 +97,5 @@ setup:
     sed -i 's|Exec=/usr/bin/google-chrome-stable|Exec=/usr/bin/google-chrome-stable --no-sandbox|g' /usr/share/applications/google-chrome.desktop 2>/dev/null
     sed -i 's|Exec=/usr/share/code/code|Exec=/usr/share/code/code --no-sandbox|g' /usr/share/applications/code.desktop 2>/dev/null
     sed -i 's|Exec=/usr/share/code/code|Exec=/usr/share/code/code --no-sandbox|g' /usr/share/applications/code-url-handler.desktop 2>/dev/null
+  # Set Chrome as default browser (enables OAuth flows for CLI tools like Claude Code)
+  - "xdg-settings set default-web-browser google-chrome.desktop 2>/dev/null || true"
