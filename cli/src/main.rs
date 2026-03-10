@@ -2192,7 +2192,14 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
                 &state.pod_dir, &net.host_veth, &net.pod_ip, &all_ports,
             ) {
                 Ok(()) => {
-                    for spec in &all_ports {
+                    // Only print user-defined port forwards (not auto-added display/audio/upload)
+                    let auto_port_count = if web_display_type != envpod_core::config::WebDisplayType::None {
+                        let mut n = 1; // display port
+                        if let Some(ref cfg) = pod_config { if cfg.web_display.audio { n += 1; } if cfg.web_display.file_upload { n += 1; } }
+                        n
+                    } else { 0 };
+                    let user_ports = all_ports.len().saturating_sub(auto_port_count);
+                    for spec in &all_ports[..user_ports] {
                         let scope = if spec.starts_with("127.0.0.1:") { "local " } else { "public" };
                         eprintln!("  {}  [{}] {} → pod", color::dim("Port   "), scope, spec);
                     }
