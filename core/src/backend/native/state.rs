@@ -25,6 +25,9 @@ pub struct NativeState {
     /// Network namespace state. None = host network (Unsafe mode).
     #[serde(default)]
     pub network: Option<NetworkState>,
+    /// Whether this pod uses a loopback disk image for overlay storage.
+    #[serde(default)]
+    pub disk_image: bool,
 }
 
 /// Persisted network namespace state for a pod.
@@ -83,11 +86,19 @@ impl NativeState {
     }
 
     pub fn upper_dir(&self) -> PathBuf {
-        self.pod_dir.join("upper")
+        if self.disk_image {
+            self.pod_dir.join("disk_mount/upper")
+        } else {
+            self.pod_dir.join("upper")
+        }
     }
 
     pub fn work_dir(&self) -> PathBuf {
-        self.pod_dir.join("work")
+        if self.disk_image {
+            self.pod_dir.join("disk_mount/work")
+        } else {
+            self.pod_dir.join("work")
+        }
     }
 
     pub fn merged_dir(&self) -> PathBuf {
@@ -201,6 +212,7 @@ mod tests {
             status: NativeStatus::Running,
             lower_dirs: vec![PathBuf::from("/")],
             network: None,
+            disk_image: false,
         };
 
         let json = state.to_json();
@@ -212,6 +224,7 @@ mod tests {
         assert_eq!(recovered.status, NativeStatus::Running);
         assert_eq!(recovered.lower_dirs, vec![PathBuf::from("/")]);
         assert!(recovered.network.is_none());
+        assert!(!recovered.disk_image);
     }
 
     #[test]
@@ -237,6 +250,7 @@ mod tests {
                 dns_remap: std::collections::HashMap::new(),
                 subnet_base: "10.200".into(),
             }),
+            disk_image: false,
         };
 
         let json = state.to_json();
@@ -360,6 +374,7 @@ mod tests {
             status: NativeStatus::Created,
             lower_dirs: vec![PathBuf::from("/")],
             network: None,
+            disk_image: false,
         };
 
         assert_eq!(state.upper_dir(), PathBuf::from("/var/lib/envpod/pods/abc/upper"));

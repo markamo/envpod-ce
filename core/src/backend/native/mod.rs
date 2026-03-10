@@ -14,6 +14,7 @@
 pub(crate) mod cgroup;
 pub(crate) mod dev_mask;
 pub mod gc;
+pub(crate) mod loopback;
 pub(crate) mod namespace;
 pub(crate) mod netns;
 pub(crate) mod overlay;
@@ -251,6 +252,11 @@ impl NativeBackend {
             overlay::unmount_overlay(&merged).ok();
         }
 
+        // Unmount and delete loopback disk image
+        if state.disk_image {
+            loopback::destroy_disk_image(&state.pod_dir).ok();
+        }
+
         // Remove all overlay directories
         overlay::destroy(&state.pod_dir)
     }
@@ -417,6 +423,7 @@ impl NativeBackend {
             status: NativeStatus::Created,
             lower_dirs: vec![PathBuf::from("/")],
             network,
+            disk_image: false, // clones don't inherit loopback
         };
 
         // 5. Audit entry
@@ -503,6 +510,7 @@ impl NativeBackend {
             status: NativeStatus::Created,
             lower_dirs: vec![PathBuf::from("/")],
             network,
+            disk_image: false, // clones don't inherit loopback
         };
 
         // Audit entry
@@ -547,6 +555,12 @@ impl NativeBackend {
         user: Option<&str>,
         extra_env: &[String],
     ) -> Result<ProcessHandle> {
+        // Remount loopback disk image if needed (after stop + start)
+        if state.disk_image && !loopback::is_mounted(&state.pod_dir) {
+            loopback::remount_disk_image(&state.pod_dir)
+                .context("remount disk image")?;
+        }
+
         let cgroup_procs = state.cgroup_path.as_ref().map(|p| cgroup::procs_path(p));
 
         // If network isolation is active, write resolv.conf into the upper
@@ -582,6 +596,9 @@ impl NativeBackend {
             .unwrap_or_default();
         let seccomp_profile = security.seccomp_profile();
         let shm_size = Some(security.shm_size_bytes().unwrap_or(67_108_864)); // 64MB default
+        let tmp_size = pod_config
+            .map(|c| c.processor.tmp_size_bytes())
+            .unwrap_or(100 * 1024 * 1024);
 
         // Read devices config (GPU passthrough, extra devices)
         let devices = pod_config
@@ -746,6 +763,7 @@ impl NativeBackend {
             vault_env,
             seccomp_profile,
             shm_size,
+            tmp_size,
             &rootfs,
             &mount_entries,
             devices,
@@ -968,6 +986,15 @@ impl IsolationBackend for NativeBackend {
             None
         };
 
+        // Set up loopback disk image if disk_size is configured
+        let disk_image = if let Some(disk_bytes) = config.processor.disk_size_bytes() {
+            loopback::setup_disk_image(&pod_dir, disk_bytes)
+                .context("create disk image for overlay")?;
+            true
+        } else {
+            false
+        };
+
         let state = NativeState {
             pod_dir: pod_dir.clone(),
             cgroup_path,
@@ -975,6 +1002,7 @@ impl IsolationBackend for NativeBackend {
             status: NativeStatus::Created,
             lower_dirs: vec![PathBuf::from("/")],
             network,
+            disk_image,
         };
 
         Self::emit_audit(
@@ -1066,6 +1094,10 @@ impl IsolationBackend for NativeBackend {
                     std::thread::sleep(std::time::Duration::from_millis(100));
                 }
             }
+        }
+        // Unmount loopback disk image (preserves data for restart)
+        if state.disk_image {
+            loopback::unmount_disk_image(&state.pod_dir).ok();
         }
         Self::emit_audit(&state.pod_dir, &handle.name, AuditAction::Stop, String::new(), true);
         Ok(())

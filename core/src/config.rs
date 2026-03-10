@@ -92,7 +92,7 @@ impl PodConfig {
         ResourceLimits {
             cpu_cores: self.processor.cores,
             memory_bytes: self.processor.memory.as_deref().and_then(parse_memory_string),
-            disk_bytes: None,
+            disk_bytes: self.processor.disk_size_bytes(),
             max_pids: self.processor.max_pids,
             cpuset_cpus: self.processor.cpu_affinity.clone(),
         }
@@ -345,6 +345,25 @@ pub struct ProcessorConfig {
     pub cpu_affinity: Option<String>,
     /// Maximum number of processes/threads the pod can create.
     pub max_pids: Option<u32>,
+    /// Size of pod-private /tmp tmpfs (e.g. "2GB", "512MB"). Default: 100MB.
+    pub tmp_size: Option<String>,
+    /// Max disk size for the overlay upper layer (e.g. "10GB", "500MB").
+    /// When set, creates a loopback ext4 device. None = unlimited.
+    pub disk_size: Option<String>,
+}
+
+impl ProcessorConfig {
+    /// Parse `tmp_size` into bytes. Default: 100MB.
+    pub fn tmp_size_bytes(&self) -> u64 {
+        self.tmp_size.as_deref()
+            .and_then(parse_memory_string)
+            .unwrap_or(100 * 1024 * 1024)
+    }
+
+    /// Parse `disk_size` into bytes. None = unlimited (no loopback).
+    pub fn disk_size_bytes(&self) -> Option<u64> {
+        self.disk_size.as_deref().and_then(parse_memory_string)
+    }
 }
 
 // -- Budget ---------------------------------------------------------------
@@ -785,6 +804,8 @@ network:
                 memory: Some("4GB".into()),
                 cpu_affinity: None,
                 max_pids: None,
+                tmp_size: None,
+                disk_size: None,
             },
             ..Default::default()
         };
@@ -803,6 +824,8 @@ network:
                 memory: None,
                 cpu_affinity: Some("0-3".into()),
                 max_pids: None,
+                tmp_size: None,
+                disk_size: None,
             },
             ..Default::default()
         };

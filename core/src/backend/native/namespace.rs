@@ -56,6 +56,7 @@ pub fn spawn_isolated(
     env_vars: Option<&std::collections::HashMap<String, String>>,
     seccomp_profile: super::seccomp::SeccompProfile,
     shm_size: Option<u64>,
+    tmp_size: u64,
     rootfs: &Path,
     mount_entries: &[(PathBuf, PathBuf, bool)],
     devices: crate::config::DevicesConfig,
@@ -171,6 +172,7 @@ pub fn spawn_isolated(
                 &rootfs,
                 &mount_entries,
                 shm_size,
+                tmp_size,
                 seccomp_profile,
                 &devices,
                 system_access,
@@ -268,6 +270,7 @@ fn pre_exec_setup(
     rootfs: &Path,
     mount_entries: &[(PathBuf, PathBuf, bool)],
     shm_size: Option<u64>,
+    tmp_size: u64,
     seccomp_profile: super::seccomp::SeccompProfile,
     devices: &crate::config::DevicesConfig,
     system_access: SystemAccess,
@@ -379,7 +382,7 @@ fn pre_exec_setup(
     }
 
     // 5. Bind-mount virtual filesystems the process needs
-    bind_virtual_filesystems(merged, shm_size, devices)?;
+    bind_virtual_filesystems(merged, shm_size, tmp_size, devices)?;
 
     // 5.1. Mask /proc to reflect pod's cgroup limits (non-fatal)
     if let Some(ref cg_procs) = cgroup_procs {
@@ -725,6 +728,7 @@ fn bind_system_essentials(merged: &Path) -> std::io::Result<()> {
 fn bind_virtual_filesystems(
     merged: &Path,
     shm_size: Option<u64>,
+    tmp_size: u64,
     devices: &crate::config::DevicesConfig,
 ) -> std::io::Result<()> {
     // /proc — mount a fresh procfs instead of bind-mounting host /proc.
@@ -822,15 +826,16 @@ fn bind_virtual_filesystems(
         .ok();
     }
 
-    // /tmp — fresh tmpfs (not shared with host)
+    // /tmp — fresh tmpfs (not shared with host), size from config
     let tmp_target = merged.join("tmp");
     if tmp_target.exists() {
+        let tmp_opts = format!("size={tmp_size},mode=1777");
         nix::mount::mount(
             Some("tmpfs"),
             &tmp_target,
             Some("tmpfs"),
             MsFlags::empty(),
-            Some("size=100m,mode=1777"),
+            Some(tmp_opts.as_str()),
         )
         .map_err(nix_to_io)?;
     }
@@ -866,6 +871,7 @@ mod tests {
             None,
             crate::backend::native::seccomp::SeccompProfile::Default,
             None,
+            100 * 1024 * 1024,
             Path::new("/tmp/rootfs"),
             &[],
             crate::config::DevicesConfig::default(),
@@ -903,6 +909,7 @@ mod tests {
             None,
             crate::backend::native::seccomp::SeccompProfile::Default,
             None,
+            100 * 1024 * 1024,
             &pod_dir.join("rootfs"),
             &[],
             crate::config::DevicesConfig::default(),
@@ -953,6 +960,7 @@ mod tests {
             None,
             crate::backend::native::seccomp::SeccompProfile::Default,
             None,
+            100 * 1024 * 1024,
             &pod_dir.join("rootfs"),
             &[],
             crate::config::DevicesConfig::default(),
@@ -1008,6 +1016,7 @@ mod tests {
             None,
             crate::backend::native::seccomp::SeccompProfile::Default,
             None,
+            100 * 1024 * 1024,
             &pod_dir.join("rootfs"),
             &[],
             crate::config::DevicesConfig::default(),
