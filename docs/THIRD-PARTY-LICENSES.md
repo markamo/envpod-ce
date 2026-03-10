@@ -89,6 +89,30 @@ cargo about generate about.hbs > THIRD-PARTY-LICENSES.html
 |---------|---------|---------|
 | [htmx](https://htmx.org/) | BSD-2-Clause | Dashboard interactivity |
 
+### Runtime Dependencies (installed via apt inside pods)
+
+These are not bundled in the envpod binary but are installed at runtime when
+web display or desktop features are enabled (`apt-get install` during pod setup).
+
+| Package | License | Purpose |
+|---------|---------|---------|
+| [noVNC](https://github.com/novnc/noVNC) | MPL-2.0 | Web-based VNC client (HTML5) |
+| [websockify](https://github.com/novnc/websockify) | LGPL-3.0 | WebSocket-to-TCP proxy for VNC |
+| [x11vnc](https://github.com/LibVNC/x11vnc) | GPL-2.0 | VNC server for X11 displays |
+| [Xvfb](https://www.x.org/) | MIT | Virtual framebuffer X server |
+| [screen](https://www.gnu.org/software/screen/) | GPL-3.0 | Terminal multiplexer |
+| [dbus-x11](https://www.freedesktop.org/wiki/Software/dbus/) | AFL-2.1 OR GPL-2.0+ | D-Bus X11 session support |
+| [xfce4](https://xfce.org/) | GPL-2.0+ | Desktop environment (optional) |
+| [openbox](http://openbox.org/) | GPL-2.0+ | Window manager (optional) |
+| [sway](https://swaywm.org/) | MIT | Wayland compositor (optional) |
+
+**Note:** These packages run exclusively inside isolated pods — they are not
+linked into the envpod binary or distributed with it. noVNC (MPL-2.0) and
+websockify (LGPL-3.0) are used unmodified; envpod patches `vnc.html` at runtime
+to update branding and enable auto-connect. The GPL/LGPL packages (x11vnc,
+screen, xfce4, openbox) are installed from Ubuntu/Debian repositories and run
+as separate processes inside the pod.
+
 ---
 
 ## BSL 1.1 Compatibility
