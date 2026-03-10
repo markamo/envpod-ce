@@ -24,14 +24,14 @@ pub fn generate_setup_commands(config: &WebDisplayConfig) -> Vec<String> {
             if config.audio {
                 cmds.push(concat!(
                     "DEBIAN_FRONTEND=noninteractive apt-get install -y ",
-                    "xvfb x11vnc novnc websockify screen ",
+                    "xvfb x11vnc novnc websockify screen dbus-x11 ",
                     "pulseaudio socat ",
                     "gstreamer1.0-tools gstreamer1.0-plugins-base ",
                     "gstreamer1.0-plugins-good gstreamer1.0-plugins-bad"
                 ).into());
             } else {
                 cmds.push(
-                    "DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb x11vnc novnc websockify screen".into()
+                    "DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb x11vnc novnc websockify screen dbus-x11".into()
                 );
             }
             cmds
@@ -40,7 +40,7 @@ pub fn generate_setup_commands(config: &WebDisplayConfig) -> Vec<String> {
             apt_cleanup.into(),
             concat!(
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ",
-                "xvfb xdotool screen ",
+                "xvfb xdotool screen dbus-x11 ",
                 "gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good ",
                 "gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-nice ",
                 "gstreamer1.0-pulseaudio ",
@@ -135,6 +135,12 @@ export DISPLAY=:99
 echo $$ > /tmp/envpod-display.pid
 trap "rm -f /tmp/envpod-display.pid; kill 0 2>/dev/null" EXIT
 
+# Start D-Bus session bus (required by XFCE terminal, thunar, etc.)
+if command -v dbus-daemon >/dev/null 2>&1; then
+    dbus-daemon --session --address=unix:path=/tmp/envpod-dbus --nofork --nopidfile &
+    echo "D-Bus session bus started"
+fi
+
 # Start Xvfb virtual display (auto-restart on crash)
 (while true; do Xvfb :99 -screen 0 {resolution}x24 -ac -noreset 2>/dev/null; sleep 1; done) &
 
@@ -174,6 +180,7 @@ fn generate_novnc_wrapper(config: &WebDisplayConfig) -> String {
 export DISPLAY=:99
 export __EGL_VENDOR_LIBRARY_FILENAMES=""
 export __GLX_VENDOR_LIBRARY_NAME=mesa
+export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/envpod-dbus
 
 # Start display services daemon if not already running
 if [ ! -f /tmp/envpod-display.pid ] || ! kill -0 "$(cat /tmp/envpod-display.pid)" 2>/dev/null; then
@@ -221,6 +228,11 @@ export DISPLAY=:99
 echo $$ > /tmp/envpod-display.pid
 trap "rm -f /tmp/envpod-display.pid; kill 0 2>/dev/null" EXIT
 
+# Start D-Bus session bus
+if command -v dbus-daemon >/dev/null 2>&1; then
+    dbus-daemon --session --address=unix:path=/tmp/envpod-dbus --nofork --nopidfile &
+fi
+
 # Start Xvfb (auto-restart on crash)
 (while true; do Xvfb :99 -screen 0 {resolution}x24 -ac +extension GLX +render -noreset; sleep 1; done) &
 for i in $(seq 1 20); do
@@ -255,6 +267,7 @@ fn generate_webrtc_wrapper(config: &WebDisplayConfig) -> String {
 # envpod display wrapper (WebRTC)
 
 export DISPLAY=:99
+export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/envpod-dbus
 
 # Start display services daemon if not already running
 if [ ! -f /tmp/envpod-display.pid ] || ! kill -0 "$(cat /tmp/envpod-display.pid)" 2>/dev/null; then
