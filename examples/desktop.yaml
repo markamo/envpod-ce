@@ -66,3 +66,5 @@ setup:
       echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
       apt-get update && apt-get install -y google-chrome-stable
     fi
+    # Fix desktop shortcut: add --no-sandbox (envpod namespaces replace Chrome's sandbox)
+    sed -i 's|Exec=/usr/bin/google-chrome-stable|Exec=/usr/bin/google-chrome-stable --no-sandbox|g' /usr/share/applications/google-chrome.desktop 2>/dev/null

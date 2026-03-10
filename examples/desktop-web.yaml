@@ -64,6 +64,8 @@ setup:
       echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
       apt-get update && apt-get install -y google-chrome-stable
     fi
+    # Fix desktop shortcut: add --no-sandbox (envpod namespaces replace Chrome's sandbox)
+    sed -i 's|Exec=/usr/bin/google-chrome-stable|Exec=/usr/bin/google-chrome-stable --no-sandbox|g' /usr/share/applications/google-chrome.desktop 2>/dev/null
   # VS Code
   - |
     if command -v code >/dev/null 2>&1; then
@@ -74,3 +76,6 @@ setup:
       echo "deb [arch=amd64 signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list
       apt-get update && apt-get install -y code
     fi
+    # Fix desktop shortcut: add --no-sandbox (envpod namespaces replace VS Code's sandbox)
+    sed -i 's|Exec=/usr/share/code/code|Exec=/usr/share/code/code --no-sandbox|g' /usr/share/applications/code.desktop 2>/dev/null
+    sed -i 's|Exec=/usr/share/code/code|Exec=/usr/share/code/code --no-sandbox|g' /usr/share/applications/code-url-handler.desktop 2>/dev/null
