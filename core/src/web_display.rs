@@ -24,14 +24,14 @@ pub fn generate_setup_commands(config: &WebDisplayConfig) -> Vec<String> {
             if config.audio {
                 cmds.push(concat!(
                     "DEBIAN_FRONTEND=noninteractive apt-get install -y ",
-                    "xvfb x11vnc novnc websockify screen dbus-x11 ",
+                    "xvfb x11vnc novnc websockify screen dbus-x11 numlockx ",
                     "pulseaudio socat ",
                     "gstreamer1.0-tools gstreamer1.0-plugins-base ",
                     "gstreamer1.0-plugins-good gstreamer1.0-plugins-bad"
                 ).into());
             } else {
                 cmds.push(
-                    "DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb x11vnc novnc websockify screen dbus-x11".into()
+                    "DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb x11vnc novnc websockify screen dbus-x11 numlockx".into()
                 );
             }
             cmds
@@ -157,6 +157,10 @@ if [ ! -e /tmp/.X11-unix/X99 ]; then
     echo "ERROR: Xvfb failed to start"
     exit 1
 fi
+
+# Sync NumLock state (default on — matches most host keyboards)
+command -v numlockx >/dev/null 2>&1 && numlockx on 2>/dev/null
+command -v xdotool >/dev/null 2>&1 && xdotool key --clearmodifiers Num_Lock 2>/dev/null
 
 # Start x11vnc (auto-restart on crash)
 (while true; do x11vnc -display :99 -forever -nopw -shared -noshm -rfbport 5900 -q; sleep 1; done) &
