@@ -15,16 +15,16 @@ pub fn generate_setup_commands(env: DesktopEnv) -> Vec<String> {
     match env {
         DesktopEnv::None => Vec::new(),
         DesktopEnv::Xfce => vec![
-            "cd /etc/apt/sources.list.d && for f in *.list *.sources; do case \"$f\" in ubuntu*) ;; *) rm -f \"$f\" ;; esac; done 2>/dev/null; dpkg --configure -a 2>/dev/null; apt-get update -qq".into(),
-            "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends xfce4 xfce4-terminal dbus-x11".into(),
+            "cd /etc/apt/sources.list.d && for f in *.list *.sources; do case \"$f\" in ubuntu*) ;; *) rm -f \"$f\" ;; esac; done 2>/dev/null; dpkg --configure -a 2>/dev/null; rm -rf /var/lib/apt/lists/* 2>/dev/null; apt-get update -qq".into(),
+            "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends xfce4 xfce4-terminal dbus-x11 screen".into(),
         ],
         DesktopEnv::Openbox => vec![
-            "cd /etc/apt/sources.list.d && for f in *.list *.sources; do case \"$f\" in ubuntu*) ;; *) rm -f \"$f\" ;; esac; done 2>/dev/null; dpkg --configure -a 2>/dev/null; apt-get update -qq".into(),
-            "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends openbox tint2 xterm".into(),
+            "cd /etc/apt/sources.list.d && for f in *.list *.sources; do case \"$f\" in ubuntu*) ;; *) rm -f \"$f\" ;; esac; done 2>/dev/null; dpkg --configure -a 2>/dev/null; rm -rf /var/lib/apt/lists/* 2>/dev/null; apt-get update -qq".into(),
+            "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends openbox tint2 xterm screen".into(),
         ],
         DesktopEnv::Sway => vec![
-            "cd /etc/apt/sources.list.d && for f in *.list *.sources; do case \"$f\" in ubuntu*) ;; *) rm -f \"$f\" ;; esac; done 2>/dev/null; dpkg --configure -a 2>/dev/null; apt-get update -qq".into(),
-            "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends sway foot".into(),
+            "cd /etc/apt/sources.list.d && for f in *.list *.sources; do case \"$f\" in ubuntu*) ;; *) rm -f \"$f\" ;; esac; done 2>/dev/null; dpkg --configure -a 2>/dev/null; rm -rf /var/lib/apt/lists/* 2>/dev/null; apt-get update -qq".into(),
+            "DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends sway foot screen".into(),
         ],
     }
 }

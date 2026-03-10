@@ -822,10 +822,11 @@ async fn cmd_init(
         std::fs::write(state.config_path(), yaml).context("persist pod.yaml")?;
     }
 
-    // Write web display supervisor script to overlay
+    // Write web display scripts to overlay (daemon + wrapper)
     if config.web_display.display_type != envpod_core::config::WebDisplayType::None {
         if let Ok(state) = NativeState::from_handle(&handle) {
-            let script = envpod_core::web_display::generate_supervisor_script(&config.web_display);
+            let wrapper = envpod_core::web_display::generate_supervisor_script(&config.web_display);
+            let daemon = envpod_core::web_display::generate_services_daemon(&config.web_display);
             // With advanced/dangerous system_access, /usr gets its own COW overlay
             // backed by sys_upper/usr/, so we must write there instead of upper/
             let script_dir = if matches!(config.filesystem.system_access, envpod_core::config::SystemAccess::Advanced | envpod_core::config::SystemAccess::Dangerous) {
@@ -834,10 +835,15 @@ async fn cmd_init(
                 state.upper_dir().join("usr/local/bin")
             };
             std::fs::create_dir_all(&script_dir).ok();
-            let script_path = script_dir.join("envpod-display-start");
-            std::fs::write(&script_path, &script).context("write display supervisor script")?;
             use std::os::unix::fs::PermissionsExt;
+            // Write wrapper (envpod-display-start) — entry point for user commands
+            let script_path = script_dir.join("envpod-display-start");
+            std::fs::write(&script_path, &wrapper).context("write display wrapper script")?;
             std::fs::set_permissions(&script_path, std::fs::Permissions::from_mode(0o755))?;
+            // Write daemon (envpod-display-services) — background service manager
+            let daemon_path = script_dir.join("envpod-display-services");
+            std::fs::write(&daemon_path, &daemon).context("write display services daemon")?;
+            std::fs::set_permissions(&daemon_path, std::fs::Permissions::from_mode(0o755))?;
 
             // Inject audio overlay files (audio-proxy.sh, audio-plugin.js)
             for (pod_path, content, executable) in envpod_core::web_display::audio_overlay_files(&config.web_display) {
@@ -1903,9 +1909,11 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
         extra_env.push("XDG_RUNTIME_DIR=/tmp".to_string());
     }
 
-    // Build effective command: wrap with display supervisor if web_display is enabled
+    // Build effective command: wrap with display wrapper if web_display is enabled.
+    // The wrapper script is lightweight — it starts the services daemon in background
+    // if not already running, then exec's the user command immediately.
+    // Multiple runs get independent shells; services are shared.
     let effective_command: Vec<String> = if web_display_type != envpod_core::config::WebDisplayType::None {
-        // The supervisor script uses exec "$@", so pass original command as args
         let mut cmd = vec!["/usr/local/bin/envpod-display-start".to_string()];
         cmd.extend_from_slice(command);
         cmd

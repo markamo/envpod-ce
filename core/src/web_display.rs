@@ -14,7 +14,7 @@ use crate::config::{WebDisplayConfig, WebDisplayType};
 
 /// Generate apt-get install commands for the selected web display type.
 pub fn generate_setup_commands(config: &WebDisplayConfig) -> Vec<String> {
-    let apt_cleanup = "cd /etc/apt/sources.list.d && for f in *.list *.sources; do case \"$f\" in ubuntu*) ;; *) rm -f \"$f\" ;; esac; done 2>/dev/null; dpkg --configure -a 2>/dev/null; apt-get update -qq";
+    let apt_cleanup = "cd /etc/apt/sources.list.d && for f in *.list *.sources; do case \"$f\" in ubuntu*) ;; *) rm -f \"$f\" ;; esac; done 2>/dev/null; dpkg --configure -a 2>/dev/null; rm -rf /var/lib/apt/lists/* 2>/dev/null; apt-get update -qq";
     match config.display_type {
         WebDisplayType::None => Vec::new(),
         WebDisplayType::Novnc => {
@@ -24,14 +24,14 @@ pub fn generate_setup_commands(config: &WebDisplayConfig) -> Vec<String> {
             if config.audio {
                 cmds.push(concat!(
                     "DEBIAN_FRONTEND=noninteractive apt-get install -y ",
-                    "xvfb x11vnc novnc websockify ",
+                    "xvfb x11vnc novnc websockify screen ",
                     "pulseaudio socat ",
                     "gstreamer1.0-tools gstreamer1.0-plugins-base ",
                     "gstreamer1.0-plugins-good gstreamer1.0-plugins-bad"
                 ).into());
             } else {
                 cmds.push(
-                    "DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb x11vnc novnc websockify".into()
+                    "DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb x11vnc novnc websockify screen".into()
                 );
             }
             cmds
@@ -40,7 +40,7 @@ pub fn generate_setup_commands(config: &WebDisplayConfig) -> Vec<String> {
             apt_cleanup.into(),
             concat!(
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ",
-                "xvfb xdotool ",
+                "xvfb xdotool screen ",
                 "gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good ",
                 "gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-nice ",
                 "gstreamer1.0-pulseaudio ",
@@ -50,194 +50,229 @@ pub fn generate_setup_commands(config: &WebDisplayConfig) -> Vec<String> {
     }
 }
 
-/// Generate the supervisor shell script that starts display services,
-/// then execs the user command (passed as arguments).
+/// Generate the display service daemon and wrapper scripts.
 ///
-/// Written to `upper/usr/local/bin/envpod-display-start` during init.
+/// Returns `(daemon_script, wrapper_script)`:
+/// - **daemon**: background process managing Xvfb/x11vnc/websockify/audio/upload
+///   with auto-restart on crash. Written to `envpod-display-services`.
+/// - **wrapper**: lightweight entry point for user commands. Starts daemon if not
+///   running, then `exec`s the user command immediately. The user always gets their
+///   shell — even if display services fail to start. Written to `envpod-display-start`.
 pub fn generate_supervisor_script(config: &WebDisplayConfig) -> String {
+    // Returns only the wrapper script for backward compatibility.
+    // The daemon script is returned by generate_services_daemon().
     match config.display_type {
         WebDisplayType::None => String::new(),
-        WebDisplayType::Novnc => generate_novnc_script(config),
-        WebDisplayType::Webrtc => generate_webrtc_script(config),
+        WebDisplayType::Novnc => generate_novnc_wrapper(config),
+        WebDisplayType::Webrtc => generate_webrtc_wrapper(config),
     }
 }
 
-fn generate_novnc_script(config: &WebDisplayConfig) -> String {
+/// Generate the background display services daemon script.
+/// Written to `upper/usr/local/bin/envpod-display-services` during init.
+pub fn generate_services_daemon(config: &WebDisplayConfig) -> String {
+    match config.display_type {
+        WebDisplayType::None => String::new(),
+        WebDisplayType::Novnc => generate_novnc_daemon(config),
+        WebDisplayType::Webrtc => generate_webrtc_daemon(config),
+    }
+}
+
+/// Generate the noVNC services daemon script.
+/// Runs as a background process managing all display services with auto-restart.
+fn generate_novnc_daemon(config: &WebDisplayConfig) -> String {
     let resolution = &config.resolution;
     let audio_port = config.audio_port;
 
     let audio_block = if config.audio {
         format!(r#"
 # --- Audio streaming (PulseAudio + Opus/WebM → WebSocket) ---
-
-# Ensure pulse user/group exists (PulseAudio system mode requires it)
 id pulse >/dev/null 2>&1 || useradd --system --no-create-home -s /usr/sbin/nologin pulse 2>/dev/null
 getent group pulse-access >/dev/null 2>&1 || groupadd --system pulse-access 2>/dev/null
 usermod -aG pulse-access root 2>/dev/null
 mkdir -p /var/run/pulse /var/lib/pulse
 chown pulse:pulse /var/run/pulse /var/lib/pulse 2>/dev/null
-
-# Configure PulseAudio: allow anonymous access (pod is already isolated)
 mkdir -p /etc/pulse/system.pa.d
 cat > /etc/pulse/system.pa.d/envpod.pa << 'PACONF'
 load-module module-native-protocol-unix auth-anonymous=1
 PACONF
-
-# Start PulseAudio in system mode (required for running as root)
 pulseaudio --system --daemonize --no-cpu-limit --log-target=file:/tmp/pulseaudio.log
 sleep 1
-
-# Set PULSE_SERVER so all child processes (Chrome, Firefox, etc.) can find PulseAudio
 export PULSE_SERVER=unix:/var/run/pulse/native
-
-# Load virtual sink + raw TCP output via pactl
 pactl load-module module-null-sink sink_name=envpod format=s16le channels=2 rate=48000 sink_properties=device.description=envpod
 pactl set-default-sink envpod
 pactl load-module module-simple-protocol-tcp listen=127.0.0.1 port=4711 format=s16le rate=48000 channels=2 record=true source=envpod.monitor
-
-# Lock monitor source at 100% — only the speaker slider controls audio volume.
-# The XFCE mixer shows both a speaker and mic slider; both independently
-# affect the stream. The watchdog below re-locks the monitor instantly
-# whenever the user touches the mic slider, making it a no-op.
 pactl set-source-volume envpod.monitor 65536
 (pactl subscribe 2>/dev/null | while read -r line; do
     case "$line" in *source*) pactl set-source-volume envpod.monitor 65536 2>/dev/null;; esac
 done) &
-
-# Start audio proxy (GStreamer: raw PCM → Opus/WebM, auto-restart on crash)
 (while true; do /usr/local/bin/envpod-audio-proxy.sh -l 5711; sleep 1; done) &
-AUDIO_PROXY_PID=$!
 sleep 0.5
-
-# Start websockify for audio WebSocket on port {audio_port} (auto-restart on crash)
 (while true; do websockify 0.0.0.0:{audio_port} localhost:5711; sleep 1; done) &
-AUDIO_WS_PID=$!
 "#)
     } else {
-        "\nAUDIO_PROXY_PID=\nAUDIO_WS_PID=\n".to_string()
-    };
-
-    let audio_cleanup = if config.audio {
-        "$AUDIO_WS_PID $AUDIO_PROXY_PID "
-    } else {
-        ""
+        String::new()
     };
 
     let upload_block = if config.file_upload {
-        "\n# --- File upload server (auto-restart on crash) ---\nmkdir -p /tmp/uploads\n(while true; do python3 /usr/local/bin/envpod-upload-server.py 2>/dev/null; sleep 1; done) &\nUPLOAD_PID=$!\n".to_string()
+        "\n# --- File upload server ---\nmkdir -p /tmp/uploads\n(while true; do python3 /usr/local/bin/envpod-upload-server.py 2>/dev/null; sleep 1; done) &\n".to_string()
     } else {
-        "\nUPLOAD_PID=\n".to_string()
-    };
-
-    let upload_cleanup = if config.file_upload {
-        "$UPLOAD_PID "
-    } else {
-        ""
+        String::new()
     };
 
     format!(
         r#"#!/bin/bash
-# envpod web display supervisor (noVNC)
+# envpod display services daemon (noVNC)
+# Runs in background. Manages Xvfb, x11vnc, websockify, audio, uploads.
+# Auto-restarts crashed services. User commands run independently.
 
-# Prevent NVIDIA EGL/GBM from loading (causes Xvfb segfault on GPU hosts)
+exec >/tmp/envpod-display-services.log 2>&1
+
 export __EGL_VENDOR_LIBRARY_FILENAMES=""
 export __GLX_VENDOR_LIBRARY_NAME=mesa
 export DISPLAY=:99
 
-# Cleanup on exit
-cleanup() {{
-    kill {upload_cleanup}{audio_cleanup}$WEBSOCKIFY_PID $X11VNC_PID $XVFB_PID 2>/dev/null || true
-}}
-trap cleanup EXIT
+echo $$ > /tmp/envpod-display.pid
+trap "rm -f /tmp/envpod-display.pid; kill 0 2>/dev/null" EXIT
 
 # Start Xvfb virtual display (auto-restart on crash)
 (while true; do Xvfb :99 -screen 0 {resolution}x24 -ac -noreset 2>/dev/null; sleep 1; done) &
-XVFB_PID=$!
 
-# Wait for Xvfb to be ready (check for X socket)
+# Wait for Xvfb to be ready
 for i in $(seq 1 20); do
     [ -e /tmp/.X11-unix/X99 ] && break
     sleep 0.25
 done
 
-# Start x11vnc connecting to the virtual display (auto-restart on crash)
+if [ ! -e /tmp/.X11-unix/X99 ]; then
+    echo "ERROR: Xvfb failed to start"
+    exit 1
+fi
+
+# Start x11vnc (auto-restart on crash)
 (while true; do x11vnc -display :99 -forever -nopw -shared -noshm -rfbport 5900 -q; sleep 1; done) &
-X11VNC_PID=$!
 sleep 1
 
-# Start websockify to bridge VNC to WebSocket (auto-restart on crash)
+# Start websockify (auto-restart on crash)
 (while true; do websockify --web /usr/share/novnc 0.0.0.0:6080 localhost:5900; sleep 1; done) &
-WEBSOCKIFY_PID=$!
 {audio_block}{upload_block}
-# Execute the user command, redirecting its output to a log file
-# so GUI app noise (Chrome, Firefox, etc.) doesn't flood the terminal.
-# When ENVPOD_RUN_USER is set, display services ran as root above;
-# drop to the requested user for the application command only.
-if [ -n "$ENVPOD_RUN_USER" ]; then
-    # Ensure X socket is accessible to non-root user
-    chmod 1777 /tmp/.X11-unix 2>/dev/null
-    # Add user to pulse-access group for audio
-    usermod -aG pulse-access "$ENVPOD_RUN_USER" 2>/dev/null
-    exec runuser -u "$ENVPOD_RUN_USER" -- "$@" >/tmp/envpod-display-app.log 2>&1
-else
-    exec "$@" >/tmp/envpod-display-app.log 2>&1
-fi
+echo "Display services started"
+
+# Keep daemon alive — wait for all children
+wait
 "#
     )
 }
 
-fn generate_webrtc_script(config: &WebDisplayConfig) -> String {
+/// Generate the noVNC wrapper script.
+/// Starts daemon if needed, then exec's the user command immediately.
+fn generate_novnc_wrapper(config: &WebDisplayConfig) -> String {
+    let _config = config;
+    r#"#!/bin/bash
+# envpod display wrapper — starts services daemon if needed, then runs user command.
+
+export DISPLAY=:99
+export __EGL_VENDOR_LIBRARY_FILENAMES=""
+export __GLX_VENDOR_LIBRARY_NAME=mesa
+
+# Start display services daemon if not already running
+if [ ! -f /tmp/envpod-display.pid ] || ! kill -0 "$(cat /tmp/envpod-display.pid)" 2>/dev/null; then
+    /usr/local/bin/envpod-display-services &
+    disown
+    # Wait for Xvfb to come up (max 5s)
+    for i in $(seq 1 20); do
+        [ -e /tmp/.X11-unix/X99 ] && break
+        sleep 0.25
+    done
+fi
+
+# Drop privileges if requested
+if [ -n "$ENVPOD_RUN_USER" ]; then
+    chmod 1777 /tmp/.X11-unix 2>/dev/null
+    usermod -aG pulse-access "$ENVPOD_RUN_USER" 2>/dev/null
+    exec runuser -u "$ENVPOD_RUN_USER" -- "$@"
+else
+    exec "$@"
+fi
+"#.to_string()
+}
+
+/// Generate the WebRTC services daemon script.
+fn generate_webrtc_daemon(config: &WebDisplayConfig) -> String {
     let resolution = &config.resolution;
     let codec_pipeline = match config.codec.as_str() {
         "h264" => "x264enc tune=zerolatency speed-preset=ultrafast ! video/x-h264,profile=baseline ! rtph264pay",
         _ => "vp8enc deadline=1 target-bitrate=2000000 ! rtpvp8pay",
     };
     let audio_pipeline = if config.audio {
-        "\n# Start audio capture pipeline\ngst-launch-1.0 -q pulsesrc ! opusenc ! rtpopuspay ! webrtcbin name=audio-send &\nAUDIO_PID=$!"
+        "\n# Start audio capture pipeline\n(while true; do gst-launch-1.0 -q pulsesrc ! opusenc ! rtpopuspay ! webrtcbin name=audio-send; sleep 1; done) &"
     } else {
-        "\nAUDIO_PID="
+        ""
     };
-    let audio_cleanup = if config.audio { "$AUDIO_PID " } else { "" };
 
     format!(
         r#"#!/bin/bash
-# envpod web display supervisor (WebRTC/GStreamer)
-set -e
+# envpod display services daemon (WebRTC/GStreamer)
 
-# Start Xvfb virtual display
-Xvfb :99 -screen 0 {resolution}x24 -ac +extension GLX +render -noreset &
-XVFB_PID=$!
-sleep 0.5
+exec >/tmp/envpod-display-services.log 2>&1
 
 export DISPLAY=:99
 
-# Start video capture pipeline
-gst-launch-1.0 -q ximagesrc use-damage=0 ! videoconvert ! {codec_pipeline} ! webrtcbin name=video-send &
-VIDEO_PID=$!
+echo $$ > /tmp/envpod-display.pid
+trap "rm -f /tmp/envpod-display.pid; kill 0 2>/dev/null" EXIT
+
+# Start Xvfb (auto-restart on crash)
+(while true; do Xvfb :99 -screen 0 {resolution}x24 -ac +extension GLX +render -noreset; sleep 1; done) &
+for i in $(seq 1 20); do
+    [ -e /tmp/.X11-unix/X99 ] && break
+    sleep 0.25
+done
+
+if [ ! -e /tmp/.X11-unix/X99 ]; then
+    echo "ERROR: Xvfb failed to start"
+    exit 1
+fi
+
+# Start video capture pipeline (auto-restart on crash)
+(while true; do gst-launch-1.0 -q ximagesrc use-damage=0 ! videoconvert ! {codec_pipeline} ! webrtcbin name=video-send; sleep 1; done) &
 {audio_pipeline}
 
-# Start xdotool input relay (reads commands from a named pipe)
+# Start xdotool input relay
 INPUTPIPE=/tmp/envpod-input
 mkfifo "$INPUTPIPE" 2>/dev/null || true
 (while read -r cmd < "$INPUTPIPE"; do eval "$cmd"; done) &
-INPUT_PID=$!
 
-# Cleanup on exit
-cleanup() {{
-    kill {audio_cleanup}$VIDEO_PID $INPUT_PID $XVFB_PID 2>/dev/null || true
-    rm -f "$INPUTPIPE"
-}}
-trap cleanup EXIT
-
-# Execute the user command, redirecting its output to a log file
-if [ -n "$ENVPOD_RUN_USER" ]; then
-    chmod 1777 /tmp/.X11-unix 2>/dev/null
-    exec runuser -u "$ENVPOD_RUN_USER" -- "$@" >/tmp/envpod-display-app.log 2>&1
-else
-    exec "$@" >/tmp/envpod-display-app.log 2>&1
-fi
+echo "Display services started"
+wait
 "#
     )
+}
+
+/// Generate the WebRTC wrapper script.
+fn generate_webrtc_wrapper(config: &WebDisplayConfig) -> String {
+    let _config = config;
+    r#"#!/bin/bash
+# envpod display wrapper (WebRTC)
+
+export DISPLAY=:99
+
+# Start display services daemon if not already running
+if [ ! -f /tmp/envpod-display.pid ] || ! kill -0 "$(cat /tmp/envpod-display.pid)" 2>/dev/null; then
+    /usr/local/bin/envpod-display-services &
+    disown
+    for i in $(seq 1 20); do
+        [ -e /tmp/.X11-unix/X99 ] && break
+        sleep 0.25
+    done
+fi
+
+if [ -n "$ENVPOD_RUN_USER" ]; then
+    chmod 1777 /tmp/.X11-unix 2>/dev/null
+    exec runuser -u "$ENVPOD_RUN_USER" -- "$@"
+else
+    exec "$@"
+fi
+"#.to_string()
 }
 
 /// Returns files to inject into the pod overlay for audio support.
@@ -884,16 +919,20 @@ mod tests {
             audio: false,
             ..Default::default()
         };
-        let script = generate_supervisor_script(&config);
-        assert!(script.contains("Xvfb :99"));
-        assert!(script.contains("1920x1080"));
-        assert!(script.contains("x11vnc"));
-        assert!(script.contains("websockify"));
-        assert!(script.contains("0.0.0.0:6080"));
-        assert!(script.contains("DISPLAY=:99"));
-        assert!(script.contains("exec \"$@\""));
-        assert!(!script.contains("pulseaudio"));
-        assert!(!script.contains("audio-proxy"));
+        // Wrapper script: lightweight, starts daemon + exec's user command
+        let wrapper = generate_supervisor_script(&config);
+        assert!(wrapper.contains("DISPLAY=:99"));
+        assert!(wrapper.contains("envpod-display-services"));
+        assert!(wrapper.contains("exec \"$@\""));
+        // Daemon script: manages display services
+        let daemon = generate_services_daemon(&config);
+        assert!(daemon.contains("Xvfb :99"));
+        assert!(daemon.contains("1920x1080"));
+        assert!(daemon.contains("x11vnc"));
+        assert!(daemon.contains("websockify"));
+        assert!(daemon.contains("0.0.0.0:6080"));
+        assert!(!daemon.contains("pulseaudio"));
+        assert!(!daemon.contains("audio-proxy"));
     }
 
     #[test]
@@ -905,12 +944,12 @@ mod tests {
             audio_port: 6081,
             ..Default::default()
         };
-        let script = generate_supervisor_script(&config);
-        assert!(script.contains("pulseaudio"));
-        assert!(script.contains("envpod-audio-proxy"));
-        assert!(script.contains("0.0.0.0:6081"));
-        assert!(script.contains("module-null-sink"));
-        assert!(script.contains("module-simple-protocol-tcp"));
+        let daemon = generate_services_daemon(&config);
+        assert!(daemon.contains("pulseaudio"));
+        assert!(daemon.contains("envpod-audio-proxy"));
+        assert!(daemon.contains("0.0.0.0:6081"));
+        assert!(daemon.contains("module-null-sink"));
+        assert!(daemon.contains("module-simple-protocol-tcp"));
     }
 
     #[test]
@@ -974,10 +1013,9 @@ mod tests {
             file_upload: true,
             ..Default::default()
         };
-        let script = generate_supervisor_script(&config);
-        assert!(script.contains("envpod-upload-server.py"));
-        assert!(script.contains("UPLOAD_PID"));
-        assert!(script.contains("/tmp/uploads"));
+        let daemon = generate_services_daemon(&config);
+        assert!(daemon.contains("envpod-upload-server.py"));
+        assert!(daemon.contains("/tmp/uploads"));
     }
 
     #[test]
@@ -987,8 +1025,8 @@ mod tests {
             file_upload: false,
             ..Default::default()
         };
-        let script = generate_supervisor_script(&config);
-        assert!(!script.contains("envpod-upload-server.py"));
+        let daemon = generate_services_daemon(&config);
+        assert!(!daemon.contains("envpod-upload-server.py"));
     }
 
     #[test]
@@ -999,11 +1037,15 @@ mod tests {
             audio: true,
             ..Default::default()
         };
-        let script = generate_supervisor_script(&config);
-        assert!(script.contains("ximagesrc"));
-        assert!(script.contains("vp8enc"));
-        assert!(script.contains("pulsesrc"));
-        assert!(script.contains("xdotool"));
+        let daemon = generate_services_daemon(&config);
+        assert!(daemon.contains("ximagesrc"));
+        assert!(daemon.contains("vp8enc"));
+        assert!(daemon.contains("pulsesrc"));
+        assert!(daemon.contains("xdotool"));
+        // Wrapper should be lightweight
+        let wrapper = generate_supervisor_script(&config);
+        assert!(wrapper.contains("envpod-display-services"));
+        assert!(wrapper.contains("exec \"$@\""));
     }
 
     #[test]
@@ -1014,9 +1056,9 @@ mod tests {
             audio: false,
             ..Default::default()
         };
-        let script = generate_supervisor_script(&config);
-        assert!(script.contains("x264enc"));
-        assert!(!script.contains("pulsesrc"));
+        let daemon = generate_services_daemon(&config);
+        assert!(daemon.contains("x264enc"));
+        assert!(!daemon.contains("pulsesrc"));
     }
 
     #[test]

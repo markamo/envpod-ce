@@ -283,4 +283,44 @@ If connecting from another machine, use `public_ports` instead of `ports`
 
 ---
 
+## Multiple Sessions & Resumable Terminals
+
+Display services (Xvfb, x11vnc, websockify, audio, upload) run as a
+background daemon inside the pod. Each `envpod run` command gets its own
+independent terminal — you can run multiple commands simultaneously in
+the same pod:
+
+```bash
+sudo envpod run my-pod -b -- startxfce4          # start desktop in background
+sudo envpod run my-pod -- bash                    # get a shell (separate session)
+sudo envpod run my-pod -- python3 agent.py        # run an agent (another session)
+```
+
+### Resumable sessions with screen
+
+`screen` is auto-installed in all web display and desktop pods. Use it
+for sessions that survive SSH disconnections:
+
+```bash
+# Start a named screen session inside the pod
+sudo envpod run my-pod -- screen -S work
+
+# Detach from screen: Ctrl-A then D
+# Reconnect later:
+sudo envpod run my-pod -- screen -r work
+
+# List active screen sessions
+sudo envpod run my-pod -- screen -ls
+```
+
+### Tips
+
+- Use `screen -S <name>` to name sessions for easy identification
+- `Ctrl-A d` detaches without killing the session
+- `screen -r <name>` reattaches to a named session
+- `screen -ls` lists all active sessions in the pod
+- Display services are shared — all sessions see the same desktop
+
+---
+
 *Copyright 2026 Xtellix Inc. Licensed under the Business Source License 1.1.*
