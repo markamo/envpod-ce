@@ -892,6 +892,24 @@ async fn cmd_init(
                 }
             }
 
+            // Inject clipboard sync plugin (clipboard-plugin.js)
+            for (pod_path, content, executable) in envpod_core::web_display::clipboard_overlay_files(&config.web_display) {
+                let rel = pod_path.trim_start_matches('/');
+                let dest = if rel.starts_with("usr/") && matches!(config.filesystem.system_access, envpod_core::config::SystemAccess::Advanced | envpod_core::config::SystemAccess::Dangerous) {
+                    state.sys_upper_dir().join(rel)
+                } else {
+                    state.upper_dir().join(rel)
+                };
+                if let Some(parent) = dest.parent() {
+                    std::fs::create_dir_all(parent).ok();
+                }
+                std::fs::write(&dest, &content)
+                    .with_context(|| format!("write clipboard file: {pod_path}"))?;
+                if executable {
+                    std::fs::set_permissions(&dest, std::fs::Permissions::from_mode(0o755))?;
+                }
+            }
+
             // Patch vnc.html after apt installs the novnc package:
             // - Replace both noVNC logos (side panel + connect dialog) with envpod
             // - Update page title to "envpod — <pod-name>"
@@ -913,6 +931,8 @@ async fn cmd_init(
                     ),
                     // Auto-connect: inject autoconnect=true default so users skip the connect dialog
                     r#"sed -i 's|</body>|<script>if(!location.search.includes("autoconnect=false"))window.addEventListener("load",function(){setTimeout(function(){var b=document.getElementById("noVNC_connect_button");if(b)b.click();},500);});</script></body>|' /usr/share/novnc/vnc.html"#.to_string(),
+                    // Clipboard sync: host↔pod paste via Clipboard API + noVNC RFB
+                    r#"sed -i 's|</body>|<script src="clipboard-plugin.js"></script></body>|' /usr/share/novnc/vnc.html"#.to_string(),
                 ];
                 if config.web_display.file_upload {
                     patches.push(

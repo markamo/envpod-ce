@@ -338,6 +338,17 @@ pub fn upload_overlay_files(config: &WebDisplayConfig) -> Vec<(&'static str, Str
     ]
 }
 
+/// Returns files to inject into the pod overlay for clipboard sync.
+/// Each tuple is (path_inside_pod, content, executable).
+pub fn clipboard_overlay_files(config: &WebDisplayConfig) -> Vec<(&'static str, String, bool)> {
+    if config.display_type != WebDisplayType::Novnc {
+        return Vec::new();
+    }
+    vec![
+        ("/usr/share/novnc/clipboard-plugin.js", CLIPBOARD_PLUGIN_JS.to_string(), false),
+    ]
+}
+
 /// Generate upload-server.py with the correct port baked in.
 fn generate_upload_server_py(config: &WebDisplayConfig) -> String {
     UPLOAD_SERVER_SCRIPT.replace("__ENVPOD_UPLOAD_PORT__", &config.upload_port.to_string())
@@ -878,6 +889,94 @@ const EnvpodUpload = {
 };
 
 window.addEventListener('load', () => EnvpodUpload.init());
+"##;
+
+/// Embedded clipboard-plugin.js — bidirectional clipboard sync between host and pod.
+///
+/// Host→Pod: intercepts paste events on the noVNC canvas, reads browser clipboard,
+/// sends text to VNC via noVNC's clipboardPasteFrom() API, then simulates Ctrl+V.
+/// Pod→Host: listens for VNC clipboard events and writes to browser clipboard.
+///
+/// Notes:
+/// - Clipboard API requires secure context (HTTPS) or localhost — localhost works.
+/// - Falls back gracefully if clipboard permission is denied.
+const CLIPBOARD_PLUGIN_JS: &str = r##"/**
+ * envpod clipboard plugin for noVNC
+ * Bidirectional clipboard sync: host browser <-> VNC session
+ */
+const EnvpodClipboard = {
+    rfb: null,
+    ready: false,
+
+    init() {
+        // Wait for noVNC to connect, then hook into the RFB object
+        const check = setInterval(() => {
+            // noVNC stores the RFB instance on the UI object or as a global
+            const rfb = window.rfb || (window.UI && window.UI.rfb);
+            if (rfb && rfb._rfbConnectionState === 'connected') {
+                this.rfb = rfb;
+                this.ready = true;
+                clearInterval(check);
+                this.attach();
+                console.log('[envpod-clipboard] attached to RFB');
+            }
+        }, 500);
+    },
+
+    attach() {
+        // Pod→Host: VNC server sends clipboard content
+        this.rfb.addEventListener('clipboard', (e) => {
+            if (e.detail && e.detail.text) {
+                navigator.clipboard.writeText(e.detail.text).catch(() => {});
+            }
+        });
+
+        // Host→Pod: intercept paste on the noVNC canvas
+        const canvas = document.getElementById('noVNC_canvas') ||
+                       document.querySelector('canvas');
+        if (!canvas) return;
+
+        // Listen on the document for paste events (works when canvas is focused)
+        document.addEventListener('paste', async (e) => {
+            if (!this.ready) return;
+            let text = '';
+            if (e.clipboardData) {
+                text = e.clipboardData.getData('text/plain');
+            }
+            if (!text) {
+                try { text = await navigator.clipboard.readText(); } catch (_) {}
+            }
+            if (text) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.rfb.clipboardPasteFrom(text);
+                // Simulate Ctrl+V in the VNC session so the app receives the paste
+                this.rfb.sendKey(0xffe3, 'ControlLeft', true);   // Ctrl down
+                this.rfb.sendKey(0x0076, 'KeyV', true);          // v down
+                this.rfb.sendKey(0x0076, 'KeyV', false);         // v up
+                this.rfb.sendKey(0xffe3, 'ControlLeft', false);  // Ctrl up
+            }
+        });
+
+        // Also handle Ctrl+V keydown as a trigger to read clipboard
+        // (some browsers fire keydown before paste event)
+        document.addEventListener('keydown', async (e) => {
+            if (!this.ready) return;
+            if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (text) {
+                        this.rfb.clipboardPasteFrom(text);
+                    }
+                } catch (_) {
+                    // Clipboard permission denied — fall through to normal paste
+                }
+            }
+        });
+    }
+};
+
+window.addEventListener('load', () => EnvpodClipboard.init());
 "##;
 
 /// Parse resolution string into (width, height). Returns None if invalid.
