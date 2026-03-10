@@ -128,12 +128,15 @@ sleep 0.5
 
 exec >/tmp/envpod-display-services.log 2>&1
 
+# Start a new process group so kill/trap don't affect user shells
+set -m
+
 export __EGL_VENDOR_LIBRARY_FILENAMES=""
 export __GLX_VENDOR_LIBRARY_NAME=mesa
 export DISPLAY=:99
 
 echo $$ > /tmp/envpod-display.pid
-trap "rm -f /tmp/envpod-display.pid; kill 0 2>/dev/null" EXIT
+trap "rm -f /tmp/envpod-display.pid; kill -- -$$ 2>/dev/null" EXIT
 
 # Start D-Bus session bus (required by XFCE terminal, thunar, etc.)
 if command -v dbus-daemon >/dev/null 2>&1; then
@@ -184,7 +187,7 @@ export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/envpod-dbus
 
 # Start display services daemon if not already running
 if [ ! -f /tmp/envpod-display.pid ] || ! kill -0 "$(cat /tmp/envpod-display.pid)" 2>/dev/null; then
-    /usr/local/bin/envpod-display-services &
+    setsid /usr/local/bin/envpod-display-services &
     disown
     # Wait for Xvfb to come up (max 5s)
     for i in $(seq 1 20); do
@@ -197,7 +200,13 @@ fi
 if [ -n "$ENVPOD_RUN_USER" ]; then
     chmod 1777 /tmp/.X11-unix 2>/dev/null
     usermod -aG pulse-access "$ENVPOD_RUN_USER" 2>/dev/null
-    exec runuser -u "$ENVPOD_RUN_USER" -- "$@"
+    # Resolve uid/gid from /etc/passwd (runuser uses PAM which fails in namespaces)
+    EP_UID=$(id -u "$ENVPOD_RUN_USER" 2>/dev/null)
+    EP_GID=$(id -g "$ENVPOD_RUN_USER" 2>/dev/null)
+    EP_HOME=$(getent passwd "$ENVPOD_RUN_USER" 2>/dev/null | cut -d: -f6)
+    EP_HOME="${EP_HOME:-/home/$ENVPOD_RUN_USER}"
+    export HOME="$EP_HOME"
+    exec setpriv --reuid="$EP_UID" --regid="$EP_GID" --init-groups "$@"
 else
     exec "$@"
 fi
@@ -223,10 +232,13 @@ fn generate_webrtc_daemon(config: &WebDisplayConfig) -> String {
 
 exec >/tmp/envpod-display-services.log 2>&1
 
+# Start a new process group so kill/trap don't affect user shells
+set -m
+
 export DISPLAY=:99
 
 echo $$ > /tmp/envpod-display.pid
-trap "rm -f /tmp/envpod-display.pid; kill 0 2>/dev/null" EXIT
+trap "rm -f /tmp/envpod-display.pid; kill -- -$$ 2>/dev/null" EXIT
 
 # Start D-Bus session bus
 if command -v dbus-daemon >/dev/null 2>&1; then
@@ -271,7 +283,7 @@ export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/envpod-dbus
 
 # Start display services daemon if not already running
 if [ ! -f /tmp/envpod-display.pid ] || ! kill -0 "$(cat /tmp/envpod-display.pid)" 2>/dev/null; then
-    /usr/local/bin/envpod-display-services &
+    setsid /usr/local/bin/envpod-display-services &
     disown
     for i in $(seq 1 20); do
         [ -e /tmp/.X11-unix/X99 ] && break
@@ -281,7 +293,12 @@ fi
 
 if [ -n "$ENVPOD_RUN_USER" ]; then
     chmod 1777 /tmp/.X11-unix 2>/dev/null
-    exec runuser -u "$ENVPOD_RUN_USER" -- "$@"
+    EP_UID=$(id -u "$ENVPOD_RUN_USER" 2>/dev/null)
+    EP_GID=$(id -g "$ENVPOD_RUN_USER" 2>/dev/null)
+    EP_HOME=$(getent passwd "$ENVPOD_RUN_USER" 2>/dev/null | cut -d: -f6)
+    EP_HOME="${EP_HOME:-/home/$ENVPOD_RUN_USER}"
+    export HOME="$EP_HOME"
+    exec setpriv --reuid="$EP_UID" --regid="$EP_GID" --init-groups "$@"
 else
     exec "$@"
 fi
