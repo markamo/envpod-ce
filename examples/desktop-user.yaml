@@ -15,6 +15,9 @@
 #   sudo envpod setup my-desktop
 #   sudo envpod start my-desktop
 #   # Open http://localhost:6080 in your browser
+#
+# Fallback: if the desktop doesn't appear, start it manually:
+#   sudo envpod run my-desktop -b -- startxfce4
 
 name: my-desktop
 type: standard

@@ -13,6 +13,9 @@
 #   sudo envpod setup desktop-sway
 #   sudo envpod start desktop-sway
 #   # Open the noVNC URL from `envpod ls` in your browser
+#
+# Fallback: if the desktop doesn't appear, start it manually:
+#   sudo envpod run desktop-sway -b -- sway
 
 name: desktop-sway
 type: standard

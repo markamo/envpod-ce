@@ -12,6 +12,9 @@
 #   sudo envpod setup my-web
 #   sudo envpod start my-web
 #   # Open http://localhost:6080 in your browser
+#
+# Fallback: if the desktop doesn't appear, start it manually:
+#   sudo envpod run my-web -b -- startxfce4
 
 name: desktop-web
 type: standard

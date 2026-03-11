@@ -311,6 +311,13 @@ sudo envpod run my-pod -- xeyes                        # quick test
 sudo envpod run my-pod -- google-chrome --no-sandbox    # browser
 ```
 
+If `envpod start` shows a black screen despite `desktop_env` being set, you can manually start the desktop as a fallback:
+
+```bash
+sudo envpod run my-pod -b -- startxfce4                # XFCE (manual fallback)
+sudo envpod run my-pod -b -- openbox-session           # Openbox (manual fallback)
+```
+
 ### Display services crash with `--user agent`
 
 **Cause:** Display services (Xvfb, x11vnc, websockify) need root for `/dev/shm` and `/proc` access. When `--user` is set, early versions ran everything as the non-root user.

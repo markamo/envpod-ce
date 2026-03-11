@@ -16,6 +16,9 @@
 #   sudo envpod start gimp
 #   # Open the noVNC URL shown by `envpod ls` in your browser
 #
+# Fallback: if the desktop doesn't appear, start it manually:
+#   sudo envpod run gimp -b -- startxfce4
+#
 #   # Direct mode — launches GIMP only (blocks terminal, Ctrl+Z to detach):
 #   sudo envpod run gimp -- gimp
 #

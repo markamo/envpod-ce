@@ -12,6 +12,9 @@
 #   sudo envpod setup desktop-ob
 #   sudo envpod start desktop-ob
 #   # Open the noVNC URL from `envpod ls` in your browser
+#
+# Fallback: if the desktop doesn't appear, start it manually:
+#   sudo envpod run desktop-ob -b -- openbox-session
 
 name: desktop-ob
 type: standard

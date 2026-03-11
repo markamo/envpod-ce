@@ -15,6 +15,9 @@
 #   sudo envpod setup desktop
 #   sudo envpod start desktop
 #   # Open the noVNC URL from `envpod ls` in your browser
+#
+# Fallback: if the desktop doesn't appear, start it manually:
+#   sudo envpod run desktop -b -- startxfce4
 
 name: desktop
 type: standard

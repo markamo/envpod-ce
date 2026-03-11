@@ -12,6 +12,9 @@
 #   sudo envpod start full-ws
 #   # Open the noVNC URL from `envpod ls` in your browser
 #
+# Fallback: if the desktop doesn't appear, start it manually:
+#   sudo envpod run full-ws -b -- startxfce4
+#
 # Launching apps (from the XFCE menu or desktop terminal):
 #   chrome          # Google Chrome (wrapper adds --no-sandbox)
 #   firefox-pod     # Firefox (wrapper disables internal sandbox)
