@@ -46,6 +46,11 @@ pub struct PodConfig {
     /// The script is injected into the pod and executed after inline setup commands.
     #[serde(default)]
     pub setup_script: Option<String>,
+
+    /// Default command for `envpod start`. If not set, falls back to `sleep infinity`.
+    /// Can be overridden per-session with `envpod start <pod> -- <command>`.
+    #[serde(default)]
+    pub start_command: Vec<String>,
 }
 
 fn default_user() -> String {
@@ -73,6 +78,7 @@ impl Default for PodConfig {
             user: default_user(),
             setup: Vec::new(),
             setup_script: None,
+            start_command: Vec::new(),
         }
     }
 }

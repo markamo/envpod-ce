@@ -85,5 +85,7 @@ vault:
 audit:
   action_log: true
 
+start_command: ["opencode"]
+
 setup:
   - "curl -fsSL https://opencode.ai/install | bash"

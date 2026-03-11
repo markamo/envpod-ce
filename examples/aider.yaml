@@ -83,6 +83,8 @@ vault:
 audit:
   action_log: true
 
+start_command: ["aider"]
+
 setup:
   - "command -v pip >/dev/null || { apt-get update && apt-get install -y python3-pip; }"
   - "pip install aider-chat"

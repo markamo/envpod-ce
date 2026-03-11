@@ -179,6 +179,9 @@ enum Commands {
         /// Open port to other pods only: container_port[/proto]
         #[arg(short = 'i', long = "internal", conflicts_with = "all")]
         internal_ports: Vec<String>,
+        /// Command to run (overrides start_command from pod.yaml)
+        #[arg(last = true)]
+        command: Vec<String>,
     },
     /// Stop a running pod (preserves data, can `start` again)
     Stop {
@@ -718,7 +721,7 @@ async fn run(cli: Cli) -> Result<()> {
                 cmd_run(&store, base_dir, &name, &command, root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports, mount_cwd, no_mount_cwd).await
             }
         }
-        Commands::Start { names, all, root, user, env_vars, enable_display, enable_audio, ports, public_ports, internal_ports } => {
+        Commands::Start { names, all, root, user, env_vars, enable_display, enable_audio, ports, public_ports, internal_ports, command } => {
             let targets = if all {
                 stopped_pod_names(&store)?
             } else {
@@ -729,7 +732,13 @@ async fn run(cli: Cli) -> Result<()> {
                 return Ok(());
             }
             for name in &targets {
-                cmd_run_background(base_dir, name, &["sleep".into(), "infinity".into()], root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports)?;
+                // Resolve start command: CLI override > pod.yaml start_command > sleep infinity
+                let start_cmd = if !command.is_empty() {
+                    command.clone()
+                } else {
+                    resolve_start_command(&store, name)
+                };
+                cmd_run_background(base_dir, name, &start_cmd, root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports)?;
             }
             Ok(())
         }
@@ -761,8 +770,8 @@ async fn run(cli: Cli) -> Result<()> {
             for name in &targets {
                 eprintln!("restarting pod '{}'...", name);
                 cmd_stop(&store, base_dir, name).await?;
-                // Re-start with default options (sleep infinity background)
-                cmd_run_background(base_dir, name, &["sleep".into(), "infinity".into()], false, None, &[], false, false, &[], &[], &[])?;
+                let start_cmd = resolve_start_command(&store, name);
+                cmd_run_background(base_dir, name, &start_cmd, false, None, &[], false, false, &[], &[], &[])?;
             }
             Ok(())
         }
@@ -2004,6 +2013,21 @@ fn running_pod_names(store: &PodStore) -> Result<Vec<String>> {
         }
     }
     Ok(names)
+}
+
+/// Resolve the start command for a pod: config start_command > sleep infinity.
+fn resolve_start_command(store: &PodStore, name: &str) -> Vec<String> {
+    use envpod_core::backend::native::state::NativeState;
+    if let Ok(handle) = store.load(name) {
+        if let Ok(state) = NativeState::from_handle(&handle) {
+            if let Ok(Some(config)) = state.load_config() {
+                if !config.start_command.is_empty() {
+                    return config.start_command;
+                }
+            }
+        }
+    }
+    vec!["sleep".into(), "infinity".into()]
 }
 
 /// Return names of all pods that are not currently running (Created or Stopped).

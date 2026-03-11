@@ -52,3 +52,5 @@ budget:
 
 audit:
   action_log: true
+
+start_command: ["openbox-session"]

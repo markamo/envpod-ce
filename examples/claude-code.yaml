@@ -99,6 +99,8 @@ vault:
 audit:
   action_log: true
 
+start_command: ["claude-pod"]
+
 setup:
   # Install Claude Code (installs to ~/.local/bin as root)
   # then symlink to /usr/local/bin so all users (including agent) can run it.
