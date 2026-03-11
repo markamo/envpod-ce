@@ -149,8 +149,12 @@ enum Commands {
     },
     /// Start a pod in the background (services auto-start, connect via noVNC or `envpod run <pod> -- bash`)
     Start {
-        /// Pod name
-        name: String,
+        /// Pod name(s) to start
+        #[arg(required_unless_present = "all")]
+        names: Vec<String>,
+        /// Start all stopped pods
+        #[arg(long)]
+        all: bool,
         /// Run as root inside the pod (default is non-root 'agent' user)
         #[arg(long)]
         root: bool,
@@ -161,19 +165,19 @@ enum Commands {
         #[arg(short, long = "env")]
         env_vars: Vec<String>,
         /// Enable display forwarding
-        #[arg(short = 'd', long)]
+        #[arg(short = 'd', long, conflicts_with = "all")]
         enable_display: bool,
         /// Enable audio forwarding
-        #[arg(short = 'a', long)]
+        #[arg(short = 'a', long, conflicts_with = "all")]
         enable_audio: bool,
         /// Publish port to localhost only: host_port:container_port[/proto]
-        #[arg(short = 'p', long = "publish")]
+        #[arg(short = 'p', long = "publish", conflicts_with = "all")]
         ports: Vec<String>,
         /// Publish port to all interfaces: host_port:container_port[/proto]
-        #[arg(short = 'P', long = "publish-all")]
+        #[arg(short = 'P', long = "publish-all", conflicts_with = "all")]
         public_ports: Vec<String>,
         /// Open port to other pods only: container_port[/proto]
-        #[arg(short = 'i', long = "internal")]
+        #[arg(short = 'i', long = "internal", conflicts_with = "all")]
         internal_ports: Vec<String>,
     },
     /// Stop a running pod (preserves data, can `start` again)
@@ -714,8 +718,20 @@ async fn run(cli: Cli) -> Result<()> {
                 cmd_run(&store, base_dir, &name, &command, root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports, mount_cwd, no_mount_cwd).await
             }
         }
-        Commands::Start { name, root, user, env_vars, enable_display, enable_audio, ports, public_ports, internal_ports } => {
-            cmd_run_background(base_dir, &name, &["sleep".into(), "infinity".into()], root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports)
+        Commands::Start { names, all, root, user, env_vars, enable_display, enable_audio, ports, public_ports, internal_ports } => {
+            let targets = if all {
+                stopped_pod_names(&store)?
+            } else {
+                names
+            };
+            if targets.is_empty() {
+                eprintln!("no stopped pods to start");
+                return Ok(());
+            }
+            for name in &targets {
+                cmd_run_background(base_dir, name, &["sleep".into(), "infinity".into()], root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports)?;
+            }
+            Ok(())
         }
         Commands::Stop { names, all } => {
             let targets = if all {
@@ -1983,6 +1999,21 @@ fn running_pod_names(store: &PodStore) -> Result<Vec<String>> {
     for handle in &pods {
         if let Ok(state) = NativeState::from_handle(handle) {
             if state.status == NativeStatus::Running {
+                names.push(handle.name.clone());
+            }
+        }
+    }
+    Ok(names)
+}
+
+/// Return names of all pods that are not currently running (Created or Stopped).
+fn stopped_pod_names(store: &PodStore) -> Result<Vec<String>> {
+    use envpod_core::backend::native::state::{NativeState, NativeStatus};
+    let pods = store.list()?;
+    let mut names = Vec::new();
+    for handle in &pods {
+        if let Ok(state) = NativeState::from_handle(handle) {
+            if matches!(state.status, NativeStatus::Created | NativeStatus::Stopped) {
                 names.push(handle.name.clone());
             }
         }
