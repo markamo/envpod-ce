@@ -179,8 +179,20 @@ enum Commands {
     /// Stop a running pod (preserves data, can `start` again)
     Stop {
         /// Pod name(s) to stop
-        #[arg(required = true)]
+        #[arg(required_unless_present = "all")]
         names: Vec<String>,
+        /// Stop all running pods
+        #[arg(long)]
+        all: bool,
+    },
+    /// Restart a running pod (stop then start with same options)
+    Restart {
+        /// Pod name(s) to restart
+        #[arg(required_unless_present = "all")]
+        names: Vec<String>,
+        /// Restart all running pods
+        #[arg(long)]
+        all: bool,
     },
     /// Bring a background pod to the foreground (attach to running process)
     Fg {
@@ -705,9 +717,36 @@ async fn run(cli: Cli) -> Result<()> {
         Commands::Start { name, root, user, env_vars, enable_display, enable_audio, ports, public_ports, internal_ports } => {
             cmd_run_background(base_dir, &name, &["sleep".into(), "infinity".into()], root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports)
         }
-        Commands::Stop { names } => {
-            for name in &names {
+        Commands::Stop { names, all } => {
+            let targets = if all {
+                running_pod_names(&store)?
+            } else {
+                names
+            };
+            if targets.is_empty() {
+                eprintln!("no running pods to stop");
+                return Ok(());
+            }
+            for name in &targets {
                 cmd_stop(&store, base_dir, name).await?;
+            }
+            Ok(())
+        }
+        Commands::Restart { names, all } => {
+            let targets = if all {
+                running_pod_names(&store)?
+            } else {
+                names
+            };
+            if targets.is_empty() {
+                eprintln!("no running pods to restart");
+                return Ok(());
+            }
+            for name in &targets {
+                eprintln!("restarting pod '{}'...", name);
+                cmd_stop(&store, base_dir, name).await?;
+                // Re-start with default options (sleep infinity background)
+                cmd_run_background(base_dir, name, &["sleep".into(), "infinity".into()], false, None, &[], false, false, &[], &[], &[])?;
             }
             Ok(())
         }
@@ -1933,8 +1972,23 @@ fn cmd_run_background(base_dir: &std::path::Path, name: &str, command: &[String]
 }
 
 // ---------------------------------------------------------------------------
-// stop
+// stop / restart helpers
 // ---------------------------------------------------------------------------
+
+/// Return names of all currently running pods.
+fn running_pod_names(store: &PodStore) -> Result<Vec<String>> {
+    use envpod_core::backend::native::state::{NativeState, NativeStatus};
+    let pods = store.list()?;
+    let mut names = Vec::new();
+    for handle in &pods {
+        if let Ok(state) = NativeState::from_handle(handle) {
+            if state.status == NativeStatus::Running {
+                names.push(handle.name.clone());
+            }
+        }
+    }
+    Ok(names)
+}
 
 async fn cmd_stop(store: &PodStore, base_dir: &std::path::Path, name: &str) -> Result<()> {
     let handle = store.load(name)?;
@@ -5807,7 +5861,7 @@ fn format_bytes(bytes: u64) -> String {
 
 /// Subcommands whose first positional argument is a pod name.
 const POD_SUBCOMMANDS: &[&str] = &[
-    "init", "setup", "run", "start", "stop", "fg", "diff", "commit", "rollback", "audit",
+    "init", "setup", "run", "start", "stop", "restart", "fg", "diff", "commit", "rollback", "audit",
     "lock", "unlock", "kill", "destroy", "queue", "approve", "cancel", "status", "logs",
     "vault", "mount", "unmount", "undo", "remote", "monitor", "dns", "clone", "actions",
     "ports", "discover", "snapshot",
