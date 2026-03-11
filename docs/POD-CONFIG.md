@@ -21,7 +21,7 @@ Complete guide to `pod.yaml` — the configuration file that defines every aspec
 - [Processor](#processor)
 - [Devices](#devices)
 - [Web Display](#web-display)
-- [Tailscale](#tailscale)
+- [Tailscale (Premium)](#tailscale-premium)
 - [Security](#security)
 - [Budget](#budget)
 - [Audit](#audit)
@@ -672,7 +672,7 @@ Enable PulseAudio capture. Adds an Opus audio stream to the WebRTC session.
 
 ---
 
-## Tailscale
+## Tailscale (Premium)
 
 Run a Tailscale node inside the pod for secure remote access via your tailnet.
 
