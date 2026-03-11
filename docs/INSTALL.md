@@ -270,6 +270,9 @@ Running inside Docker (nested overlayfs). Mount a volume for envpod's data. See 
 **`Kernel X.X is too old`**
 envpod requires kernel 5.11+. Check with `uname -r`. Upgrade your kernel or use a newer distro release.
 
+**`sudo: sorry, you are not allowed to set the following environment variables: TERMINFO`**
+Kitty, Alacritty, Ghostty, and other modern terminals set a custom `TERMINFO` environment variable. Sudo 1.9+ blocks it. Fix: `sudo visudo` and add `Defaults env_keep += "TERMINFO"`. Alternatively, use the default terminal or run `unset TERMINFO` before the sudo command.
+
 **`cgroups v2 not active`**
 Boot with cgroup v2 enabled. Raspberry Pi: add `systemd.unified_cgroup_hierarchy=1` to `/boot/firmware/cmdline.txt`. Other: add `cgroup_no_v1=all systemd.unified_cgroup_hierarchy=1` to kernel boot parameters.
 

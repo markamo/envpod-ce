@@ -1056,11 +1056,20 @@ const CLIPBOARD_PLUGIN_JS: &str = r##"/**
         });
 
         // Pod→Host: also write to browser clipboard when VNC sends clipboard
+        // Clipboard API requires secure context (HTTPS or localhost) — guard for plain HTTP
         rfb.addEventListener('clipboard', (e) => {
-            if (e.detail && e.detail.text) {
+            if (e.detail && e.detail.text && navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(e.detail.text).catch(() => {});
             }
         });
+
+        // Make noVNC error/status bar dismissable on click (no close button by default)
+        const statusBar = document.getElementById('noVNC_status');
+        if (statusBar) {
+            statusBar.style.cursor = 'pointer';
+            statusBar.title = 'Click to dismiss';
+            statusBar.addEventListener('click', () => { statusBar.style.display = 'none'; });
+        }
 
         console.log('[envpod-clipboard] ready — use sidebar clipboard panel to paste');
     }
