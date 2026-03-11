@@ -9,6 +9,10 @@
 
 This tutorial takes you from zero to a governed AI agent in about 10 minutes. You'll create pods, see filesystem isolation in action, test DNS filtering, inspect audit trails, and run a real AI agent — all on your local machine.
 
+<p align="center">
+  <img src="../assets/demos/01-quickstart.gif" alt="envpod quickstart" width="720">
+</p>
+
 **Prerequisites:** envpod installed and working (`sudo envpod ls` prints an empty list). See [Installation](INSTALL.md) if you haven't set up yet.
 
 ---
@@ -135,6 +139,10 @@ This is the core safety loop: **run → diff → commit or rollback**. Every fil
 ---
 
 ## 3. Network Isolation & DNS Filtering
+
+<p align="center">
+  <img src="../assets/demos/04-network-isolation.gif" alt="envpod network isolation" width="720">
+</p>
 
 > **Note:** The `tutorial` pod from section 1 has no allowed domains (`allow: []`) — it cannot reach the internet by design. This section creates a separate pod with a PyPI-only whitelist.
 

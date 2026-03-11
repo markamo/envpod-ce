@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Demos — envpod</title>
-<meta name="description" content="Video demos of envpod: install in 60 seconds, govern Claude Code, browser pods with GPU, fleet dashboard, and more.">
+<meta name="description" content="Terminal screencasts of envpod features — governance, credential vault, network isolation, desktop pods, fleet management, and more.">
 <meta property="og:title" content="envpod Demos — See It in Action">
 <meta property="og:description" content="Docker isolates. Envpod governs. Watch video demos of zero-trust governance for AI agents.">
 <meta property="og:type" content="website">
@@ -15,70 +15,78 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"></noscript>
 <style>
-:root{--bg:#0a0a0b;--surface:#111113;--surface2:#16161a;--border:#1e1e24;--border-hi:#2a2a32;--text:#e8e8ed;--muted:#8b8b98;--dim:#5a5a66;--green:#22c55e;--green-dim:#16a34a;--green-glow:rgba(34,197,94,0.08);--blue:#58a6ff;--orange:#f59e0b;--red:#ef4444;--purple:#bc8cff;--mono:'JetBrains Mono','SF Mono','Cascadia Code',monospace;--sans:'DM Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+:root{--bg:#0a0a0b;--surface:#111113;--surface2:#16161a;--border:#1e1e24;--border-hi:#2a2a32;--text:#e8e8ed;--muted:#8b8b98;--dim:#5a5a66;--green:#22c55e;--green-glow:rgba(34,197,94,0.08);--blue:#58a6ff;--mono:'JetBrains Mono','SF Mono','Cascadia Code',monospace;--sans:'DM Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
-code{font-family:var(--mono);font-size:0.85em;background:rgba(88,166,255,0.08);color:var(--blue);padding:2px 7px;border-radius:4px}
+
+/* Nav */
 nav{position:fixed;top:0;width:100%;z-index:100;padding:14px 0;background:rgba(10,10,11,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-.nav-inner{max-width:1100px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between}
+.nav-inner{max-width:860px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
 .logo{font-family:var(--mono);font-weight:700;font-size:18px;color:var(--text);text-decoration:none;letter-spacing:-0.5px}
 .logo span{color:var(--green)}
 .logo-ce{font-size:10px;font-weight:700;color:var(--green);background:var(--green-glow);border:1px solid rgba(34,197,94,0.2);padding:2px 8px;border-radius:100px;letter-spacing:1.5px;margin-left:6px;vertical-align:2px}
 .nav-links{display:flex;gap:4px;align-items:center}
-.nav-links a{font-size:14px;color:var(--muted);padding:6px 12px;border-radius:6px;transition:color .15s,background .15s}
-.nav-links a:hover{color:var(--text);background:var(--surface);text-decoration:none}
+.nav-links a{font-size:14px;color:var(--muted);padding:6px 12px;border-radius:6px;transition:color .15s}
+.nav-links a:hover{color:var(--text);text-decoration:none}
 .nav-links a.active{color:var(--text);background:var(--surface)}
 .nav-gh{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text)!important;font-size:13px;font-weight:500;margin-left:8px;transition:border-color .15s!important}
 .nav-gh:hover{border-color:var(--green)!important;text-decoration:none!important}
 .nav-toggle{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:8px;z-index:101}
 .nav-toggle span{display:block;width:20px;height:2px;background:var(--text);border-radius:2px;transition:all 0.2s}
-.wrap{max-width:1100px;margin:0 auto;padding:120px 32px 80px}
-h1{font-size:36px;font-weight:700;letter-spacing:-0.03em;margin-bottom:8px}
-.subtitle{color:var(--muted);font-size:16px;margin-bottom:48px}
-.demo-grid{display:flex;flex-direction:column;gap:48px}
-.demo-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:border-color .2s}
-.demo-card:hover{border-color:var(--border-hi)}
-.demo-video{position:relative;width:100%;padding-bottom:56.25%;background:#000}
-.demo-video iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
-.demo-placeholder{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(88,166,255,0.06));cursor:default}
-.demo-placeholder-icon{font-size:48px;color:var(--dim);margin-bottom:12px}
-.demo-placeholder-text{font-family:var(--mono);font-size:13px;color:var(--dim)}
-.demo-info{padding:24px 28px}
-.demo-header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-.demo-number{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green);background:var(--green-glow);border:1px solid rgba(34,197,94,0.2);padding:3px 10px;border-radius:100px;flex-shrink:0}
-.demo-title{font-size:20px;font-weight:700;letter-spacing:-0.02em}
-.demo-meta{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap}
-.demo-tag{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:3px 10px;border-radius:6px}
-.demo-desc{color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:16px}
-.demo-features{list-style:none;display:flex;flex-wrap:wrap;gap:8px;padding:0}
-.demo-features li{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--surface2);padding:4px 10px;border-radius:4px}
-.demo-features li::before{content:'>';color:var(--green);margin-right:6px}
-.cta-section{text-align:center;margin-top:64px;padding:48px 0;border-top:1px solid var(--border)}
+
+/* Layout */
+.wrap{max-width:860px;margin:0 auto;padding:120px 24px 60px}
+h1{font-size:clamp(28px,5vw,42px);font-weight:700;letter-spacing:-0.03em;margin-bottom:8px}
+.subtitle{color:var(--muted);font-size:17px;margin-bottom:56px;max-width:520px}
+
+/* Category */
+.cat{margin-bottom:64px}
+.cat-label{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:2px;margin-bottom:28px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+
+/* Video card */
+.vid{margin-bottom:40px}
+.vid-embed{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;background:#010409;border-radius:10px;border:1px solid var(--border)}
+.vid-embed iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
+.vid-info{padding:16px 0}
+.vid-info h3{font-size:18px;font-weight:600;margin-bottom:6px}
+.vid-info p{font-size:14px;color:var(--muted);line-height:1.6;margin:0}
+.vid-meta{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.vid-tag{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--surface2);border:1px solid var(--border);padding:3px 10px;border-radius:6px}
+
+/* Upcoming */
+.upcoming{border:1px dashed var(--border);border-radius:10px;padding:24px;margin-bottom:24px}
+.upcoming h3{font-size:15px;font-weight:600;color:var(--dim);margin-bottom:4px}
+.upcoming p{font-size:13px;color:var(--dim);margin:0}
+
+/* CTA */
+.cta-section{text-align:center;margin-top:48px;padding:48px 0;border-top:1px solid var(--border)}
 .cta-section h2{font-size:24px;font-weight:700;letter-spacing:-0.02em;margin-bottom:12px}
 .cta-section p{color:var(--muted);font-size:15px;margin-bottom:24px}
-.btn-p{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;background:var(--green);color:var(--bg);font-family:var(--mono);font-weight:700;font-size:14px;border-radius:8px;border:none;cursor:pointer;transition:all .2s;text-decoration:none}
+.btn-p{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;background:var(--green);color:var(--bg);font-family:var(--mono);font-weight:700;font-size:14px;border-radius:8px;text-decoration:none;transition:all .2s}
 .btn-p:hover{background:#2dd468;transform:translateY(-1px);text-decoration:none;color:var(--bg)}
-.btn-s{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;background:var(--surface);color:var(--text);font-family:var(--mono);font-size:14px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all .2s;text-decoration:none;margin-left:12px}
-.btn-s:hover{border-color:var(--border-hi);color:var(--text);text-decoration:none}
-footer{border-top:1px solid var(--border);padding:44px 0;margin-top:80px}
-.footer-inner{max-width:1100px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
-.footer-logo{font-family:var(--mono);font-weight:700;font-size:16px;letter-spacing:-0.02em}
+.btn-s{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;background:var(--surface);color:var(--text);font-family:var(--mono);font-size:14px;border-radius:8px;border:1px solid var(--border);text-decoration:none;transition:all .2s;margin-left:12px}
+.btn-s:hover{border-color:var(--border-hi);text-decoration:none}
+
+/* Footer */
+footer{border-top:1px solid var(--border);padding:44px 0;margin-top:40px}
+.footer-inner{max-width:860px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.footer-logo{font-family:var(--mono);font-weight:700;font-size:16px}
 .footer-logo em{color:var(--green);font-style:normal}
 .footer-copy{color:var(--dim);font-size:12px;margin-top:4px}
 .footer-links{display:flex;gap:6px;flex-wrap:wrap}
-.footer-links a{color:var(--muted);font-size:13px;padding:4px 10px;border-radius:4px;transition:color .15s,background .15s}
-.footer-links a:hover{color:var(--text);background:var(--surface);text-decoration:none}
+.footer-links a{color:var(--muted);font-size:13px;padding:4px 10px;border-radius:4px;transition:color .15s}
+.footer-links a:hover{color:var(--text);text-decoration:none}
+
 @media(max-width:768px){
   .nav-toggle{display:flex}
   .nav-links{position:fixed;top:0;right:-100%;width:280px;height:100vh;flex-direction:column;background:var(--bg);border-left:1px solid var(--border);padding:80px 24px 32px;gap:4px;transition:right 0.3s ease;z-index:100}
   .nav-links.open{right:0}
   .nav-links a{padding:12px 16px!important;font-size:15px!important;display:block;width:100%}
-  .wrap{padding:100px 16px 60px!important}
-  h1{font-size:28px!important}
-  .demo-info{padding:20px!important}
-  .demo-title{font-size:17px!important}
-  .demo-meta{gap:8px}
+  .wrap{padding:100px 16px 40px!important}
+  h1{font-size:26px!important}
+  .vid-info h3{font-size:16px}
   .footer-inner{flex-direction:column;text-align:center;gap:20px}
   .footer-links{justify-content:center}
   .cta-section .btn-s{margin-left:0;margin-top:8px}
@@ -87,7 +95,6 @@ footer{border-top:1px solid var(--border);padding:44px 0;margin-top:80px}
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <div class="nav-inner">
     <a href="/" class="logo"><span>env</span>pod<span class="logo-ce">CE</span></a>
@@ -108,159 +115,143 @@ footer{border-top:1px solid var(--border);padding:44px 0;margin-top:80px}
   </div>
 </nav>
 
-<!-- CONTENT -->
 <div class="wrap">
   <h1>Demos</h1>
-  <p class="subtitle">See envpod in action. Each demo shows a real workflow — no simulations.</p>
+  <p class="subtitle">See envpod in action. Each demo shows a real workflow — no simulations. All under 3 minutes.</p>
 
-  <div class="demo-grid">
+  <!-- ── GETTING STARTED ── -->
+  <div class="cat">
+    <div class="cat-label">Getting Started</div>
 
-    <!-- DEMO 1 -->
-    <div class="demo-card" id="install">
-      <div class="demo-video">
-        <!-- Replace YOUTUBE_ID_1 with the actual YouTube video ID -->
-        <!--<iframe src="https://www.youtube.com/embed/YOUTUBE_ID_1" title="Install to First Pod in 60 Seconds" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>-->
-        <div class="demo-placeholder">
-          <div class="demo-placeholder-icon">&#9654;</div>
-          <div class="demo-placeholder-text">Video coming soon</div>
-        </div>
-      </div>
-      <div class="demo-info">
-        <div class="demo-header">
-          <span class="demo-number">01</span>
-          <h2 class="demo-title">Install to First Pod in 60 Seconds</h2>
-        </div>
-        <div class="demo-meta">
-          <span class="demo-tag">60s</span>
-          <span class="demo-tag">Teaser</span>
-          <span class="demo-tag">Getting Started</span>
-        </div>
-        <p class="demo-desc">One curl command installs envpod. Pick a preset, create a pod, run a command, review the diff, commit or rollback. The full governance loop in under a minute.</p>
-        <ul class="demo-features">
-          <li>One-line install</li>
-          <li>18 built-in presets</li>
-          <li>diff / commit / rollback</li>
-          <li>Audit trail</li>
-        </ul>
+    <div class="vid">
+      <div class="vid-embed"><iframe src="https://www.youtube.com/embed/QhM_BJzN1J8" title="README Quick Start" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+      <div class="vid-info">
+        <h3>Quick Start (README)</h3>
+        <p>Install envpod, create a governed pod, store encrypted secrets, run an agent, diff changes, commit, audit DNS queries, destroy. The complete lifecycle in under 2 minutes.</p>
+        <div class="vid-meta"><span class="vid-tag">105s</span><span class="vid-tag">Full lifecycle</span></div>
       </div>
     </div>
 
-    <!-- DEMO 2 -->
-    <div class="demo-card" id="claude-code">
-      <div class="demo-video">
-        <!--<iframe src="https://www.youtube.com/embed/YOUTUBE_ID_2" title="Claude Code — Governed" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>-->
-        <div class="demo-placeholder">
-          <div class="demo-placeholder-icon">&#9654;</div>
-          <div class="demo-placeholder-text">Video coming soon</div>
-        </div>
-      </div>
-      <div class="demo-info">
-        <div class="demo-header">
-          <span class="demo-number">02</span>
-          <h2 class="demo-title">Claude Code — Governed</h2>
-        </div>
-        <div class="demo-meta">
-          <span class="demo-tag">3 min</span>
-          <span class="demo-tag">Coding Agent</span>
-          <span class="demo-tag">Vault</span>
-        </div>
-        <p class="demo-desc">Run Claude Code inside an envpod. API key stored in an encrypted vault. Every file write captured in the overlay. Review changes before they touch your codebase. Clone the pod in 130ms for parallel agents.</p>
-        <ul class="demo-features">
-          <li>Encrypted vault (ChaCha20)</li>
-          <li>Real-time audit log</li>
-          <li>Security analysis</li>
-          <li>130ms clone</li>
-        </ul>
+    <div class="vid">
+      <div class="vid-embed"><iframe src="https://www.youtube.com/embed/M_zRl6vOiYg" title="Install" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+      <div class="vid-info">
+        <h3>Install</h3>
+        <p>One curl command. Single static binary with no dependencies, 12MB. Auto-detects platform (x86_64 or ARM64), installs to /usr/local/bin, creates your first pod.</p>
+        <div class="vid-meta"><span class="vid-tag">42s</span><span class="vid-tag">Getting started</span></div>
       </div>
     </div>
 
-    <!-- DEMO 3 -->
-    <div class="demo-card" id="openclaw">
-      <div class="demo-video">
-        <!--<iframe src="https://www.youtube.com/embed/YOUTUBE_ID_3" title="OpenClaw — Messaging Agent, Governed" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>-->
-        <div class="demo-placeholder">
-          <div class="demo-placeholder-icon">&#9654;</div>
-          <div class="demo-placeholder-text">Video coming soon</div>
-        </div>
+    <div class="vid">
+      <div class="vid-embed"><iframe src="https://www.youtube.com/embed/3lVy-FMAgRw" title="Quick Start" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+      <div class="vid-info">
+        <h3>Quick Start</h3>
+        <p>Create a pod, run commands inside it, see filesystem changes with diff, rollback everything, check the audit trail. The core governance workflow step by step.</p>
+        <div class="vid-meta"><span class="vid-tag">62s</span><span class="vid-tag">Core workflow</span></div>
       </div>
-      <div class="demo-info">
-        <div class="demo-header">
-          <span class="demo-number">03</span>
-          <h2 class="demo-title">OpenClaw — Messaging Agent, Governed</h2>
-        </div>
-        <div class="demo-meta">
-          <span class="demo-tag">2.5 min</span>
-          <span class="demo-tag">Autonomous Agent</span>
-          <span class="demo-tag">Interactive Wizard</span>
-        </div>
-        <p class="demo-desc">OpenClaw connects to WhatsApp, Telegram, and Discord. Lots of power that needs governance. Use the interactive wizard to pick a preset and customize resources. Snapshots checkpoint the overlay state. Freeze and resume on demand.</p>
-        <ul class="demo-features">
-          <li>Interactive wizard</li>
-          <li>Overlay snapshots</li>
-          <li>Freeze / resume</li>
-          <li>Multi-key vault</li>
-        </ul>
+    </div>
+  </div>
+
+  <!-- ── GOVERNANCE ── -->
+  <div class="cat">
+    <div class="cat-label">Governance</div>
+
+    <div class="vid">
+      <div class="vid-embed"><iframe src="https://www.youtube.com/embed/0MFuR3B6s1M" title="Governance" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+      <div class="vid-info">
+        <h3>Filesystem Governance</h3>
+        <p>An agent writes malicious files, modifies configs, deletes critical data. But the host stays completely untouched. Diff shows every change. Rollback discards everything instantly.</p>
+        <div class="vid-meta"><span class="vid-tag">83s</span><span class="vid-tag">COW overlay</span><span class="vid-tag">diff / rollback</span></div>
       </div>
     </div>
 
-    <!-- DEMO 4 -->
-    <div class="demo-card" id="browser">
-      <div class="demo-video">
-        <!--<iframe src="https://www.youtube.com/embed/YOUTUBE_ID_4" title="Chrome in a Pod — Wayland + GPU" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>-->
-        <div class="demo-placeholder">
-          <div class="demo-placeholder-icon">&#9654;</div>
-          <div class="demo-placeholder-text">Video coming soon</div>
-        </div>
-      </div>
-      <div class="demo-info">
-        <div class="demo-header">
-          <span class="demo-number">04</span>
-          <h2 class="demo-title">Chrome in a Pod — Wayland + GPU</h2>
-        </div>
-        <div class="demo-meta">
-          <span class="demo-tag">90s</span>
-          <span class="demo-tag">Browser Agent</span>
-          <span class="demo-tag">GPU</span>
-        </div>
-        <p class="demo-desc">Launch Chrome with full GPU acceleration, Wayland display forwarding, and PipeWire audio — all inside a governed pod. Every cookie, cache file, and network call captured. Rollback everything in one command.</p>
-        <ul class="demo-features">
-          <li>GPU passthrough</li>
-          <li>Wayland display</li>
-          <li>PipeWire audio</li>
-          <li>Browser seccomp</li>
-        </ul>
+    <div class="vid">
+      <div class="vid-embed"><iframe src="https://www.youtube.com/embed/pQxjWtxiPc0" title="Credential Vault" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+      <div class="vid-info">
+        <h3>Credential Vault</h3>
+        <p>Store API keys encrypted with ChaCha20-Poly1305. The agent sees masked values. Real keys are injected at runtime but never appear in env vars, config files, or shell history.</p>
+        <div class="vid-meta"><span class="vid-tag">57s</span><span class="vid-tag">Encrypted secrets</span></div>
       </div>
     </div>
 
-    <!-- DEMO 5 -->
-    <div class="demo-card" id="dashboard">
-      <div class="demo-video">
-        <!--<iframe src="https://www.youtube.com/embed/YOUTUBE_ID_5" title="Dashboard — Fleet Control" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>-->
-        <div class="demo-placeholder">
-          <div class="demo-placeholder-icon">&#9654;</div>
-          <div class="demo-placeholder-text">Video coming soon</div>
-        </div>
-      </div>
-      <div class="demo-info">
-        <div class="demo-header">
-          <span class="demo-number">05</span>
-          <h2 class="demo-title">Dashboard — Fleet Control</h2>
-        </div>
-        <div class="demo-meta">
-          <span class="demo-tag">90s</span>
-          <span class="demo-tag">Web UI</span>
-          <span class="demo-tag">Fleet Management</span>
-        </div>
-        <p class="demo-desc">Spin up four agents with presets, then manage them from the browser. Fleet overview with live resource usage, audit timeline, diff review, commit/rollback, snapshots, and one-click freeze — all from localhost:9090.</p>
-        <ul class="demo-features">
-          <li>Fleet overview</li>
-          <li>Live resources</li>
-          <li>Browser commit/rollback</li>
-          <li>One-click freeze</li>
-        </ul>
+    <div class="vid">
+      <div class="vid-embed"><iframe src="https://www.youtube.com/embed/yZ6OQnr563s" title="Network Isolation" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+      <div class="vid-info">
+        <h3>Network Isolation</h3>
+        <p>Per-pod DNS whitelist in action. Allowed domains resolve normally. Blocked domains return NXDOMAIN. Every DNS query is logged to the audit trail with timestamps.</p>
+        <div class="vid-meta"><span class="vid-tag">52s</span><span class="vid-tag">DNS filtering</span><span class="vid-tag">Audit log</span></div>
       </div>
     </div>
 
+    <div class="vid">
+      <div class="vid-embed"><iframe src="https://www.youtube.com/embed/j6vqCp8ry04" title="Fleet Management" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+      <div class="vid-info">
+        <h3>Fleet Management</h3>
+        <p>Clone 3 agents from a single base pod. Start all, diff all, commit one, rollback another, stop all. Batch operations across your entire fleet.</p>
+        <div class="vid-meta"><span class="vid-tag">102s</span><span class="vid-tag">Multi-agent</span><span class="vid-tag">Clone + batch ops</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DESKTOP & DISPLAY ── -->
+  <div class="cat">
+    <div class="cat-label">Desktop &amp; Display</div>
+
+    <div class="vid">
+      <div class="vid-embed"><iframe src="https://www.youtube.com/embed/-04hU1iRZX0" title="Desktop Pod" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+      <div class="vid-info">
+        <h3>Desktop Pod</h3>
+        <p>A full XFCE desktop running inside a governed pod, accessible via noVNC in your browser. File changes tracked, audit trail active. Works on headless servers and SSH sessions.</p>
+        <div class="vid-meta"><span class="vid-tag">73s</span><span class="vid-tag">noVNC</span><span class="vid-tag">XFCE</span></div>
+      </div>
+    </div>
+
+    <div class="vid">
+      <div class="vid-embed"><iframe src="https://www.youtube.com/embed/krfWk9rUYtE" title="Desktop Config" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+      <div class="vid-info">
+        <h3>Desktop Config</h3>
+        <p>Desktop pod.yaml walkthrough. noVNC settings, XFCE, browser seccomp profile, shared memory sizing, and a side-by-side comparison of agent vs desktop configurations.</p>
+        <div class="vid-meta"><span class="vid-tag">63s</span><span class="vid-tag">pod.yaml</span><span class="vid-tag">Agent vs Desktop</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONFIGURATION ── -->
+  <div class="cat">
+    <div class="cat-label">Configuration</div>
+
+    <div class="vid">
+      <div class="vid-embed"><iframe src="https://www.youtube.com/embed/tHZYiP6_vjY" title="Pod Config" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+      <div class="vid-info">
+        <h3>Pod Config (Basic)</h3>
+        <p>Claude Code pod.yaml walkthrough. Every section explained: network whitelist, filesystem tracking, processor limits, vault, security profiles, audit, setup commands.</p>
+        <div class="vid-meta"><span class="vid-tag">59s</span><span class="vid-tag">pod.yaml</span><span class="vid-tag">Claude Code</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── COMING SOON ── -->
+  <div class="cat">
+    <div class="cat-label">Coming Soon</div>
+
+    <div class="upcoming">
+      <h3>End-to-End Lifecycle</h3>
+      <p>Full lifecycle in one take: install, init, vault, start, diff, commit, audit (DNS + security), destroy. 2.5 minutes.</p>
+    </div>
+
+    <div class="upcoming">
+      <h3>Pod Config Guide</h3>
+      <p>Every section of pod.yaml explained — foundation, four walls, governance ceiling. All options and defaults. 3.5 minutes.</p>
+    </div>
+
+    <div class="upcoming">
+      <h3>OpenClaw + envpod</h3>
+      <p>Govern your OpenClaw AI messaging assistant — encrypted tokens, DNS whitelist, full audit trail.</p>
+    </div>
+
+    <div class="upcoming">
+      <h3>Desktop + Browser Capture</h3>
+      <p>Live noVNC desktop screenshot captured via Playwright alongside the terminal screencast.</p>
+    </div>
   </div>
 
   <!-- CTA -->
@@ -272,7 +263,6 @@ footer{border-top:1px solid var(--border);padding:44px 0;margin-top:80px}
   </div>
 </div>
 
-<!-- FOOTER -->
 <footer>
   <div class="footer-inner">
     <div>

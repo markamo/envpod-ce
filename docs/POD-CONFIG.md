@@ -8,6 +8,10 @@
 
 Complete guide to `pod.yaml` — the configuration file that defines every aspect of an envpod pod. Each section controls the foundation (filesystem COW), one of the four walls (processor, network, memory, devices), or the governance ceiling (security, audit, budget, tools).
 
+<p align="center">
+  <img src="../assets/demos/13-pod-config-guide.gif" alt="envpod pod config guide" width="720">
+</p>
+
 **Prerequisites:** envpod installed. See [Installation](INSTALL.md) and [Quickstart](QUICKSTART.md) if you're new.
 
 ---

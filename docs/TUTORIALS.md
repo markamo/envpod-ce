@@ -9,6 +9,10 @@
 
 Step-by-step guides for common envpod use cases. Each tutorial is self-contained — start with the one that matches your needs.
 
+<p align="center">
+  <img src="../assets/demos/02-governance.gif" alt="envpod governance demo" width="720">
+</p>
+
 **Prerequisites:** envpod installed and working. See [Installation](INSTALL.md) and [Quickstart](QUICKSTART.md) if you're new. For a complete reference of all pod.yaml options, see [Pod Configuration Reference](POD-CONFIG.md).
 
 ---
@@ -602,6 +606,10 @@ sudo envpod destroy ml --full
 
 Run Claude Code (Anthropic's CLI coding agent) inside a fully governed pod.
 
+<p align="center">
+  <img src="../assets/demos/03-vault.gif" alt="envpod vault demo" width="720">
+</p>
+
 ### Step 1: Create the Pod
 
 <!-- no-exec -->
@@ -709,6 +717,10 @@ sudo envpod destroy claude claude-task-2 claude-task-3 --full
 ## Tutorial 8: Multi-Agent Fleet
 
 Spin up multiple agent pods from a single base for parallel workloads.
+
+<p align="center">
+  <img src="../assets/demos/06-fleet.gif" alt="envpod fleet demo" width="720">
+</p>
 
 ### Step 1: Create a Base Pod
 
@@ -1869,6 +1881,10 @@ Run `sudo envpod queue my-agent` to see what is pending.
 ## Tutorial 13: Web Display — Browser Desktop via noVNC
 
 Run a full browser desktop inside a governed pod — accessible from any browser on localhost. No X11, Wayland, or host display needed. Works on headless servers and SSH sessions.
+
+<p align="center">
+  <img src="../assets/demos/05-desktop.gif" alt="envpod desktop demo" width="720">
+</p>
 
 ### What You Need
 

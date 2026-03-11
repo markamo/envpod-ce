@@ -3,6 +3,10 @@
 
 envpod is a single static binary with no runtime dependencies. It runs on any Linux distribution with kernel 5.11+ and cgroup v2.
 
+<p align="center">
+  <img src="../assets/demos/07-install.gif" alt="envpod install" width="720">
+</p>
+
 ## One-Line Install (any distro)
 
 <!-- no-exec -->

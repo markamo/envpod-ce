@@ -11,6 +11,10 @@
 
 **Docker isolates. Envpod governs.**
 
+<p align="center">
+  <img src="assets/demos/00-readme-quickstart.gif" alt="envpod quickstart demo" width="800">
+</p>
+
 Every AI agent runs inside a **pod** — an isolated environment with a foundation (OverlayFS COW), four walls (processor, network, memory, devices), and a governance ceiling (vault, action queue, monitoring, remote control, audit). All agent actions are isolated, monitored, and reversible.
 
 > **Why not just Docker?** Docker isolates processes but provides zero governance. No file change review, no action queue, no credential vault, no undo. Envpod adds the governance layer on top of the same Linux primitives. See [Docker vs Envpod](docs/COMPARE-DOCKER.md) for a full comparison.

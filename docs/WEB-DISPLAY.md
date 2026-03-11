@@ -10,6 +10,10 @@ Web display runs a virtual display stack **inside** the pod and exposes it
 via a browser-accessible WebSocket. Open `http://localhost:6080/vnc.html`
 to see and interact with the pod desktop.
 
+<p align="center">
+  <img src="../assets/demos/09-config-desktop.gif" alt="envpod desktop config" width="720">
+</p>
+
 **Stack:** Xvfb (virtual display) → x11vnc (VNC server) → websockify (WebSocket bridge) → browser
 
 This is different from [display passthrough](TUTORIALS.md#tutorial-1-browser-pod-with-display--audio),
