@@ -10,7 +10,7 @@
 # Usage:
 #   sudo envpod init my-web -c examples/desktop-web.yaml
 #   sudo envpod setup my-web
-#   sudo envpod run my-web -b -- startxfce4
+#   sudo envpod start my-web
 #   # Open http://localhost:6080 in your browser
 
 name: desktop-web

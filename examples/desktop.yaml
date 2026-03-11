@@ -13,7 +13,7 @@
 # Usage:
 #   sudo envpod init desktop -c examples/desktop.yaml
 #   sudo envpod setup desktop
-#   sudo envpod run desktop -b -- startxfce4    # desktop in background
+#   sudo envpod start desktop
 #   # Open the noVNC URL from `envpod ls` in your browser
 
 name: desktop

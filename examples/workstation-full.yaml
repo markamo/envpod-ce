@@ -9,7 +9,7 @@
 # Usage:
 #   sudo envpod init full-ws -c examples/workstation-full.yaml
 #   sudo envpod setup full-ws
-#   sudo envpod run full-ws -b -- startxfce4
+#   sudo envpod start full-ws
 #   # Open the noVNC URL from `envpod ls` in your browser
 #
 # Launching apps (from the XFCE menu or desktop terminal):

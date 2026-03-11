@@ -11,9 +11,9 @@
 #   sudo envpod init gimp -c examples/gimp.yaml
 #   sudo envpod setup gimp
 #
-#   # Desktop mode (recommended) — launches full XFCE desktop in background,
+#   # Desktop mode (recommended) — starts pod in background,
 #   # terminal stays free for envpod commands. Open GIMP from the desktop menu.
-#   sudo envpod run gimp -b -- startxfce4
+#   sudo envpod start gimp
 #   # Open the noVNC URL shown by `envpod ls` in your browser
 #
 #   # Direct mode — launches GIMP only (blocks terminal, Ctrl+Z to detach):

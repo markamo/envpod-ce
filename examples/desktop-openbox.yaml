@@ -10,7 +10,7 @@
 # Usage:
 #   sudo envpod init desktop-ob -c examples/desktop-openbox.yaml
 #   sudo envpod setup desktop-ob
-#   sudo envpod run desktop-ob -b -- openbox-session
+#   sudo envpod start desktop-ob
 #   # Open the noVNC URL from `envpod ls` in your browser
 
 name: desktop-ob
@@ -53,4 +53,4 @@ budget:
 audit:
   action_log: true
 
-start_command: ["openbox-session"]
+start_command: ["sleep", "infinity"]  # Desktop auto-starts via daemon; this keeps the pod alive

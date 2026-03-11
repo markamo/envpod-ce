@@ -14,7 +14,7 @@
 # Usage:
 #   sudo envpod init gpu-ws -c examples/workstation-gpu.yaml
 #   sudo envpod setup gpu-ws
-#   sudo envpod run gpu-ws -b -- startxfce4
+#   sudo envpod start gpu-ws
 #   # Open the noVNC URL from `envpod ls` in your browser
 #
 # Launching apps (from the desktop terminal or XFCE menu):
