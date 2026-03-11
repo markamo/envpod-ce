@@ -578,7 +578,7 @@ It depends on the pod type.
 **Web display pods** (`web_display.type: novnc` or `devices.desktop_env` set) support multiple simultaneous `envpod run` commands. Display services (Xvfb, x11vnc, websockify, audio, upload) run as a background daemon inside the pod, and each `envpod run` gets its own independent terminal while sharing the display:
 
 ```bash
-sudo envpod run my-pod -b -- startxfce4          # start desktop in background
+sudo envpod start my-pod                          # start pod, desktop auto-starts
 sudo envpod run my-pod -- bash                    # get a shell (separate session)
 sudo envpod run my-pod -- python3 agent.py        # run an agent (another session)
 ```

@@ -327,7 +327,7 @@ Compare security findings with `sudo envpod audit --security -c examples/browser
 
 ```bash
 sudo envpod init web-demo --preset desktop
-sudo envpod run web-demo -b -- startxfce4
+sudo envpod start web-demo
 # Open http://localhost:6080 — auto-connects, envpod-branded, with audio + file upload
 ```
 

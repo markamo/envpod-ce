@@ -286,7 +286,7 @@ sudo envpod run my-desktop -- bash                  # shell in same pod
 #### Tips
 
 - **Auto-start**: The configured desktop starts automatically as part of the
-  display services daemon — just `envpod run <pod> -- bash` and connect via noVNC
+  display services daemon — just `envpod start <pod>` and connect via noVNC
 - **Multiple sessions**: All sessions share the same virtual display — commands
   run from bash appear on the noVNC desktop
 - **Browser inside desktop**: Launch Chrome from the openbox right-click menu
@@ -376,8 +376,7 @@ If not using `desktop_env`, run a GUI application or start a desktop manually:
 ```bash
 sudo envpod run my-pod -- xeyes                      # quick test
 sudo envpod run my-pod -- google-chrome --no-sandbox  # browser
-sudo envpod run my-pod -b -- openbox-session          # openbox desktop (manual)
-sudo envpod run my-pod -b -- startxfce4               # XFCE desktop (manual)
+sudo envpod start my-pod                               # desktop auto-starts if desktop_env is set
 ```
 
 ### apt-get fails during setup
@@ -430,12 +429,7 @@ sudo envpod run my-pod -- bash                    # get a shell
 sudo envpod run my-pod -- python3 agent.py        # run an agent (another session)
 ```
 
-Or use the traditional approach with `envpod run -b`:
-
-```bash
-sudo envpod run my-pod -b -- startxfce4          # start desktop in background
-sudo envpod run my-pod -- bash                    # get a shell (separate session)
-```
+The desktop environment auto-starts as part of the display services daemon when `desktop_env` is set in pod.yaml — no need to manually launch `startxfce4` or `openbox-session`.
 
 ### Resumable sessions with screen
 

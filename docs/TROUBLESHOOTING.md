@@ -304,12 +304,11 @@ Takes effect on `envpod init` only (creates a loopback ext4 device). The pod get
 
 ### Black screen in browser (port 6080)
 
-The display starts empty — you need to launch a GUI application:
+If `desktop_env` is set in pod.yaml, the desktop auto-starts — you should see it immediately after `envpod start`. If not using `desktop_env`, launch a GUI application manually:
 
 ```bash
 sudo envpod run my-pod -- xeyes                        # quick test
 sudo envpod run my-pod -- google-chrome --no-sandbox    # browser
-sudo envpod run my-pod -- openbox-session               # window manager
 ```
 
 ### Display services crash with `--user agent`

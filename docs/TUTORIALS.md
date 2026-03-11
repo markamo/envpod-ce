@@ -2073,7 +2073,7 @@ A full image editor running in an isolated pod with a desktop environment:
 ```bash
 sudo envpod init gimp -c examples/gimp.yaml
 sudo envpod setup gimp              # installs XFCE + GIMP (~3 min first time)
-sudo envpod run gimp -b -- startxfce4   # desktop in background, terminal stays free
+sudo envpod start gimp              # desktop auto-starts, terminal stays free
 sudo envpod ls                       # shows pod IP and noVNC URL
 ```
 
@@ -2158,10 +2158,10 @@ sudo envpod init my-web -c examples/desktop-web.yaml
 
 This installs XFCE desktop, Chrome, and VS Code (~3-5 min first time).
 
-### Step 2: Run the desktop
+### Step 2: Start the desktop
 
 ```bash
-sudo envpod run my-web -b -- startxfce4
+sudo envpod start my-web
 ```
 
 ### Step 3: Open in browser

@@ -272,7 +272,7 @@ web_display:
 ```
 
 ```bash
-sudo envpod run my-agent -b -- startxfce4
+sudo envpod start my-agent
 # Open http://localhost:6080 in your browser — auto-connects, no click needed
 ```
 
