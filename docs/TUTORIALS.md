@@ -2203,6 +2203,139 @@ sudo envpod clone my-web my-web-2
 sudo envpod clone my-web my-web-3
 ```
 
+## Tutorial 15: Commit — Review, Select, and Export Changes
+
+Every file an agent touches lands in a copy-on-write overlay. Nothing reaches your real filesystem until you explicitly commit it. This tutorial covers the full commit workflow: reviewing changes, committing specific files, excluding paths, and exporting to a custom directory.
+
+### Step 1: Create a pod and make changes
+
+```bash
+sudo envpod init demo -c examples/basic-cli.yaml
+sudo envpod run demo -- bash -c '
+  mkdir -p /workspace
+  echo "hello world" > /workspace/hello.txt
+  echo "secret notes" > /workspace/notes.txt
+  echo "build artifact" > /workspace/build.log
+  echo "modified" >> /etc/hostname
+'
+```
+
+The agent thinks it wrote to the real filesystem — but everything is captured in the overlay.
+
+### Step 2: Review what changed
+
+```bash
+sudo envpod diff demo
+```
+
+Output shows every file the agent created, modified, or deleted:
+
+```
++ /workspace/hello.txt (12 bytes)
++ /workspace/notes.txt (13 bytes)
++ /workspace/build.log (15 bytes)
+~ /etc/hostname (9 bytes)
+```
+
+`+` = added, `~` = modified, `-` = deleted. This is the changeset you decide what to do with.
+
+### Step 3: Commit specific files
+
+Only commit the files you want. Pass paths from the diff output:
+
+```bash
+sudo envpod commit demo /workspace/hello.txt /workspace/notes.txt
+```
+
+This copies only those two files to the host. The rest stay in the overlay untouched.
+
+### Step 4: Exclude files instead
+
+Alternatively, commit everything *except* certain paths:
+
+```bash
+sudo envpod commit demo --exclude /workspace/build.log --exclude /etc/hostname
+```
+
+This commits all changes except build artifacts and system files.
+
+### Step 5: Export to a different directory
+
+The `--output` flag copies changes to a custom directory instead of overwriting host files. The overlay directory structure is preserved:
+
+```bash
+sudo envpod commit demo --output /tmp/demo-export/
+```
+
+This creates:
+
+```
+/tmp/demo-export/
+├── workspace/
+│   ├── hello.txt
+│   ├── notes.txt
+│   └── build.log
+└── etc/
+    └── hostname
+```
+
+Your real `/workspace/` and `/etc/hostname` are never touched. Combine with path selection:
+
+```bash
+# Export only workspace files to a custom directory
+sudo envpod commit demo /workspace/hello.txt /workspace/notes.txt --output /tmp/clean-export/
+```
+
+### Step 6: Rollback what's left
+
+After committing the files you want (to host or to `--output`), discard everything else:
+
+```bash
+sudo envpod rollback demo
+```
+
+The overlay is clean. The pod is ready for the next run.
+
+### When to use `--output`
+
+| Scenario | Command |
+|----------|---------|
+| Agent writes code — apply to your project | `envpod commit agent /workspace/src/` |
+| Collect results from multiple agents | `envpod commit agent-1 --output /tmp/results/agent-1/` |
+| Export training artifacts without touching host | `envpod commit ml /opt/models/ --output /data/checkpoints/` |
+| Review before applying (safe preview) | `envpod commit agent --output /tmp/preview/` then inspect |
+| CI pipeline — extract build output | `envpod commit build --output ./artifacts/` |
+
+### Commit with approval queue
+
+For high-stakes pods, require human approval before any commit executes:
+
+```yaml
+# pod.yaml
+queue:
+  require_commit_approval: true
+```
+
+```bash
+sudo envpod commit demo /workspace/hello.txt
+# → Commit queued for approval (id: a1b2c3d4)
+# → Approve and execute: envpod approve demo a1b2c3d4
+
+sudo envpod approve demo a1b2c3d4   # commit executes now
+```
+
+### Summary
+
+```bash
+envpod diff <pod>                              # see all changes
+envpod commit <pod>                            # commit all to host
+envpod commit <pod> /path/a /path/b            # commit specific files
+envpod commit <pod> --exclude /path/c          # commit all except
+envpod commit <pod> --output /tmp/export/      # export to directory
+envpod commit <pod> /path/a -o /tmp/export/    # selective export
+envpod rollback <pod>                          # discard everything
+```
+
 ---
 
 Copyright 2026 Xtellix Inc. All rights reserved. Licensed under the Business Source License 1.1.
