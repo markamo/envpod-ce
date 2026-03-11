@@ -60,6 +60,7 @@ name: my-pod              # Required. Pod name (used in all envpod commands)
 type: standard            # Pod type (see below)
 backend: native           # Isolation backend (only "native" in v0.1)
 user: agent               # Default user inside pod (see below)
+start_command: ["claude-pod"]  # Default command for `envpod start` (optional)
 ```
 
 ### `name`
@@ -93,6 +94,22 @@ Default user for commands run inside the pod.
 | Any name | varies | Runs as that user (must exist inside the pod). |
 
 Override per-command with `envpod run my-pod --user root -- ...` or `envpod run my-pod --root -- ...`.
+
+### `start_command`
+
+Default command for `envpod start`. When not set, falls back to `sleep infinity`.
+
+```yaml
+start_command: ["claude-pod"]           # Single command
+start_command: ["aider", "--model", "sonnet"]  # Command with arguments
+```
+
+Resolution order for `envpod start`:
+1. CLI override: `envpod start my-pod -- custom-command`
+2. `start_command` from pod.yaml
+3. Fallback: `sleep infinity`
+
+This is especially useful with `envpod start --all` (e.g., after a host reboot) — each pod starts with its configured command without needing to specify it manually.
 
 ---
 

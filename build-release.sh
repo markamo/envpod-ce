@@ -159,7 +159,7 @@ build_arch() {
 # envpod v${VERSION}
 
 > **EnvPod v${VERSION}** — Zero-trust governance environments for AI agents
-> Author: Mark Amoboateng · mark@envpod.dev
+> Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL 1.1
 
 **Docker isolates. Envpod governs.**
@@ -275,7 +275,11 @@ See [docs/INSTALL.md](docs/INSTALL.md), [docs/QUICKSTART.md](docs/QUICKSTART.md)
 | \`envpod dns <name>\` | Update DNS policy live |
 | \`envpod remote <name> <cmd>\` | Remote control |
 | \`envpod monitor <name>\` | Monitoring policy |
-| \`envpod dashboard [--port 9090]\` | Web dashboard |
+| \`envpod start <names...> [--all]\` | Start stopped pod(s) in background |
+| \`envpod stop <names...> [--all]\` | Stop running pod(s) |
+| \`envpod restart <names...> [--all]\` | Restart running pod(s) |
+| \`envpod dashboard [--port] [--daemon] [--stop]\` | Web dashboard |
+| \`envpod about\` / \`envpod --about\` | Version, license, project info |
 | \`envpod gc\` | Clean up orphaned resources |
 
 ## System Requirements
@@ -291,7 +295,7 @@ Copyright 2026 Xtellix Inc. All rights reserved.
 
 Licensed under BSL 1.1. Converts to AGPL-3.0 on 2030-03-07. See [LICENSE](LICENSE) for the full text.
 
-**Author:** Mark Amoboateng, Xtellix Inc. (mark@envpod.dev)
+**Author:** Mark Amo-Boateng, PhD, Xtellix Inc. (mark@envpod.dev)
 **Patent:** Provisional patent filed February 22, 2026.
 README_EOF
     info "README.md generated"

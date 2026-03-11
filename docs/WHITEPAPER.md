@@ -1,6 +1,6 @@
 # envpod: Zero-Trust Governance for Autonomous AI Agents
 
-**Mark Amo-Boateng — Xtellix Inc. — March 2026**
+**Mark Amo-Boateng, PhD — Xtellix Inc. — March 2026**
 
 ---
 

@@ -171,7 +171,7 @@ jobs:
           cat > "${RELEASE_DIR}/README.md" << EOF
           # envpod v${VERSION} — ${ARCH}
           Zero-trust governance environments for AI agents.
-          Copyright 2026 Mark Amo-Boateng / Xtellix Inc.
+          Copyright 2026 Mark Amo-Boateng, PhD / Xtellix Inc.
           Licensed under the BSL 1.1. Converts to AGPL-3.0 on 2030-03-07.
 
           ## Install
@@ -241,7 +241,7 @@ jobs:
           \`\`\`
 
           ---
-          Copyright 2026 Mark Amo-Boateng / Xtellix Inc. · BSL 1.1"
+          Copyright 2026 Mark Amo-Boateng, PhD / Xtellix Inc. · BSL 1.1"
 
           # Delete existing release if present, then recreate
           gh release delete "${TAG}" --yes 2>/dev/null || true

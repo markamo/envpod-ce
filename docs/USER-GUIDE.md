@@ -85,19 +85,24 @@ A pod is a self-contained execution environment with a foundation (COW filesyste
 
 <!-- output -->
 ```
-init  →  start / run  →  diff  →  commit  or  rollback  →  stop / destroy
-                           ↑                                     ↑
-                           └── review changes ───────────────────┘
+init → setup → Created → start → Running → stop → Stopped → start → Running
+                                     │                                   │
+                                     ▼                                   ▼
+                               diff → commit or rollback           destroy
 ```
 
 1. **init** — Create the pod (overlay dirs, cgroup, network namespace)
-2. **start** — Start the pod in the background (services auto-start, connect via noVNC or `run`)
-3. **run** — Execute commands inside the pod (or start + run a one-shot command)
-4. **diff** — See what the agent changed
-5. **commit** — Accept changes to host filesystem
-6. **rollback** — Discard all changes
-7. **stop** — Gracefully stop the pod (preserves overlay for later `start`)
-8. **destroy** — Remove pod entirely
+2. **setup** — Install software inside the pod (runs setup commands from pod.yaml)
+3. **start** — Start the pod in the background (uses `start_command` from pod.yaml, or `sleep infinity`)
+4. **stop** — Stop a running pod
+5. **restart** — Stop + start in one step
+6. **run** — Execute one-off commands inside the pod
+7. **diff** — See what the agent changed
+8. **commit** — Accept changes to host filesystem
+9. **rollback** — Discard all changes
+10. **destroy** — Remove pod entirely
+
+Use `--all` with start/stop/restart to operate on all pods at once (e.g., after a host reboot).
 
 ### Pod Types
 

@@ -664,7 +664,7 @@ Envpod checks for host root at startup and gives a clear error with remediation 
 
 ## Is there a GUI or dashboard?
 
-Not in v0.1. Envpod is CLI-only. All commands support `--json` for machine-readable output, making it easy to build dashboards or integrations on top:
+All commands support `--json` for machine-readable output, making it easy to build dashboards or integrations on top:
 
 ```bash
 sudo envpod ls --json
@@ -678,6 +678,8 @@ The built-in web dashboard provides a browser-based UI for fleet management:
 ```bash
 sudo envpod dashboard              # Opens localhost:9090
 sudo envpod dashboard --port 8080  # Custom port
+sudo envpod dashboard --daemon     # Run in background (PID file at $ENVPOD_DIR/dashboard.pid)
+sudo envpod dashboard --stop       # Stop background dashboard
 ```
 
 The dashboard shows fleet overview, pod detail with tabs (audit, diff, resources, snapshots), and action buttons (commit, rollback, freeze, resume).
@@ -709,6 +711,30 @@ sudo envpod run my-agent -- cat /opt/log  # read output
 ```
 
 The overlay persists between runs, so you can inspect files left by a previous command without committing them to the host.
+
+---
+
+## How do I restart all pods after a host reboot?
+
+Use `start_command` in pod.yaml to define each pod's default command, then start them all at once:
+
+```yaml
+# In pod.yaml
+start_command: ["claude-pod"]
+```
+
+```bash
+# After reboot — start all pods with their configured commands
+sudo envpod start --all
+
+# Or restart all running pods
+sudo envpod restart --all
+
+# Stop everything
+sudo envpod stop --all
+```
+
+If no `start_command` is set, the pod starts with `sleep infinity` (keeping it alive for `envpod run`). You can always override per-invocation: `sudo envpod start my-pod -- custom-command`.
 
 ---
 

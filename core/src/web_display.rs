@@ -142,17 +142,34 @@ export __EGL_VENDOR_LIBRARY_FILENAMES=""
 export __GLX_VENDOR_LIBRARY_NAME=mesa
 export DISPLAY=:99
 
+# XDG_RUNTIME_DIR must be owned by the user and not world-writable (D-Bus requirement)
+if [ ! -d /run/user/0 ]; then
+    mkdir -p /run/user/0
+    chmod 700 /run/user/0
+fi
+export XDG_RUNTIME_DIR=/run/user/0
+
 echo $$ > /tmp/envpod-display.pid
 trap "rm -f /tmp/envpod-display.pid; kill -- -$$ 2>/dev/null" EXIT
 
-# Start D-Bus session bus (required by XFCE terminal, thunar, etc.)
+# Start D-Bus session bus (required by XFCE settings daemon, thunar, etc.)
+export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/envpod-dbus
 if command -v dbus-daemon >/dev/null 2>&1; then
-    dbus-daemon --session --address=unix:path=/tmp/envpod-dbus --nofork --nopidfile &
+    dbus-daemon --session --address="$DBUS_SESSION_BUS_ADDRESS" --nofork --nopidfile &
+    # Wait for socket to be ready before starting desktop environment
+    for _i in $(seq 1 20); do
+        [ -e /tmp/envpod-dbus ] && break
+        sleep 0.1
+    done
     echo "D-Bus session bus started"
 fi
 
+# Clean up stale X state from previous runs (survives stop/start in overlay)
+mkdir -p /tmp/.X11-unix
+rm -f /tmp/.X99-lock /tmp/.X11-unix/X99 2>/dev/null
+
 # Start Xvfb virtual display (auto-restart on crash)
-(while true; do Xvfb :99 -screen 0 {resolution}x24 -ac -noreset 2>/dev/null; sleep 1; done) &
+(while true; do mkdir -p /tmp/.X11-unix; rm -f /tmp/.X99-lock /tmp/.X11-unix/X99 2>/dev/null; Xvfb :99 -screen 0 {resolution}x24 -ac -noreset 2>/dev/null; sleep 1; done) &
 
 # Wait for Xvfb to be ready
 for i in $(seq 1 20); do
@@ -199,6 +216,11 @@ export DISPLAY=:99
 export __EGL_VENDOR_LIBRARY_FILENAMES=""
 export __GLX_VENDOR_LIBRARY_NAME=mesa
 export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/envpod-dbus
+if [ ! -d /run/user/0 ]; then
+    mkdir -p /run/user/0
+    chmod 700 /run/user/0
+fi
+export XDG_RUNTIME_DIR=/run/user/0
 
 # Start display services daemon if not already running
 if [ ! -f /tmp/envpod-display.pid ] || ! kill -0 "$(cat /tmp/envpod-display.pid)" 2>/dev/null; then
@@ -259,16 +281,32 @@ set -m
 
 export DISPLAY=:99
 
+# XDG_RUNTIME_DIR must be owned by the user and not world-writable (D-Bus requirement)
+if [ ! -d /run/user/0 ]; then
+    mkdir -p /run/user/0
+    chmod 700 /run/user/0
+fi
+export XDG_RUNTIME_DIR=/run/user/0
+
 echo $$ > /tmp/envpod-display.pid
 trap "rm -f /tmp/envpod-display.pid; kill -- -$$ 2>/dev/null" EXIT
 
 # Start D-Bus session bus
+export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/envpod-dbus
 if command -v dbus-daemon >/dev/null 2>&1; then
-    dbus-daemon --session --address=unix:path=/tmp/envpod-dbus --nofork --nopidfile &
+    dbus-daemon --session --address="$DBUS_SESSION_BUS_ADDRESS" --nofork --nopidfile &
+    for _i in $(seq 1 20); do
+        [ -e /tmp/envpod-dbus ] && break
+        sleep 0.1
+    done
 fi
 
+# Clean up stale X state from previous runs
+mkdir -p /tmp/.X11-unix
+rm -f /tmp/.X99-lock /tmp/.X11-unix/X99 2>/dev/null
+
 # Start Xvfb (auto-restart on crash)
-(while true; do Xvfb :99 -screen 0 {resolution}x24 -ac +extension GLX +render -noreset; sleep 1; done) &
+(while true; do mkdir -p /tmp/.X11-unix; rm -f /tmp/.X99-lock /tmp/.X11-unix/X99 2>/dev/null; Xvfb :99 -screen 0 {resolution}x24 -ac +extension GLX +render -noreset; sleep 1; done) &
 for i in $(seq 1 20); do
     [ -e /tmp/.X11-unix/X99 ] && break
     sleep 0.25
@@ -306,6 +344,11 @@ fn generate_webrtc_wrapper(config: &WebDisplayConfig) -> String {
 
 export DISPLAY=:99
 export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/envpod-dbus
+if [ ! -d /run/user/0 ]; then
+    mkdir -p /run/user/0
+    chmod 700 /run/user/0
+fi
+export XDG_RUNTIME_DIR=/run/user/0
 
 # Start display services daemon if not already running
 if [ ! -f /tmp/envpod-display.pid ] || ! kill -0 "$(cat /tmp/envpod-display.pid)" 2>/dev/null; then
@@ -972,6 +1015,92 @@ const CLIPBOARD_PLUGIN_JS: &str = r##"/**
     window.addEventListener('load', () => setTimeout(init, 1000));
 })();
 "##;
+
+/// Embedded info-plugin.js — "About envpod" button for noVNC toolbar.
+/// Shows a modal overlay with pod name, envpod version, and links.
+///
+/// __ENVPOD_POD_NAME__ and __ENVPOD_VERSION__ are replaced at generation time.
+const INFO_PLUGIN_JS: &str = r##"/**
+ * envpod info plugin for noVNC
+ * Shows pod info + envpod branding when info button is clicked
+ */
+const EnvpodInfo = {
+    podName: '__ENVPOD_POD_NAME__',
+    version: '__ENVPOD_VERSION__',
+
+    init() {
+        this.addButton();
+    },
+
+    addButton() {
+        const disconnectBtn = document.getElementById('noVNC_disconnect_button');
+        const container = disconnectBtn ? disconnectBtn.parentElement : document.getElementById('noVNC_control_bar');
+        if (!container) return;
+
+        const icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
+        const btn = document.createElement('img');
+        btn.id = 'envpod_info_btn';
+        btn.className = 'noVNC_button';
+        btn.alt = 'About';
+        btn.title = 'About envpod';
+        btn.src = 'data:image/svg+xml,' + encodeURIComponent(icon);
+        btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); this.showModal(); });
+        container.appendChild(btn);
+    },
+
+    showModal() {
+        if (document.getElementById('envpod_info_modal')) return;
+        const overlay = document.createElement('div');
+        overlay.id = 'envpod_info_modal';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100000;display:flex;align-items:center;justify-content:center;';
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+        const card = document.createElement('div');
+        card.style.cssText = 'background:#1c2128;border:1px solid #444c56;border-radius:12px;padding:28px 32px;max-width:380px;width:90%;color:#e6edf3;font-family:-apple-system,system-ui,sans-serif;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,.5);';
+        card.innerHTML = `
+            <div style="font-size:28px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px;">
+                <span style="color:#58a6ff;">env</span><span style="color:#e6edf3;">pod</span>
+            </div>
+            <div style="font-size:12px;color:#8b949e;margin-bottom:16px;">
+                Zero-trust governance for AI agents
+            </div>
+            <div style="background:#161b22;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;text-align:left;">
+                <div style="margin-bottom:6px;"><span style="color:#8b949e;">Pod:</span> <span style="color:#f0f6fc;">${this.podName}</span></div>
+                <div><span style="color:#8b949e;">Version:</span> <span style="color:#f0f6fc;">${this.version}</span></div>
+            </div>
+            <div style="display:flex;gap:12px;justify-content:center;margin-bottom:14px;">
+                <a href="https://envpod.dev" target="_blank" style="color:#58a6ff;text-decoration:none;font-size:13px;">envpod.dev</a>
+                <span style="color:#444c56;">|</span>
+                <a href="https://github.com/markamo/envpod-ce" target="_blank" style="color:#58a6ff;text-decoration:none;font-size:13px;">GitHub</a>
+            </div>
+            <div style="font-size:11px;color:#484f58;">
+                Docker isolates. Envpod governs.
+            </div>
+        `;
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+
+        const esc = (e) => { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', esc); } };
+        document.addEventListener('keydown', esc);
+    }
+};
+
+window.addEventListener('load', () => EnvpodInfo.init());
+"##;
+
+/// Returns files to inject into the pod overlay for the info button.
+/// Each tuple is (path_inside_pod, content, executable).
+pub fn info_overlay_files(config: &WebDisplayConfig, pod_name: &str, version: &str) -> Vec<(&'static str, String, bool)> {
+    if config.display_type != WebDisplayType::Novnc {
+        return Vec::new();
+    }
+    let js = INFO_PLUGIN_JS
+        .replace("__ENVPOD_POD_NAME__", pod_name)
+        .replace("__ENVPOD_VERSION__", version);
+    vec![
+        ("/usr/share/novnc/info-plugin.js", js, false),
+    ]
+}
 
 /// Parse resolution string into (width, height). Returns None if invalid.
 pub fn parse_resolution(res: &str) -> Option<(u32, u32)> {

@@ -77,8 +77,12 @@ struct Cli {
     #[arg(long, env = "ENVPOD_DIR", default_value = DEFAULT_BASE_DIR, global = true)]
     dir: PathBuf,
 
+    /// Show envpod version, license, and project info
+    #[arg(long)]
+    about: bool,
+
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand)]
@@ -517,6 +521,8 @@ enum Commands {
         /// Shell to generate completions for
         shell: Shell,
     },
+    /// Show envpod version, license, and project info
+    About,
 }
 
 #[derive(Subcommand)]
@@ -699,9 +705,23 @@ async fn main() -> ExitCode {
 
 async fn run(cli: Cli) -> Result<()> {
     let base_dir = &cli.dir;
+
+    // --about flag or no subcommand → show about info
+    let command = if cli.about {
+        Commands::About
+    } else {
+        match cli.command {
+            Some(cmd) => cmd,
+            None => {
+                Cli::command().print_help()?;
+                return Ok(());
+            }
+        }
+    };
+
     let store = PodStore::new(base_dir.join("state"))?;
 
-    match cli.command {
+    match command {
         Commands::Init {
             name,
             backend,
@@ -870,6 +890,23 @@ async fn run(cli: Cli) -> Result<()> {
             print_completions(shell, base_dir);
             Ok(())
         }
+        Commands::About => {
+            let version = concat!(env!("CARGO_PKG_VERSION"), " (CE)");
+            let build = concat!(env!("ENVPOD_BUILD_HASH"), " ", env!("ENVPOD_BUILD_TIME"));
+            println!("{}", color::bold("envpod"));
+            println!("Zero-trust governance environments for AI agents");
+            println!();
+            println!("  Version:  {version}");
+            println!("  Build:    {build}");
+            println!("  License:  BSL 1.1 (converts to AGPL-3.0 on 2030-03-07)");
+            println!("  Source:   https://github.com/markamo/envpod-ce");
+            println!("  Docs:     https://envpod.dev");
+            println!();
+            println!("  {}  Mark Amo-Boateng, PhD / Xtellix Inc.", color::dim("Author:"));
+            println!();
+            println!("{}", color::dim("Docker isolates. Envpod governs."));
+            Ok(())
+        }
     }
 }
 
@@ -1033,6 +1070,27 @@ async fn cmd_init(
                 }
             }
 
+            // Inject info plugin (info-plugin.js — about/branding button)
+            {
+                let version = concat!(env!("CARGO_PKG_VERSION"), " (CE)");
+                for (pod_path, content, executable) in envpod_core::web_display::info_overlay_files(&config.web_display, &name, version) {
+                    let rel = pod_path.trim_start_matches('/');
+                    let dest = if rel.starts_with("usr/") && matches!(config.filesystem.system_access, envpod_core::config::SystemAccess::Advanced | envpod_core::config::SystemAccess::Dangerous) {
+                        state.sys_upper_dir().join(rel)
+                    } else {
+                        state.upper_dir().join(rel)
+                    };
+                    if let Some(parent) = dest.parent() {
+                        std::fs::create_dir_all(parent).ok();
+                    }
+                    std::fs::write(&dest, &content)
+                        .with_context(|| format!("write info file: {pod_path}"))?;
+                    if executable {
+                        std::fs::set_permissions(&dest, std::fs::Permissions::from_mode(0o755))?;
+                    }
+                }
+            }
+
             // Patch vnc.html after apt installs the novnc package:
             // - Replace both noVNC logos (side panel + connect dialog) with envpod
             // - Update page title to "envpod — <pod-name>"
@@ -1059,6 +1117,8 @@ async fn cmd_init(
                     r#"sed -i 's|UI\.rfb\.addEventListener("connect", UI\.connectFinished);|UI.rfb.addEventListener("connect", UI.connectFinished); window.rfb = UI.rfb;|' /usr/share/novnc/app/ui.js"#.to_string(),
                     // Clipboard sync: host↔pod paste via Clipboard API + noVNC RFB
                     r#"sed -i 's|</body>|<script src="clipboard-plugin.js"></script></body>|' /usr/share/novnc/vnc.html"#.to_string(),
+                    // Info/about button
+                    r#"sed -i 's|</body>|<script src="info-plugin.js"></script></body>|' /usr/share/novnc/vnc.html"#.to_string(),
                 ];
                 if config.web_display.file_upload {
                     patches.push(
@@ -1073,8 +1133,6 @@ async fn cmd_init(
                 let patch_cmd = patches.join(" && ") + " 2>/dev/null; true";
                 config.setup.push(patch_cmd);
             }
-
-            eprintln!("  Web display supervisor script installed");
 
             // Prepend web display setup commands to config.setup
             let display_cmds = envpod_core::web_display::generate_setup_commands(&config.web_display);
