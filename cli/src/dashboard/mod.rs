@@ -4,7 +4,7 @@
 //! Web dashboard for envpod — fleet overview, pod detail, audit, diff.
 //!
 //! Single binary, embedded static assets. `envpod dashboard` starts an
-//! axum server on localhost:9090.
+//! axum server on localhost:9090. Use `--daemon` to run in the background.
 
 pub mod api;
 pub mod state;
@@ -30,8 +30,94 @@ use api::AppState;
 #[folder = "src/dashboard/static/"]
 struct Assets;
 
+/// PID file location for the dashboard daemon.
+fn pid_file(base_dir: &std::path::Path) -> PathBuf {
+    base_dir.join("dashboard.pid")
+}
+
+/// Stop a running dashboard daemon.
+fn stop_daemon(base_dir: &std::path::Path) -> Result<()> {
+    let pidfile = pid_file(base_dir);
+    let pid_str = std::fs::read_to_string(&pidfile)
+        .with_context(|| "no running dashboard daemon (PID file not found)")?;
+    let pid: i32 = pid_str.trim().parse()
+        .with_context(|| format!("invalid PID in {}", pidfile.display()))?;
+
+    // Check if process is alive
+    match nix::sys::signal::kill(nix::unistd::Pid::from_raw(pid), None) {
+        Ok(()) => {
+            // Process exists — send SIGTERM
+            nix::sys::signal::kill(
+                nix::unistd::Pid::from_raw(pid),
+                nix::sys::signal::Signal::SIGTERM,
+            ).context("failed to send SIGTERM")?;
+            eprintln!("dashboard daemon stopped (PID {pid})");
+            let _ = std::fs::remove_file(&pidfile);
+            Ok(())
+        }
+        Err(_) => {
+            // Process doesn't exist — stale PID file
+            let _ = std::fs::remove_file(&pidfile);
+            anyhow::bail!("dashboard daemon not running (stale PID file removed)");
+        }
+    }
+}
+
 /// Start the dashboard web server.
-pub async fn run(base_dir: PathBuf, port: u16, no_open: bool) -> Result<()> {
+pub async fn run(base_dir: PathBuf, port: u16, no_open: bool, daemon: bool, stop: bool) -> Result<()> {
+    if stop {
+        return stop_daemon(&base_dir);
+    }
+
+    if daemon {
+        return start_daemon(&base_dir, port);
+    }
+
+    serve(base_dir, port, no_open).await
+}
+
+/// Spawn a detached background process running the dashboard.
+fn start_daemon(base_dir: &std::path::Path, port: u16) -> Result<()> {
+    let pidfile = pid_file(base_dir);
+
+    // Check if already running
+    if pidfile.exists() {
+        if let Ok(pid_str) = std::fs::read_to_string(&pidfile) {
+            if let Ok(pid) = pid_str.trim().parse::<i32>() {
+                if nix::sys::signal::kill(nix::unistd::Pid::from_raw(pid), None).is_ok() {
+                    eprintln!("dashboard daemon already running (PID {pid})");
+                    return Ok(());
+                }
+            }
+        }
+        // Stale PID file
+        let _ = std::fs::remove_file(&pidfile);
+    }
+
+    // Re-exec ourselves without --daemon to get a clean tokio runtime.
+    // fork() inside tokio corrupts the child's inherited runtime threads.
+    let exe = std::env::current_exe().context("cannot find own executable")?;
+    let devnull = std::fs::File::open("/dev/null")?;
+
+    let child = std::process::Command::new(exe)
+        .args(["dashboard", "--no-open", "--port", &port.to_string(), "--dir", &base_dir.display().to_string()])
+        .stdin(std::process::Stdio::null())
+        .stdout(devnull.try_clone()?)
+        .stderr(std::process::Stdio::from(devnull))
+        .spawn()
+        .context("failed to spawn dashboard daemon")?;
+
+    let pid = child.id();
+    std::fs::write(&pidfile, format!("{pid}"))
+        .with_context(|| format!("write PID file {}", pidfile.display()))?;
+    eprintln!("dashboard daemon started (PID {pid}, port {port})");
+    eprintln!("  http://127.0.0.1:{port}");
+    eprintln!("  stop with: envpod dashboard --stop");
+    Ok(())
+}
+
+/// The actual server loop.
+async fn serve(base_dir: PathBuf, port: u16, no_open: bool) -> Result<()> {
     let store = PodStore::new(base_dir.join("state"))?;
     let app_state = Arc::new(AppState { store, base_dir });
 

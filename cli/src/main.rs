@@ -428,6 +428,12 @@ enum Commands {
         /// Don't open the browser automatically
         #[arg(long)]
         no_open: bool,
+        /// Run dashboard as a background daemon
+        #[arg(long, short = 'd')]
+        daemon: bool,
+        /// Stop a running dashboard daemon
+        #[arg(long, conflicts_with_all = ["daemon", "port", "no_open"])]
+        stop: bool,
     },
     /// View or mutate port forwarding rules on a running pod (no restart required)
     Ports {
@@ -762,7 +768,7 @@ async fn run(cli: Cli) -> Result<()> {
         Commands::Setup { name, create_base, verbose } => cmd_setup(&store, base_dir, &name, create_base.as_deref(), verbose).await,
         Commands::Clone { source, name, current } => cmd_clone(&store, base_dir, &source, &name, current),
         Commands::Base { action } => cmd_base(&store, base_dir, action).await,
-        Commands::Dashboard { port, no_open } => dashboard::run(base_dir.clone(), port, no_open).await,
+        Commands::Dashboard { port, no_open, daemon, stop } => dashboard::run(base_dir.clone(), port, no_open, daemon, stop).await,
         Commands::Ports { name, add_publish, add_publish_all, add_internal, remove, remove_internal } =>
             cmd_ports(&store, &name, &add_publish, &add_publish_all, &add_internal, &remove, &remove_internal),
         Commands::Discover { name, on, off, add_pods, remove_pods } =>
