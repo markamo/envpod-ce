@@ -120,10 +120,13 @@ sleep 0.5
         String::new()
     };
 
+    // Desktop environment is started by the daemon (as root) so it can
+    // communicate with the root-owned D-Bus session bus and ICE auth.
+    // The user's start_command should be "sleep infinity" (not startxfce4).
     let desktop_block = match desktop_env {
-        DesktopEnv::Openbox => "\n# --- Desktop environment (openbox) ---\n(openbox-session &) 2>/dev/null\necho \"Desktop: openbox started\"\n".to_string(),
-        DesktopEnv::Xfce => "\n# --- Desktop environment (xfce) ---\n(startxfce4 &) 2>/dev/null\necho \"Desktop: xfce started\"\n".to_string(),
-        DesktopEnv::Sway => "\n# --- Desktop environment (sway) ---\n(sway &) 2>/dev/null\necho \"Desktop: sway started\"\n".to_string(),
+        DesktopEnv::Openbox => "\n# --- Desktop environment (openbox) ---\n(openbox-session &)\necho \"Desktop: openbox started\"\n".to_string(),
+        DesktopEnv::Xfce => "\n# --- Desktop environment (xfce) ---\nexport ICEAUTHORITY=/tmp/ICEauthority\nrm -f /tmp/ICEauthority /tmp/ICEauthority-l /tmp/ICEauthority-c 2>/dev/null\ntouch /tmp/ICEauthority\nchmod 600 /tmp/ICEauthority\n(startxfce4 &)\necho \"Desktop: xfce started\"\n".to_string(),
+        DesktopEnv::Sway => "\n# --- Desktop environment (sway) ---\n(sway &)\necho \"Desktop: sway started\"\n".to_string(),
         DesktopEnv::None => String::new(),
     };
 
@@ -153,9 +156,28 @@ echo $$ > /tmp/envpod-display.pid
 trap "rm -f /tmp/envpod-display.pid; kill -- -$$ 2>/dev/null" EXIT
 
 # Start D-Bus session bus (required by XFCE settings daemon, thunar, etc.)
+# Use custom config to allow connections from any uid (clone_host pods run
+# the daemon as root but drop privileges for the user command).
 export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/envpod-dbus
 if command -v dbus-daemon >/dev/null 2>&1; then
-    dbus-daemon --session --address="$DBUS_SESSION_BUS_ADDRESS" --nofork --nopidfile &
+    cat > /tmp/envpod-dbus.conf << 'DBUSCONF'
+<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <type>session</type>
+  <listen>unix:path=/tmp/envpod-dbus</listen>
+  <auth>EXTERNAL</auth>
+  <auth>ANONYMOUS</auth>
+  <allow_anonymous/>
+  <standard_session_servicedirs/>
+  <policy context="default">
+    <allow send_destination="*" eavesdrop="true"/>
+    <allow eavesdrop="true"/>
+    <allow own="*"/>
+  </policy>
+</busconfig>
+DBUSCONF
+    dbus-daemon --config-file=/tmp/envpod-dbus.conf --nofork --nopidfile &
     # Wait for socket to be ready before starting desktop environment
     for _i in $(seq 1 20); do
         [ -e /tmp/envpod-dbus ] && break
@@ -189,14 +211,14 @@ command -v xdotool >/dev/null 2>&1 && xdotool key --clearmodifiers Num_Lock 2>/d
 # Enable key repeat (delay 250ms, rate 30 keys/sec)
 xset r on 2>/dev/null
 xset r rate 250 30 2>/dev/null
-{desktop_block}
+
 # Start x11vnc (auto-restart on crash, key repeat enabled)
 (while true; do x11vnc -display :99 -forever -nopw -shared -noshm -rfbport 5900 -q -repeat; sleep 1; done) &
 sleep 1
 
 # Start websockify (auto-restart on crash)
 (while true; do websockify --web /usr/share/novnc 0.0.0.0:6080 localhost:5900; sleep 1; done) &
-{audio_block}{upload_block}
+{desktop_block}{audio_block}{upload_block}
 echo "Display services started"
 
 # Keep daemon alive — wait for all children
@@ -216,11 +238,17 @@ export DISPLAY=:99
 export __EGL_VENDOR_LIBRARY_FILENAMES=""
 export __GLX_VENDOR_LIBRARY_NAME=mesa
 export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/envpod-dbus
+export ICEAUTHORITY=/tmp/ICEauthority
 if [ ! -d /run/user/0 ]; then
     mkdir -p /run/user/0
     chmod 700 /run/user/0
 fi
 export XDG_RUNTIME_DIR=/run/user/0
+
+# Pre-create ICE authority file (iceauth fails if it can't lock on first access)
+rm -f /tmp/ICEauthority /tmp/ICEauthority-l /tmp/ICEauthority-c 2>/dev/null
+touch /tmp/ICEauthority
+chmod 600 /tmp/ICEauthority
 
 # Start display services daemon if not already running
 if [ ! -f /tmp/envpod-display.pid ] || ! kill -0 "$(cat /tmp/envpod-display.pid)" 2>/dev/null; then
@@ -236,6 +264,7 @@ fi
 # Drop privileges if requested
 if [ -n "$ENVPOD_RUN_USER" ]; then
     chmod 1777 /tmp/.X11-unix 2>/dev/null
+    chown "$ENVPOD_RUN_USER" /tmp/ICEauthority 2>/dev/null
     usermod -aG pulse-access "$ENVPOD_RUN_USER" 2>/dev/null
     # Resolve uid/gid from /etc/passwd (runuser uses PAM which fails in namespaces)
     EP_UID=$(id -u "$ENVPOD_RUN_USER" 2>/dev/null)
@@ -264,10 +293,10 @@ fn generate_webrtc_daemon(config: &WebDisplayConfig, desktop_env: DesktopEnv) ->
     };
 
     let desktop_block = match desktop_env {
-        DesktopEnv::Openbox => "\n# --- Desktop environment (openbox) ---\n(openbox-session &) 2>/dev/null\necho \"Desktop: openbox started\"\n",
-        DesktopEnv::Xfce => "\n# --- Desktop environment (xfce) ---\n(startxfce4 &) 2>/dev/null\necho \"Desktop: xfce started\"\n",
-        DesktopEnv::Sway => "\n# --- Desktop environment (sway) ---\n(sway &) 2>/dev/null\necho \"Desktop: sway started\"\n",
-        DesktopEnv::None => "",
+        DesktopEnv::Openbox => "\n# --- Desktop environment (openbox) ---\n(openbox-session &)\necho \"Desktop: openbox started\"\n".to_string(),
+        DesktopEnv::Xfce => "\n# --- Desktop environment (xfce) ---\nexport ICEAUTHORITY=/tmp/ICEauthority\nrm -f /tmp/ICEauthority /tmp/ICEauthority-l /tmp/ICEauthority-c 2>/dev/null\ntouch /tmp/ICEauthority\nchmod 600 /tmp/ICEauthority\n(startxfce4 &)\necho \"Desktop: xfce started\"\n".to_string(),
+        DesktopEnv::Sway => "\n# --- Desktop environment (sway) ---\n(sway &)\necho \"Desktop: sway started\"\n".to_string(),
+        DesktopEnv::None => String::new(),
     };
 
     format!(
@@ -291,10 +320,27 @@ export XDG_RUNTIME_DIR=/run/user/0
 echo $$ > /tmp/envpod-display.pid
 trap "rm -f /tmp/envpod-display.pid; kill -- -$$ 2>/dev/null" EXIT
 
-# Start D-Bus session bus
+# Start D-Bus session bus (custom config allows connections from any uid)
 export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/envpod-dbus
 if command -v dbus-daemon >/dev/null 2>&1; then
-    dbus-daemon --session --address="$DBUS_SESSION_BUS_ADDRESS" --nofork --nopidfile &
+    cat > /tmp/envpod-dbus.conf << 'DBUSCONF'
+<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <type>session</type>
+  <listen>unix:path=/tmp/envpod-dbus</listen>
+  <auth>EXTERNAL</auth>
+  <auth>ANONYMOUS</auth>
+  <allow_anonymous/>
+  <standard_session_servicedirs/>
+  <policy context="default">
+    <allow send_destination="*" eavesdrop="true"/>
+    <allow eavesdrop="true"/>
+    <allow own="*"/>
+  </policy>
+</busconfig>
+DBUSCONF
+    dbus-daemon --config-file=/tmp/envpod-dbus.conf --nofork --nopidfile &
     for _i in $(seq 1 20); do
         [ -e /tmp/envpod-dbus ] && break
         sleep 0.1
@@ -320,11 +366,11 @@ fi
 # Enable key repeat (delay 250ms, rate 30 keys/sec)
 xset r on 2>/dev/null
 xset r rate 250 30 2>/dev/null
-{desktop_block}
+
 # Start video capture pipeline (auto-restart on crash)
 (while true; do gst-launch-1.0 -q ximagesrc use-damage=0 ! videoconvert ! {codec_pipeline} ! webrtcbin name=video-send; sleep 1; done) &
 {audio_pipeline}
-
+{desktop_block}
 # Start xdotool input relay
 INPUTPIPE=/tmp/envpod-input
 mkfifo "$INPUTPIPE" 2>/dev/null || true
@@ -344,11 +390,17 @@ fn generate_webrtc_wrapper(config: &WebDisplayConfig) -> String {
 
 export DISPLAY=:99
 export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/envpod-dbus
+export ICEAUTHORITY=/tmp/ICEauthority
 if [ ! -d /run/user/0 ]; then
     mkdir -p /run/user/0
     chmod 700 /run/user/0
 fi
 export XDG_RUNTIME_DIR=/run/user/0
+
+# Pre-create ICE authority file (iceauth fails if it can't lock on first access)
+rm -f /tmp/ICEauthority /tmp/ICEauthority-l /tmp/ICEauthority-c 2>/dev/null
+touch /tmp/ICEauthority
+chmod 600 /tmp/ICEauthority
 
 # Start display services daemon if not already running
 if [ ! -f /tmp/envpod-display.pid ] || ! kill -0 "$(cat /tmp/envpod-display.pid)" 2>/dev/null; then
@@ -362,6 +414,7 @@ fi
 
 if [ -n "$ENVPOD_RUN_USER" ]; then
     chmod 1777 /tmp/.X11-unix 2>/dev/null
+    chown "$ENVPOD_RUN_USER" /tmp/ICEauthority 2>/dev/null
     EP_UID=$(id -u "$ENVPOD_RUN_USER" 2>/dev/null)
     EP_GID=$(id -g "$ENVPOD_RUN_USER" 2>/dev/null)
     EP_HOME=$(getent passwd "$ENVPOD_RUN_USER" 2>/dev/null | cut -d: -f6)

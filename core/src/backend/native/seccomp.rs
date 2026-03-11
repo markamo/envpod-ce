@@ -68,6 +68,8 @@ const ALLOWED_SYSCALLS: &[libc::c_long] = &[
     #[cfg(target_arch = "x86_64")]
     libc::SYS_open,               // x86_64 only; aarch64 uses openat
     libc::SYS_openat,
+    #[cfg(target_arch = "x86_64")]
+    libc::SYS_creat,              // x86_64 only; legacy create (used by iceauth, some tools)
     libc::SYS_close,
     #[cfg(target_arch = "x86_64")]
     libc::SYS_stat,               // x86_64 only; aarch64 uses newfstatat
@@ -138,6 +140,13 @@ const ALLOWED_SYSCALLS: &[libc::c_long] = &[
     libc::SYS_copy_file_range,
     #[cfg(target_arch = "x86_64")]
     libc::SYS_sendfile,           // x86_64 only; aarch64 has sendfile but different nr
+    // ── Extended attributes (OverlayFS, desktop apps, file managers) ──
+    libc::SYS_getxattr,
+    libc::SYS_lgetxattr,
+    libc::SYS_fgetxattr,
+    libc::SYS_listxattr,
+    libc::SYS_llistxattr,
+    libc::SYS_flistxattr,
     // ── Memory management ──
     libc::SYS_mmap,
     libc::SYS_mprotect,

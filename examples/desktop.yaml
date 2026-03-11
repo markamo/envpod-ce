@@ -56,7 +56,7 @@ budget:
 audit:
   action_log: true
 
-start_command: ["startxfce4"]
+start_command: ["sleep", "infinity"]  # Desktop auto-starts via daemon; this keeps the pod alive
 
 setup:
   - |
