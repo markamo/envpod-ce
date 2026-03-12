@@ -699,6 +699,41 @@ These properties must always hold. A violation of any invariant is a security bu
 
 8. **Single-host only** — No cross-host isolation guarantees. Pod-to-pod discovery is host-local. Remote fleet management planned for Enterprise tier.
 
+### 3.6 Recommended Host Hardening
+
+envpod's seccomp filter blocks dangerous syscalls (`kexec_load`, `bpf`, `perf_event_open`, `init_module`, etc.), but these are userspace restrictions — a seccomp bypass would restore access. The following kernel-level protections enforce the same restrictions independently, so even a seccomp bypass is not sufficient for exploitation.
+
+**Kernel boot parameters:**
+
+```
+# /etc/default/grub (then run update-grub && reboot)
+GRUB_CMDLINE_LINUX="lockdown=confidentiality nosmt vsyscall=none"
+```
+
+| Parameter | What it does | Why it matters |
+|-----------|-------------|---------------|
+| `lockdown=integrity` | Blocks unsigned kernel modules, `/dev/mem` writes, `kexec_load`, eBPF kernel writes, hibernation | Kernel self-protection — even root cannot modify the running kernel |
+| `lockdown=confidentiality` | Everything in `integrity` + blocks `/dev/mem` reads, `perf_event_open`, debugfs/tracefs, raw PCI reads | Prevents kernel memory disclosure — raises the bar for information leaks needed to build exploits |
+| `nosmt` | Disables hyperthreading (simultaneous multithreading) | Eliminates Spectre v2 / Branch History Injection attacks via sibling hyperthreads. Costs ~20-30% throughput on HT-capable CPUs. |
+| `vsyscall=none` | Removes the legacy vsyscall page | ASLR hardening — removes a fixed-address page that attackers use for ROP gadgets |
+
+**Relationship to envpod's seccomp:**
+
+envpod's seccomp already blocks `kexec_load`, `bpf`, `perf_event_open`, `init_module`, and `finit_module`. Kernel lockdown enforces the same restrictions at a deeper level. The two are complementary — seccomp is the first barrier (userspace), lockdown is the second (kernel). An attacker must bypass both.
+
+**Isolation backend hierarchy (planned):**
+
+For environments where the shared kernel is an unacceptable risk, envpod's pluggable backend architecture supports stronger isolation:
+
+| Backend | Kernel exposure | Boot time | Use case |
+|---------|----------------|-----------|----------|
+| `native` | Shared host kernel, ~130 allowed syscalls | ~32ms | Development, coding agents |
+| `native` + lockdown | Shared, kernel self-protected | ~32ms | Production, sensitive workloads |
+| `docker` | Shared (container runtime) | ~500ms | Existing Docker infrastructure |
+| `vm` (Firecracker) | **Separate kernel per pod** | ~125ms | Untrusted agents, multi-tenant, compliance |
+
+All backends run the same governance layer — diff/commit/rollback, vault, DNS filtering, audit, action queue. The isolation strength changes; the governance is constant.
+
 ---
 
 ## Part 4: Pod Configuration Security Reference
@@ -1103,7 +1138,7 @@ WebRTC is inherently more secure for remote access due to mandatory DTLS encrypt
 
 ## Detailed Reference (Appendices A-E)
 
-The following detailed appendices are available in [SECURITY-MODEL-DETAILED.md](SECURITY-MODEL-DETAILED.md):
+The following detailed appendices are available on request for security audits and enterprise evaluations. Contact **security@envpod.dev** to request access.
 
 - **Appendix A** — Full allowed syscall list (default + browser profiles), blocked syscalls with reasons
 - **Appendix B** — All filesystem paths visible to pod, masked paths, commit exclusions, tracking defaults
