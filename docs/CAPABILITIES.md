@@ -1,12 +1,12 @@
 # Capabilities
 
-> **EnvPod v0.1.0** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
 > Author: Mark Amoboateng · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
 ---
 
-What envpod can do today (v0.1.0). For how-to guides, see [Quickstart](QUICKSTART.md) and [Tutorials](TUTORIALS.md).
+What envpod can do today (v0.1.1). For how-to guides, see [Quickstart](QUICKSTART.md) and [Tutorials](TUTORIALS.md).
 
 ## At a Glance
 
@@ -53,23 +53,7 @@ What envpod can do today (v0.1.0). For how-to guides, see [Quickstart](QUICKSTAR
 
 Every pod has a foundation, four walls, and a governance ceiling:
 
-```
-┌──────────────────────────────────────────────────┐
-│                  GOVERNANCE CEILING               │
-│  Vault · Queue · Undo · Monitor · Audit · DNS    │
-├───────────┬───────────┬──────────┬───────────────┤
-│ PROCESSOR │ NETWORK   │ MEMORY   │ DEVICES       │
-│ cgroups v2│ Net ns    │ PID ns   │ GPU pass-     │
-│ CPU/mem/  │ veth      │ mount ns │  through      │
-│ PID limits│ DNS filter│ UTS ns   │ Display/Audio │
-│ seccomp   │ iptables  │ user ns  │  passthrough  │
-│ affinity  │ port fwd  │ /proc    │               │
-├───────────┴───────────┴──────────┴───────────────┤
-│               ▼ FOUNDATION ▼                     │
-│         OverlayFS Copy-on-Write                  │
-│    diff · commit · rollback · snapshots          │
-└──────────────────────────────────────────────────┘
-```
+![Pod Architecture — governance ceiling, four walls, OverlayFS foundation](images/fig-02-capabilities-architecture.svg)
 
 ### What the agent cannot do
 

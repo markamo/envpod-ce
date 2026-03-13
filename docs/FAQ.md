@@ -1,6 +1,6 @@
 # Frequently Asked Questions
 
-> **EnvPod v0.1.0** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
 > Author: Mark Amoboateng · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -69,21 +69,7 @@ The right way to combine them is envpod's Docker backend: Docker provides the co
 
 Think of a pod as a building: a COW filesystem foundation underneath, four walls for isolation, and a governance ceiling on top:
 
-```
-         ┌─────────────────────────────────────┐
-         │        GOVERNANCE CEILING (roof)     │
-         │  Audit · Vault · Queue · Monitoring  │
-         ├─────────┬────────┬────────┬──────────┤
-         │PROCESSOR│NETWORK │ MEMORY │ DEVICES  │
-         │  WALL   │  WALL  │  WALL  │  WALL    │
-         │         │        │        │          │
-         ├─────────┴────────┴────────┴──────────┤
-         │    ▼ FOUNDATION (OverlayFS COW) ▼    │
-         │  diff · commit · rollback · snapshots │
-         ├─────────────────────────────────────┤
-         │           HOST SYSTEM                │
-         └─────────────────────────────────────┘
-```
+![Pod Architecture — governance ceiling, four walls, OverlayFS foundation](images/fig-02-capabilities-architecture.svg)
 
 Envpod provides a **foundation**, **four isolation walls**, and a **governance ceiling**:
 

@@ -1,11 +1,11 @@
-[![Release](https://img.shields.io/badge/release-v0.1.0-brightgreen)](https://github.com/markamo/envpod-ce/releases/tag/v0.1.0)
+[![Release](https://img.shields.io/badge/release-v0.1.1-brightgreen)](https://github.com/markamo/envpod-ce/releases/tag/v0.1.1)
 [![License](https://img.shields.io/badge/license-BSL--1.1-blue)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Linux%20x86__64%20%7C%20ARM64-lightgrey)](docs/EMBEDDED.md)
 [![Built with Rust](https://img.shields.io/badge/built%20with-Rust-orange)](https://www.rust-lang.org/)
 
 # envpod
 
-> **EnvPod v0.1.0** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
 > Author: Mark Amoboateng · mark@envpod.dev
 > Copyright 2026 Xtellix Inc.
 
@@ -115,29 +115,7 @@ See [Installation](docs/INSTALL.md), [Quickstart](docs/QUICKSTART.md), [Pod Conf
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────┐
-│                 GOVERNANCE CEILING                   │
-│  Credential Vault · Action Queue · Undo · Audit Log │
-│  Monitoring Agent · Remote Control · Dashboard      │
-├───────────┬───────────┬───────────┬─────────────────┤
-│ PROCESSOR │ NETWORK   │ MEMORY    │ DEVICES         │
-│ WALL      │ WALL      │ WALL      │ WALL            │
-│           │           │           │                  │
-│ cgroups v2│ Net ns    │ PID ns    │ GPU passthrough  │
-│ CPU/mem/  │ veth      │ mount ns  │ Display (X11/    │
-│ PID limits│ DNS filter│ UTS ns    │  Wayland/noVNC)  │
-│ seccomp   │ iptables  │ user ns   │ Audio (PW/PA)    │
-│ affinity  │ port fwd  │ /proc mask│                  │
-├───────────┴───────────┴───────────┴─────────────────┤
-│               ▼ FOUNDATION ▼                        │
-│         OverlayFS Copy-on-Write                     │
-│    diff · commit · rollback · snapshots             │
-├─────────────────────────────────────────────────────┤
-│              ISOLATION BACKEND (pluggable)           │
-│                  native (Linux)                      │
-└─────────────────────────────────────────────────────┘
-```
+![Pod Architecture — governance ceiling, four isolation walls, OverlayFS foundation, pluggable backend](docs/images/fig-01-pod-architecture.svg)
 
 ## CLI Commands
 

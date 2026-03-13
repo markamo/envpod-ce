@@ -89,15 +89,7 @@ Network isolation uses a pre-created network namespace (joined via `setns(CLONE_
 
 ### 2.2 Filesystem Isolation (OverlayFS)
 
-```
-┌──────────────────────────────────┐
-│          Agent's View            │  ← merged (overlay mount)
-├──────────────────────────────────┤
-│   Upper (pod-private writes)     │  ← only layer agent can modify
-├──────────────────────────────────┤
-│   Lower (host root, read-only)   │  ← immutable, live view of host
-└──────────────────────────────────┘
-```
+![OverlayFS layers — merged view, upper (pod writes), lower (host, read-only)](images/fig-04-overlayfs-layers.svg)
 
 **Rootfs structure at init:**
 
@@ -352,15 +344,7 @@ When GPU is disabled, GPU info paths are masked with empty read-only tmpfs overl
 
 Each pod gets an isolated network namespace with a veth pair connecting it to the host:
 
-```
-┌─────────────────┐          ┌─────────────────┐
-│   Host Network   │          │   Pod Network    │
-│                  │  veth    │                  │
-│  10.200.{idx}.1 ├──────────┤ 10.200.{idx}.2   │
-│                  │          │                  │
-│  NAT + iptables  │          │  DNS filtering   │
-└─────────────────┘          └─────────────────┘
-```
+![Network isolation — host and pod connected via veth pair](images/fig-05-network-veth.svg)
 
 **Subnet allocation:** `10.200.{idx}.0/30` — one /30 per pod (index 1-254). Kernel route collision check before allocation.
 
@@ -428,14 +412,7 @@ Per-pod embedded DNS resolver with three modes:
 - Wire format: `[12-byte nonce][ciphertext][16-byte Poly1305 tag]`
 
 **File layout:**
-```
-{pod_dir}/
-├── vault.key        # 256-bit master key (mode 0600)
-├── vault/           # Per-secret encrypted files (mode 0700)
-│   ├── OPENAI_KEY   # Encrypted (mode 0600)
-│   └── GITHUB_TOKEN # Encrypted (mode 0600)
-└── vault_env        # Plaintext KEY=value for runtime injection (mode 0644)
-```
+![Vault directory structure — encrypted secrets with per-file permissions](images/fig-06-vault-directory.svg)
 
 `vault_env` is bind-mounted read-only into the pod at `/run/envpod/secrets.env`. Secrets are loaded as environment variables at pod start.
 
@@ -1040,23 +1017,7 @@ When `devices.audio: true`, the host audio socket is bind-mounted into the pod:
 
 When `web_display.type: novnc`, envpod runs a virtual display stack entirely inside the pod:
 
-```
-┌─────────────────────────────────────────────────────┐
-│  Pod (inside namespace)                              │
-│                                                      │
-│  Xvfb :99 ──→ x11vnc ──→ websockify:6080 ──→ Browser│
-│  (virtual      (VNC        (WebSocket                │
-│   display)     server)      proxy)                   │
-│                                                      │
-│  PulseAudio ──→ Opus encoder ──→ websockify:6081     │
-│  (virtual       (audio            (audio             │
-│   sink)          stream)           WebSocket)        │
-│                                                      │
-│  Upload server ──→ :5080                             │
-│  (file upload      (HTTP)                            │
-│   to /tmp/uploads)                                   │
-└─────────────────────────────────────────────────────┘
-```
+![Web display stack — Xvfb, x11vnc, websockify, PulseAudio, upload server inside pod](images/fig-07-web-display-stack.svg)
 
 **All services run inside the pod's namespaces.** The host display, host audio, and host X11 are never touched. The agent gets a completely isolated virtual display.
 

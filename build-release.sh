@@ -3,8 +3,8 @@
 # build-release.sh — Build envpod and assemble self-contained release folders.
 #
 # Output:
-#   release/envpod-0.1.0-linux-x86_64/    (x86_64 release, default)
-#   release/envpod-0.1.0-linux-aarch64/   (ARM64: Raspberry Pi / Jetson Orin)
+#   release/envpod-0.1.1-linux-x86_64/    (x86_64 release, default)
+#   release/envpod-0.1.1-linux-aarch64/   (ARM64: Raspberry Pi / Jetson Orin)
 #
 # Usage:
 #   ./build-release.sh              # x86_64 only (default)

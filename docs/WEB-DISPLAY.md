@@ -102,13 +102,7 @@ sudo envpod start my-desktop
 
 ## How It Works
 
-```
-Browser ──WebSocket──→ websockify:6080 ──VNC──→ x11vnc:5900 ──X11──→ Xvfb:99
-                           │                                           │
-                     pod network ns                              virtual display
-                           │                                     (1280x720x24)
-              host:6080 ─DNAT─→ pod:6080
-```
+![Web display pipeline — Browser to websockify to x11vnc to Xvfb with DNAT](images/fig-09-display-pipeline.svg)
 
 ### At `envpod init`
 

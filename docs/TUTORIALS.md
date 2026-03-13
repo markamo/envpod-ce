@@ -1,7 +1,7 @@
 <!-- type-delay 0.03 -->
 # Tutorials
 
-> **EnvPod v0.1.0** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
 > Author: Mark Amoboateng · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Business Source License 1.1
 
@@ -2269,15 +2269,7 @@ sudo envpod commit demo --output /tmp/demo-export/
 
 This creates:
 
-```
-/tmp/demo-export/
-├── workspace/
-│   ├── hello.txt
-│   ├── notes.txt
-│   └── build.log
-└── etc/
-    └── hostname
-```
+![File export directory structure from envpod commit --output](images/fig-14-file-export.svg)
 
 Your real `/workspace/` and `/etc/hostname` are never touched. Combine with path selection:
 

@@ -14,21 +14,7 @@ Docker answers: **"Where does this process run?"** It draws a box around the pro
 
 envpod answers: **"What is this process allowed to do?"** It draws the same box, then adds a governance ceiling: every significant action is intercepted, queued, validated, audited, and optionally requires human approval before execution.
 
-```
-  Docker:                          envpod:
-
-  ┌─────────────────────┐          ┌─────────────────────────────────┐
-  │      agent          │          │  governance ceiling              │
-  │                     │          │  (policy, queue, vault, audit)   │
-  │  ┌───────────────┐  │          ├─────────────────────────────────┤
-  │  │   container   │  │          │          agent                   │
-  │  │  (isolated)   │  │          │                                  │
-  │  └───────────────┘  │          │  ┌───────────────────────────┐  │
-  │                     │          │  │        pod                │  │
-  └─────────────────────┘          │  │     (isolated)            │  │
-                                   │  └───────────────────────────┘  │
-                                   └─────────────────────────────────┘
-```
+![Docker vs envpod — isolation only vs isolation + governance](images/fig-08-docker-vs-envpod.svg)
 
 The isolation layer is roughly equivalent. The governance ceiling is what's new.
 

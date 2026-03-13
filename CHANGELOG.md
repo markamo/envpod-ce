@@ -4,24 +4,62 @@ All notable changes to envpod are documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased]
+## [0.1.1] - 2026-03-13
 
-### Added
+### New Commands
 
-- `--create-base [name]` flag for `envpod init` and `envpod setup` — base pods are no longer auto-created. Use `--create-base` to opt in. Accepts an optional name (defaults to pod name). Auto-increments on collision (e.g. `my-agent-2`) instead of overwriting.
-- `devices.desktop_env` — auto-install a desktop environment during `envpod init`. Options: `none` (default), `xfce` (xfce4 + xfce4-terminal + dbus-x11, ~200 MB), `openbox` (openbox + tint2 + xterm, ~50 MB), `sway` (sway + foot, ~150 MB, Wayland-native). Pairs with `web_display` or `devices.display` for browser-based or host display access.
-- `filesystem.mount_cwd` — mount the working directory into the pod with COW isolation. `envpod init` captures `$PWD`; `envpod run` bind-mounts it read-only. Agent sees real files, writes go to overlay. CLI: `-w`/`--mount-cwd` to force, `--no-mount-cwd` to skip.
-- `screen` auto-installed in all web display and desktop pods for resumable sessions
-- Multiple simultaneous `envpod run` sessions in the same web display pod (each gets an independent terminal, display services are shared)
-- `--version` flag for install scripts to pin a specific release version
-- `uninstall.sh` bundled in release tarballs
-- Universal installer (distro detection, container support) in release tarballs
+- `envpod start <names...> [--all]` — start stopped pods in background (uses `start_command` from pod.yaml, or `sleep infinity`)
+- `envpod stop <names...> [--all]` — stop running pods gracefully
+- `envpod restart <names...> [--all]` — stop + start in one step
+- `envpod prune` — remove all stopped pods
+- `envpod about` / `envpod --about` — version, license, project info, and system details
+
+### New Configuration
+
+- `start_command` in pod.yaml — default command for `envpod start` (e.g. `start_command: ["sleep", "infinity"]`)
+- `processor.tmp_size` — configurable `/tmp` tmpfs size (e.g. `tmp_size: 500MB`, default 100MB)
+- `processor.disk_size` — upper layer disk image for large pods (e.g. `disk_size: 10GB`)
+
+### Dashboard
+
+- `envpod dashboard --daemon/-d` — run dashboard in background
+- `envpod dashboard --stop` — stop background dashboard
+
+### Web Display (noVNC)
+
+- Clipboard sync between host and noVNC pod (bidirectional copy/paste)
+- NumLock state sync on display startup
+- noVNC info button showing pod details
+- Default `desktop_env`: openbox for agents, xfce for desktops
+- Auto-added port forwards no longer print noise on exit
+
+### Security
+
+- S-04 security finding for `seccomp_profile: none` — `envpod audit --security` now flags missing seccomp
+- Comprehensive security model document (`docs/SECURITY-MODEL.md`)
+- Host hardening recommendations and isolation backend hierarchy
+
+### Documentation
+
+- 14 SVG architecture diagrams replacing all ASCII art across docs
+- Security model deep-dive: filesystem, network, process, vault, display isolation
+- Tutorial 15: commit workflow with selective paths and `--output` export
+- Troubleshooting guide with common issues and fixes
+- API key authentication docs added to all agent example configs
+- Demo GIFs for quickstart, diff/commit, vault, web display, dashboard
 
 ### Fixed
 
-- APT GPG signature failures in OverlayFS pods (`rm -rf /var/lib/apt/lists/*` before update)
-- Display services blocking user terminal (split into background daemon + lightweight wrapper)
-- D-Bus "Could not connect to bus" error in web display pods (auto-start `dbus-daemon --session`)
+- **TUI apps broken in pods** — devpts not mounted, seccomp blocking `restart_syscall`, SIGINT not forwarded to child process. Vim, htop, claude, and other terminal apps now work correctly.
+- **XFCE desktop startup failures** — D-Bus auth cookie path, ICE authority, seccomp syscalls for desktop session
+- **Display wrapper killing user shell on exit** — wrapper now detaches cleanly
+- **noVNC clipboard error on non-HTTPS** — clipboard API requires secure context; error bar added with dismiss button
+- **VS Code desktop shortcut** — patches original `.desktop` instead of overwriting (preserves icon path)
+- **Chrome set as default browser** in desktop pod examples
+
+### Example Configs
+
+- 41 example configs (up from 20 in v0.1.0): added desktop-user, desktop-agent, workstation, web-display variants, and updated all existing configs with `start_command`, API key docs, and fixed desktop shortcuts
 
 ## [0.1.0] - 2026-03-03
 
@@ -74,10 +112,16 @@ First public release.
 - System access profiles: safe, advanced, dangerous
 - Host path bind mounts (`mount`, `unmount`)
 - Shell completions (bash, zsh, fish)
+- `--create-base [name]` flag for `envpod init` and `envpod setup`
+- `devices.desktop_env` — auto-install desktop environment (xfce, openbox, sway)
+- `filesystem.mount_cwd` — mount working directory into pod with COW isolation
+- `screen` auto-installed in web display pods for resumable sessions
+- Multiple simultaneous `envpod run` sessions in web display pods
+- Universal installer with `--version` flag and `uninstall.sh`
 
 ### Platform
 
-- Static musl binary (12 MB, no runtime dependencies)
+- Static musl binary (13 MB, no runtime dependencies)
 - x86_64 and ARM64 (aarch64) support
 - Raspberry Pi 4/5 and Jetson Orin tested
 
@@ -85,4 +129,5 @@ First public release.
 
 - 20 example pod configs: coding-agent, claude-code, codex, opencode, aider, swe-agent, browser, browser-wayland, browser-use, openclaw, ml-training, nodejs, python-env, devbox, hardened-sandbox, fuse-agent, demo-pod, monitoring-policy, raspberry-pi, jetson-orin
 
+[0.1.1]: https://github.com/markamo/envpod-ce/releases/tag/v0.1.1
 [0.1.0]: https://github.com/markamo/envpod-ce/releases/tag/v0.1.0

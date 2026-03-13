@@ -1,7 +1,7 @@
 <!-- type-delay 0.03 -->
 # envpod User Guide
 
-> **EnvPod v0.1.0** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
 > Author: Mark Amoboateng · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -62,34 +62,13 @@ Every action is auditable. Every capability is revocable. Every change is revers
 
 A pod is a self-contained execution environment with a foundation (COW filesystem), four isolation walls, and a governance ceiling.
 
-<!-- output -->
-```
-┌──────────────────────────────────────────────────────────┐
-│                  GOVERNANCE CEILING                       │
-│  Audit · Vault · Action Queue · Monitoring · Lockdown    │
-├──────────────┬─────────────┬─────────────┬──────────────┤
-│  PROCESSOR   │   NETWORK   │   MEMORY    │   DEVICES    │
-│  cgroups v2  │ DNS filter  │ /proc mask  │ GPU pass-    │
-│  CPU affinity│ namespace   │ coredump    │  through     │
-│  seccomp-BPF │ iptables    │ prevention  │ Display/Audio│
-├──────────────┴─────────────┴─────────────┴──────────────┤
-│                  ▼ FOUNDATION ▼                          │
-│            OverlayFS Copy-on-Write                       │
-│       diff · commit · rollback · snapshots               │
-└──────────────────────────────────────────────────────────┘
-```
+![Pod Architecture — governance ceiling, four walls, OverlayFS foundation](images/fig-03-userguide-architecture.svg)
 
 <!-- pause 2 -->
 
 ### Lifecycle
 
-<!-- output -->
-```
-init → setup → Created → start → Running → stop → Stopped → start → Running
-                                     │                                   │
-                                     ▼                                   ▼
-                               diff → commit or rollback           destroy
-```
+![Pod lifecycle — init, setup, start, run, stop, diff, commit, rollback, destroy](images/fig-10-pod-lifecycle.svg)
 
 1. **init** — Create the pod (overlay dirs, cgroup, network namespace)
 2. **setup** — Install software inside the pod (runs setup commands from pod.yaml)
@@ -1008,18 +987,7 @@ Every pod uses Linux OverlayFS for copy-on-write filesystem isolation.
 
 ### How It Works
 
-<!-- output -->
-```
-┌─────────────┐
-│   Agent      │ ← sees "merged" view
-│   Process    │
-└──────┬───────┘
-       │
-┌──────▼───────┐     ┌──────────────┐
-│   Merged     │ = │  Upper (RW)  │ + Lower (RO)
-│   (overlay)  │     │  (pod writes)│   (rootfs)
-└──────────────┘     └──────────────┘
-```
+![OverlayFS merged view — agent sees upper (RW) + lower (RO) combined](images/fig-11-overlayfs-merged.svg)
 
 - **Lower layer** — minimal rootfs skeleton (read-only)
 - **Upper layer** — all agent writes land here
@@ -2292,21 +2260,7 @@ Files in the overlay's upper layer appear in `envpod diff`. Infrastructure files
 
 All pod data is stored under `/var/lib/envpod/` by default:
 
-<!-- output -->
-```
-/var/lib/envpod/
-├── state/                  # Pod handle JSON files
-├── pods/{uuid}/            # Per-pod data
-│   ├── rootfs/             # Minimal rootfs skeleton
-│   ├── upper/              # OverlayFS upper layer (agent writes)
-│   ├── work/               # OverlayFS work directory
-│   ├── merged/             # OverlayFS merged mount point
-│   ├── audit.jsonl         # Audit log
-│   ├── vault.key           # Per-pod encryption key (32 bytes, 0600)
-│   ├── vault/              # Encrypted secrets (0700 dir, 0600 files)
-│   └── output.log          # stdout/stderr capture
-└── netns_index/            # Network namespace index allocation
-```
+![Pod data directory structure — state, pods, rootfs, overlay, vault, audit](images/fig-12-data-directory.svg)
 
 Override with `--dir` or `ENVPOD_DIR`:
 
