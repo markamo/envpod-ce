@@ -541,6 +541,18 @@ enum Commands {
         /// Enable GPU passthrough (stopped pods only)
         #[arg(long)]
         gpu: Option<bool>,
+        /// Enable display forwarding (stopped pods only)
+        #[arg(long)]
+        display: Option<bool>,
+        /// Enable audio forwarding (stopped pods only)
+        #[arg(long)]
+        audio: Option<bool>,
+        /// Desktop environment: none, xfce, openbox, sway (stopped pods only)
+        #[arg(long)]
+        desktop: Option<String>,
+        /// Web display type: none, novnc (stopped pods only)
+        #[arg(long)]
+        web_display: Option<String>,
     },
     /// Generate shell tab completions
     Completions {
@@ -885,8 +897,8 @@ async fn run(cli: Cli) -> Result<()> {
             cmd_discover(&store, base_dir, &name, on, off, &add_pods, &remove_pods).await,
         Commands::DnsDaemon { socket } => cmd_dns_daemon(base_dir, socket).await,
         Commands::Snapshot { name, action } => cmd_snapshot(&store, base_dir, &name, action),
-        Commands::Resize { name, cpus, memory, tmp_size, disk_size, max_pids, cpu_affinity, gpu } =>
-            cmd_resize(&store, base_dir, &name, cpus, memory.as_deref(), tmp_size.as_deref(), disk_size.as_deref(), max_pids, cpu_affinity.as_deref(), gpu),
+        Commands::Resize { name, cpus, memory, tmp_size, disk_size, max_pids, cpu_affinity, gpu, display, audio, desktop, web_display } =>
+            cmd_resize(&store, base_dir, &name, cpus, memory.as_deref(), tmp_size.as_deref(), disk_size.as_deref(), max_pids, cpu_affinity.as_deref(), gpu, display, audio, desktop.as_deref(), web_display.as_deref()),
         Commands::Prune { bases } => cmd_prune(&store, base_dir, bases).await,
         Commands::Gc => {
             let result = gc_all(&base_dir, &store)?;
@@ -5020,8 +5032,12 @@ fn cmd_resize(
     max_pids: Option<u32>,
     cpu_affinity: Option<&str>,
     gpu: Option<bool>,
+    display: Option<bool>,
+    audio: Option<bool>,
+    desktop: Option<&str>,
+    web_display: Option<&str>,
 ) -> Result<()> {
-    use envpod_core::config::parse_memory_string;
+    use envpod_core::config::{parse_memory_string, DesktopEnv, WebDisplayType};
     use envpod_core::types::ResourceLimits;
 
     // Validate that at least one option was given
@@ -5032,10 +5048,28 @@ fn cmd_resize(
         && max_pids.is_none()
         && cpu_affinity.is_none()
         && gpu.is_none()
+        && display.is_none()
+        && audio.is_none()
+        && desktop.is_none()
+        && web_display.is_none()
     {
         anyhow::bail!(
-            "nothing to resize — specify at least one of: --cpus, --memory, --tmp-size, --disk-size, --max-pids, --cpu-affinity, --gpu"
+            "nothing to resize — specify at least one of: --cpus, --memory, --tmp-size, --disk-size, --max-pids, --cpu-affinity, --gpu, --display, --audio, --desktop, --web-display"
         );
+    }
+
+    // Validate desktop/web-display values
+    if let Some(d) = desktop {
+        match d {
+            "none" | "xfce" | "openbox" | "sway" => {}
+            _ => anyhow::bail!("invalid desktop: '{d}' (expected: none, xfce, openbox, sway)"),
+        }
+    }
+    if let Some(w) = web_display {
+        match w {
+            "none" | "novnc" => {}
+            _ => anyhow::bail!("invalid web-display: '{w}' (expected: none, novnc)"),
+        }
     }
 
     // Validate memory strings before doing anything
@@ -5059,9 +5093,10 @@ fn cmd_resize(
     let state = NativeState::from_handle(&handle)?;
     let is_running = state.status == NativeStatus::Running;
 
-    // GPU can only be changed on stopped pods
-    if gpu.is_some() && is_running {
-        anyhow::bail!("GPU passthrough can only be changed on a stopped pod (device mounts are set at start)");
+    // Device/display changes require a stopped pod (bind mounts set at start)
+    let device_changes = gpu.is_some() || display.is_some() || audio.is_some() || desktop.is_some() || web_display.is_some();
+    if device_changes && is_running {
+        anyhow::bail!("--gpu, --display, --audio, --desktop, and --web-display can only be changed on a stopped pod");
     }
 
     // --- 1. Apply live cgroup changes if pod is running ---
@@ -5135,6 +5170,30 @@ fn cmd_resize(
         config.devices.gpu = g;
         config_changes.push(format!("gpu: {g}"));
     }
+    if let Some(d) = display {
+        config.devices.display = d;
+        config_changes.push(format!("display: {d}"));
+    }
+    if let Some(a) = audio {
+        config.devices.audio = a;
+        config_changes.push(format!("audio: {a}"));
+    }
+    if let Some(d) = desktop {
+        config.devices.desktop_env = match d {
+            "xfce" => DesktopEnv::Xfce,
+            "openbox" => DesktopEnv::Openbox,
+            "sway" => DesktopEnv::Sway,
+            _ => DesktopEnv::None,
+        };
+        config_changes.push(format!("desktop: {d}"));
+    }
+    if let Some(w) = web_display {
+        config.web_display.display_type = match w {
+            "novnc" => WebDisplayType::Novnc,
+            _ => WebDisplayType::None,
+        };
+        config_changes.push(format!("web_display: {w}"));
+    }
 
     let yaml = serde_yaml::to_string(&config).context("serialize pod.yaml")?;
     std::fs::write(&config_path, yaml)
@@ -5159,8 +5218,8 @@ fn cmd_resize(
     if !is_running && (cpus.is_some() || memory.is_some() || max_pids.is_some() || cpu_affinity.is_some()) {
         eprintln!("  {} changes take effect on next start", color::dim("i"));
     }
-    if gpu.is_some() {
-        eprintln!("  {} GPU change takes effect on next start", color::dim("i"));
+    if device_changes {
+        eprintln!("  {} device/display changes take effect on next start", color::dim("i"));
     }
 
     let _ = base_dir;
