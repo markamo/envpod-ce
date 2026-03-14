@@ -644,6 +644,52 @@ sudo envpod dns my-agent --remove-allow api.example.com
 sudo envpod dns my-agent --allow a.com --allow b.com --deny c.com
 ```
 
+#### `envpod resize <name> [options]`
+
+Resize CPU, memory, disk, or device settings on a pod. Resource changes apply **live** on running pods (via cgroup writes and tmpfs remount). Device/display changes require the pod to be stopped.
+
+| Option | Live | Description |
+|--------|------|-------------|
+| `--cpus <n>` | Yes | CPU cores (fractional, e.g. 0.5, 2, 4) |
+| `--memory <size>` | Yes | Memory limit (e.g. "512MB", "2GB") |
+| `--tmp-size <size>` | Yes | /tmp tmpfs size (e.g. "1GB", "4GB") |
+| `--max-pids <n>` | Yes | Max processes/threads |
+| `--cpu-affinity <cpus>` | Yes | Pin to CPUs (e.g. "0-1", "0,2") |
+| `--disk-size <size>` | No | Max overlay disk size |
+| `--gpu <bool>` | No | GPU passthrough |
+| `--display <bool>` | No | Display forwarding |
+| `--audio <bool>` | No | Audio forwarding |
+| `--desktop <env>` | No | Desktop: none, xfce, openbox, sway |
+| `--web-display <type>` | No | Web display: none, novnc |
+
+All changes are persisted to `pod.yaml` — they survive restarts. "Live" changes also take effect immediately on a running pod.
+
+<!-- no-exec -->
+```bash
+# Bump memory and tmp for a failed pip install, then re-run setup
+sudo envpod resize my-pod --memory 8GB --tmp-size 4GB
+sudo envpod setup my-pod
+
+# Scale up a running pod (no restart)
+sudo envpod resize my-pod --cpus 4 --memory 16GB
+
+# Add GPU + noVNC desktop to a stopped pod
+sudo envpod resize my-pod --gpu true --web-display novnc --desktop xfce
+```
+
+#### `envpod base resize <name> [options]`
+
+Resize a base pod's config. Future clones inherit the updated settings. Takes the same options as `envpod resize`.
+
+<!-- no-exec -->
+```bash
+# Update base pod resources — all future clones get 8GB
+sudo envpod base resize my-base --memory 8GB --tmp-size 2GB
+
+# Clone inherits the resized config
+sudo envpod clone my-base new-pod
+```
+
 ### Lockdown & Undo
 
 #### `envpod lock [<name>] [--all]`
@@ -2010,10 +2056,12 @@ All isolation walls are dynamically mutable during execution without restart or 
 
 | Mutation | Command |
 |----------|---------|
+| Resize CPU/memory/tmp | `envpod resize --cpus` / `--memory` / `--tmp-size` |
 | Mount/unmount paths | `envpod mount` / `envpod unmount` |
 | Add/remove DNS rules | `envpod dns --allow` / `--deny` |
-| Freeze/resume | `envpod lock` / `envpod remote resume` |
-| Restrict resources | `envpod remote restrict --payload {...}` |
+| Add/remove port forwards | `envpod ports --publish` / `--remove` |
+| Toggle discovery | `envpod discover --on` / `--off` |
+| Freeze/resume | `envpod lock` / `envpod unlock` |
 | Update monitoring | `envpod monitor set-policy` |
 | Store/revoke secrets | `envpod vault set` / `envpod vault rm` |
 

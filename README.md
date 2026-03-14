@@ -148,7 +148,8 @@ See [Installation](docs/INSTALL.md), [Quickstart](docs/QUICKSTART.md), [Pod Conf
 | `envpod kill <name>` | Stop processes and rollback |
 | `envpod destroy <names...> [--base] [--full]` | Remove pod(s). `--full` also cleans iptables immediately |
 | `envpod clone <source> <name> [--current]` | Clone a pod or base pod (fast — skips rootfs rebuild) |
-| `envpod base create/ls/destroy` | Manage base pods (reusable snapshots for cloning) |
+| `envpod resize <name> [--cpus/--memory/--gpu/...]` | Resize resources (live if running) or toggle devices (stopped) |
+| `envpod base create/ls/destroy/resize` | Manage base pods (reusable snapshots for cloning) |
 | `envpod ls [--json]` | List all pods |
 | `envpod queue <name>` | View action staging queue |
 | `envpod approve <name> <id>` | Approve a queued action |

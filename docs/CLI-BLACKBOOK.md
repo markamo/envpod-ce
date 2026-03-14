@@ -840,6 +840,65 @@ sudo envpod base create python-ml -c configs/ml.yaml
 sudo envpod base create browser-agent -c configs/browser.yaml
 ```
 
+### base resize
+
+Update a base pod's config. Future clones inherit the updated settings. Takes the same options as `envpod resize`.
+
+```bash
+envpod base resize <name> [--cpus <n>] [--memory <size>] [--tmp-size <size>] [--gpu <bool>] [--display <bool>] [--audio <bool>] [--desktop <env>] [--web-display <type>]
+```
+
+```bash
+# Update base to 8GB memory — all future clones get it
+sudo envpod base resize my-base --memory 8GB --tmp-size 2GB
+
+# Add GPU + noVNC to base
+sudo envpod base resize my-base --gpu true --web-display novnc --desktop xfce
+```
+
+---
+
+## resize
+
+Resize CPU, memory, disk, or device settings on a pod. Resource limits apply **live** on running pods (cgroup writes + tmpfs remount). Device/display changes require the pod to be stopped.
+
+```bash
+envpod resize <name> [--cpus <n>] [--memory <size>] [--tmp-size <size>] [--disk-size <size>] [--max-pids <n>] [--cpu-affinity <cpus>] [--gpu <bool>] [--display <bool>] [--audio <bool>] [--desktop <env>] [--web-display <type>]
+```
+
+| Option | Live | Stopped | Description |
+|--------|------|---------|-------------|
+| `--cpus` | Yes | Yes | CPU cores (fractional) |
+| `--memory` | Yes | Yes | Memory limit (e.g. "8GB") |
+| `--tmp-size` | Yes | Yes | /tmp tmpfs size |
+| `--max-pids` | Yes | Yes | Max processes |
+| `--cpu-affinity` | Yes | Yes | Pin to specific CPUs |
+| `--disk-size` | No | Yes | Overlay disk limit |
+| `--gpu` | No | Yes | GPU passthrough |
+| `--display` | No | Yes | Display forwarding |
+| `--audio` | No | Yes | Audio forwarding |
+| `--desktop` | No | Yes | Desktop env (none/xfce/openbox/sway) |
+| `--web-display` | No | Yes | Web display (none/novnc) |
+
+All changes are persisted to `pod.yaml`.
+
+```bash
+# Fix a failed setup — bump resources, then retry
+sudo envpod resize my-pod --memory 8GB --tmp-size 4GB
+sudo envpod setup my-pod
+
+# Scale up a running pod (instant — no restart)
+sudo envpod resize my-pod --cpus 4 --memory 16GB
+
+# Add GPU + noVNC desktop to a stopped pod
+sudo envpod resize my-pod --gpu true --web-display novnc --desktop xfce
+
+# Downscale a running pod
+sudo envpod resize my-pod --cpus 1 --memory 1GB
+```
+
+**Audit:** Every resize is logged in the pod's audit trail (`envpod audit <name>`).
+
 ---
 
 ## snapshot
