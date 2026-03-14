@@ -352,6 +352,44 @@ Both `setup` commands and `setup_script` run automatically during `envpod init`.
 
 ---
 
+## Why does `apt-get update` fail or install wrong versions?
+
+Pod overlays inherit stale `/var/lib/apt/lists/` from the host filesystem. When `apt-get update` runs inside the pod, it may fail with hash mismatch errors or install outdated packages.
+
+Fix by clearing the apt lists as the first setup step:
+
+```yaml
+setup:
+  - "rm -rf /var/lib/apt/lists/*"
+  - "apt-get update && apt-get install -y my-package"
+```
+
+This is safe — the deletion happens in the COW overlay, not on the host.
+
+---
+
+## Why does `pip install` fail during setup on Ubuntu 24.04?
+
+Three common causes:
+
+1. **PEP 668 "externally-managed-environment"** — Ubuntu 24.04 blocks system-wide pip. Fix: `rm -f /usr/lib/python*/EXTERNALLY-MANAGED`
+2. **"Cannot uninstall X, RECORD file not found"** — Debian packages lack pip metadata. Fix: remove dist-info without RECORD files (see below)
+3. **"No space left on device"** — default `/tmp` is 100MB, large packages (Playwright = 46MB) fill it. Fix: `tmp_size: "2GB"` in pod.yaml
+
+Add these lines before your `pip install` in setup:
+
+```yaml
+setup:
+  - "rm -f /usr/lib/python*/EXTERNALLY-MANAGED"
+  - "rm -rf /var/lib/apt/lists/*"
+  - "find /usr/lib/python3/dist-packages -maxdepth 1 -name '*.dist-info' -exec sh -c 'test ! -f \"$1/RECORD\" && rm -rf \"$1\"' _ {} \\;"
+  - "pip install my-package"
+```
+
+All fixes are safe — writes go to the COW overlay, the host is never modified.
+
+---
+
 ## Do envpod pods sleep?
 
 Yes, but envpod calls it **freezing** rather than sleeping.

@@ -48,6 +48,7 @@ network:
       - files.pythonhosted.org
 
 filesystem:
+  system_access: advanced
   tracking:
     watch:
       - /home
@@ -64,6 +65,7 @@ filesystem:
 processor:
   cores: 2.0
   memory: "2GB"
+  tmp_size: "1GB"
 
 security:
   seccomp_profile: default
@@ -83,6 +85,9 @@ audit:
   action_log: true
 
 setup:
+  - "rm -f /usr/lib/python*/EXTERNALLY-MANAGED"
+  - "rm -rf /var/lib/apt/lists/*"
   - "command -v pip >/dev/null || { apt-get update && apt-get install -y python3-pip; }"
   - "git clone https://github.com/SWE-agent/SWE-agent.git /opt/swe-agent"
+  - "find /usr/lib/python3/dist-packages -maxdepth 1 -name '*.dist-info' -exec sh -c 'test ! -f \"$1/RECORD\" && rm -rf \"$1\"' _ {} \\;"
   - "cd /opt/swe-agent && pip install --editable ."

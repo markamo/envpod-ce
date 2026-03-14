@@ -29,6 +29,10 @@ Existing sandboxes (Docker, E2B, Firecrackers) provide isolation but zero govern
 
 **COW Foundation** — OverlayFS copy-on-write. Every write lands in a private overlay — the host is untouched. Review changes with `diff`, accept with `commit`, discard with `rollback`. The foundation makes everything else reversible.
 
+<p align="center">
+  <img src="assets/demos/02-governance.gif" alt="envpod governance — diff, commit, rollback" width="800">
+</p>
+
 **Processor Wall** — cgroups v2 (CPU, memory, PID limits), seccomp-BPF syscall filtering, CPU affinity. A runaway agent cannot starve the host.
 
 **Network Wall** — Each pod gets its own network namespace with veth pairs. Embedded DNS resolver per pod with whitelist, blacklist, or monitor modes. Every DNS query is logged.
@@ -40,6 +44,10 @@ Existing sandboxes (Docker, E2B, Firecrackers) provide isolation but zero govern
 **Credential Vault** — Secrets stored encrypted (ChaCha20-Poly1305), injected as environment variables at runtime. **Vault proxy injection** (v0.2) goes further: a transparent HTTPS proxy intercepts API requests, strips dummy auth headers, and injects real credentials at the transport layer — the agent never has access to real API keys in env vars, memory, or config files.
 
 **Web Dashboard** — Browser-based fleet management UI (`envpod dashboard`). Real-time pod overview with resource monitoring, audit trail viewer, filesystem diff inspector, and one-click commit/rollback/freeze/resume actions.
+
+<p align="center">
+  <img src="assets/demos/06-fleet.gif" alt="envpod web dashboard — fleet management" width="800">
+</p>
 
 **Action Queue** — Actions classified by reversibility: immediate (COW-protected), delayed (auto-execute after timeout), staged (human approval required), blocked (denied).
 
@@ -56,6 +64,10 @@ Existing sandboxes (Docker, E2B, Firecrackers) provide isolation but zero govern
 **Display + Audio Forwarding** — GPU passthrough, Wayland/X11 display forwarding, PipeWire/PulseAudio audio forwarding for GUI agents. Auto-install desktop environments (xfce, openbox, sway) via `devices.desktop_env`.
 
 **Web Display (noVNC)** — Run a full browser desktop inside a pod, accessible from any browser at localhost:6080. Envpod auto-brands the interface, auto-connects (no click needed), and includes a file upload button (files go to `/tmp/uploads/`). Built-in audio streaming via PulseAudio + Opus/WebM with toast notifications for upload status. All supervisor processes auto-restart on crash. Works on headless servers, SSH sessions, no host display needed. Three desktop environments: xfce (~200MB), openbox (~50MB), sway (~150MB). Default ports: 6080 (display), 6081 (audio), 5080 (upload).
+
+<p align="center">
+  <img src="docs/images/screenshot-web-desktop.png" alt="envpod web desktop — VS Code, Chrome, OpenClaw, nvidia-smi, GIMP running in a governed pod" width="800">
+</p>
 
 **Snapshots** — Save and restore the agent's overlay state at any point. `envpod snapshot create/ls/restore/destroy/prune/promote`. Auto-snapshot before every run. Promote any snapshot to a clonable base pod. Configurable retention.
 
@@ -111,7 +123,7 @@ sudo envpod audit my-agent
 sudo envpod audit my-agent --security
 ```
 
-See [Installation](docs/INSTALL.md), [Quickstart](docs/QUICKSTART.md), [Pod Config](docs/POD-CONFIG.md), [Tutorials](docs/TUTORIALS.md), [Action Catalog](docs/ACTION-CATALOG.md), [CLI Black Book](docs/CLI-BLACKBOOK.md), [Capabilities](docs/CAPABILITIES.md), [Features](docs/FEATURES.md), [Compare vs Docker](docs/COMPARE-DOCKER.md), [Benchmarks](docs/BENCHMARKS.md), [Security](docs/SECURITY.md), [Licensing](docs/LICENSING.md), [Roadmap](docs/ROADMAP.md), [FAQ](docs/FAQ.md), [Changelog](CHANGELOG.md), and [Contributing](CONTRIBUTING.md) for more.
+See [Installation](docs/INSTALL.md), [Quickstart](docs/QUICKSTART.md), [Pod Config](docs/POD-CONFIG.md), [Tutorials](docs/TUTORIALS.md), [Action Catalog](docs/ACTION-CATALOG.md), [CLI Black Book](docs/CLI-BLACKBOOK.md), [Capabilities](docs/CAPABILITIES.md), [Features](docs/FEATURES.md), [Compare vs Docker](docs/COMPARE-DOCKER.md), [Benchmarks](docs/BENCHMARKS.md), [Security](docs/SECURITY.md), [Licensing](docs/LICENSING.md), [FAQ](docs/FAQ.md), [Changelog](CHANGELOG.md), and [Contributing](CONTRIBUTING.md) for more.
 
 ## Architecture
 

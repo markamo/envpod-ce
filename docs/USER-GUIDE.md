@@ -2252,6 +2252,57 @@ These warnings appear during `envpod init` when the kernel or system doesn't sup
 
 Check that you have the required kernel features (cgroups v2, network namespaces) and that `iptables` and `ip` commands are installed. See [INSTALL.md](INSTALL.md) for prerequisites.
 
+### apt-get update Fails or Installs Wrong Versions
+
+Pod overlays inherit stale `/var/lib/apt/lists/` from the host. This can cause `apt-get update` to fail or install outdated packages. Fix by clearing the lists before any apt operations:
+
+<!-- output -->
+```yaml
+setup:
+  - "rm -rf /var/lib/apt/lists/*"
+  - "apt-get update && apt-get install -y my-package"
+```
+
+This is safe inside a pod — the deletion happens in the COW overlay, not on the host. All example configs in `examples/` include this fix.
+
+### pip install Fails During Setup (Ubuntu 24.04)
+
+Three common issues when running `pip install` in pod setup commands on Ubuntu 24.04+:
+
+**1. "externally-managed-environment" error**
+
+Ubuntu 24.04 blocks system-wide pip installs (PEP 668). The pod inherits this restriction from the host. Fix by removing the marker file:
+
+<!-- output -->
+```yaml
+setup:
+  - "rm -f /usr/lib/python*/EXTERNALLY-MANAGED"
+  - "pip install my-package"
+```
+
+**2. "Cannot uninstall X, RECORD file not found"**
+
+Debian-installed Python packages lack pip's RECORD metadata, so pip cannot uninstall them to upgrade. Fix by removing dist-info entries without RECORD files:
+
+<!-- output -->
+```yaml
+setup:
+  - "find /usr/lib/python3/dist-packages -maxdepth 1 -name '*.dist-info' -exec sh -c 'test ! -f \"$1/RECORD\" && rm -rf \"$1\"' _ {} \\;"
+  - "pip install my-package"
+```
+
+**3. "No space left on device" during pip install**
+
+Large packages (e.g., Playwright at 46MB) fill the default 100MB `/tmp`. Increase `tmp_size` in pod.yaml:
+
+<!-- output -->
+```yaml
+processor:
+  tmp_size: "2GB"
+```
+
+All three fixes are safe inside a pod — writes go to the COW overlay, so the host is never modified. See the example configs in `examples/` for the complete pattern.
+
 ### Diff Shows Unexpected Files
 
 Files in the overlay's upper layer appear in `envpod diff`. Infrastructure files (`.wh.*` whiteout files used by OverlayFS) are automatically excluded. If you see unexpected files, the agent likely created them. Use `envpod rollback` to discard.

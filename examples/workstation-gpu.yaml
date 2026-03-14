@@ -76,6 +76,7 @@ audit:
   action_log: true
 
 setup:
+  - "rm -rf /var/lib/apt/lists/*"
   # Chrome
   - |
     if command -v google-chrome >/dev/null 2>&1; then

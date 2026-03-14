@@ -23,6 +23,7 @@ network:
       - files.pythonhosted.org
 
 filesystem:
+  system_access: advanced
   tracking:
     watch:
       - /home
@@ -52,4 +53,6 @@ audit:
   action_log: true
 
 setup:
+  - "rm -f /usr/lib/python*/EXTERNALLY-MANAGED"
+  - "find /usr/lib/python3/dist-packages -maxdepth 1 -name '*.dist-info' -exec sh -c 'test ! -f \"$1/RECORD\" && rm -rf \"$1\"' _ {} \\;"
   - "pip install s3fs rclone"

@@ -9,7 +9,7 @@
 #      curl -fsSL https://envpod.dev/install.sh | sudo bash
 #
 #   2. From release tarball (uses local binary):
-#      cd envpod-0.1.0-linux-x86_64 && sudo bash install.sh
+#      cd envpod-0.1.1-linux-x86_64 && sudo bash install.sh
 #
 # Auto-detects: distro, package manager, architecture, container vs bare metal.
 # Installs prerequisites, downloads binary if needed, sets up envpod.
@@ -26,7 +26,7 @@
 #
 set -euo pipefail
 
-ENVPOD_CURRENT_VERSION="0.1.0"
+ENVPOD_CURRENT_VERSION="0.1.1"
 ENVPOD_REPO="https://github.com/markamo/envpod-ce"
 
 INSTALL_DIR="/usr/local/bin"

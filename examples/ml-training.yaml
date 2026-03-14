@@ -28,6 +28,7 @@ network:
       - "*.anaconda.org"
 
 filesystem:
+  system_access: advanced
   tracking:
     watch:
       - /home
@@ -44,6 +45,7 @@ filesystem:
 processor:
   cores: 4.0
   memory: "16GB"
+  tmp_size: "8GB"
 
 devices:
   gpu: true
@@ -55,4 +57,6 @@ audit:
   action_log: true
 
 setup:
+  - "rm -f /usr/lib/python*/EXTERNALLY-MANAGED"
+  - "find /usr/lib/python3/dist-packages -maxdepth 1 -name '*.dist-info' -exec sh -c 'test ! -f \"$1/RECORD\" && rm -rf \"$1\"' _ {} \\;"
   - "pip install torch torchvision numpy pandas matplotlib"

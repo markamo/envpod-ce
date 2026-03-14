@@ -23,9 +23,9 @@ filesystem:
     - git
 
 network:
-  mode: Filtered
+  mode: Isolated
   dns:
-    mode: whitelist
+    mode: Whitelist
     allow:
       - "github.com"
       - "*.githubusercontent.com"

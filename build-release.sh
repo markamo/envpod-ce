@@ -184,7 +184,6 @@ ${RELEASE_NAME}/
 │   ├── TUTORIALS.md
 │   ├── POD-CONFIG.md
 │   ├── CAPABILITIES.md
-│   ├── ROADMAP.md
 │   └── EMBEDDED.md     (Raspberry Pi / Jetson Orin guide)
 └── examples/       Pod configs (24 YAML) + jailbreak-test.sh
 \`\`\`
@@ -218,7 +217,7 @@ sudo envpod audit my-agent --security
 
 See [docs/INSTALL.md](docs/INSTALL.md), [docs/QUICKSTART.md](docs/QUICKSTART.md),
 [docs/POD-CONFIG.md](docs/POD-CONFIG.md), [docs/TUTORIALS.md](docs/TUTORIALS.md),
-[docs/CAPABILITIES.md](docs/CAPABILITIES.md), [docs/ROADMAP.md](docs/ROADMAP.md),
+[docs/CAPABILITIES.md](docs/CAPABILITIES.md),
 [docs/BENCHMARKS.md](docs/BENCHMARKS.md), [docs/SECURITY.md](docs/SECURITY.md),
 [docs/FAQ.md](docs/FAQ.md), and [docs/EMBEDDED.md](docs/EMBEDDED.md).
 
@@ -323,7 +322,7 @@ README_EOF
 
     for doc in INSTALL.md QUICKSTART.md USER-GUIDE.md FAQ.md BENCHMARKS.md \
                SECURITY.md TUTORIALS.md POD-CONFIG.md CAPABILITIES.md \
-               ROADMAP.md EMBEDDED.md; do
+               EMBEDDED.md; do
         if [[ -f "${SCRIPT_DIR}/docs/${doc}" ]]; then
             cp "${SCRIPT_DIR}/docs/${doc}" "${RELEASE_DIR}/docs/${doc}"
         else

@@ -69,7 +69,7 @@ audit:
 
 setup:
   # Install nvm to /opt/nvm — world-accessible (not /root/.nvm which is mode 700)
-  - "export NVM_DIR=/opt/nvm && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash"
+  - "mkdir -p /opt/nvm && export NVM_DIR=/opt/nvm && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash"
   - "export NVM_DIR=/opt/nvm && . \"$NVM_DIR/nvm.sh\" && nvm install 22"
   # Symlink node binaries to /usr/local/bin — always in PATH for root and non-root users
   - |

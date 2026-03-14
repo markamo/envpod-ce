@@ -185,21 +185,6 @@ envpod runs on ARM64 Linux with a static `aarch64-unknown-linux-musl` binary. No
 
 See [docs/EMBEDDED.md](EMBEDDED.md) for setup instructions, resource limits, and GPU configuration.
 
-## What's Not Yet Built
-
-These features are designed but not shipped:
-
-| Feature | Target | Description |
-|---------|--------|-------------|
-| Docker backend | v0.2 | Run pods inside Docker containers instead of native namespaces |
-| VM backend | v0.3 | Run pods inside Firecracker/QEMU microVMs |
-| Base pod export/import | Premium | `envpod base export/import` — package and transfer base pods |
-| Custom rootfs sources | v0.2 | Use debootstrap, Alpine tarballs, or OCI images as rootfs |
-| Advanced diff viewer | Premium | Inline git-style per-hunk diff in dashboard, per-hunk staging |
-| FEBO policy engine | v0.3 | Full policy language for governance rules |
-| Cloud relay | v0.3 | Remote control plane for managing pods across machines |
-| Pod encryption | v0.2 | Encrypt pod data at rest |
-
 ---
 
 Copyright 2026 Xtellix Inc. All rights reserved. Licensed under BSL 1.1.

@@ -12,9 +12,9 @@ filesystem:
     - node
 
 network:
-  mode: Filtered
+  mode: Isolated
   dns:
-    mode: whitelist
+    mode: Whitelist
     allow:
       - "*.google.com"
       - "*.googleapis.com"

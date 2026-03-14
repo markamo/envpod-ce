@@ -38,6 +38,7 @@ network:
       - files.pythonhosted.org
 
 filesystem:
+  system_access: advanced
   tracking:
     watch:
       - /home
@@ -70,5 +71,8 @@ audit:
   action_log: true
 
 setup:
+  - "rm -f /usr/lib/python*/EXTERNALLY-MANAGED"
+  - "rm -rf /var/lib/apt/lists/*"
   - "command -v pip >/dev/null || { apt-get update && apt-get install -y python3-pip; }"
+  - "find /usr/lib/python3/dist-packages -maxdepth 1 -name '*.dist-info' -exec sh -c 'test ! -f \"$1/RECORD\" && rm -rf \"$1\"' _ {} \\;"
   - "pip install langgraph langchain-openai langchain-anthropic"
