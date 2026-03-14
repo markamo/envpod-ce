@@ -671,6 +671,44 @@ enum BaseAction {
     },
     /// Remove all base pods not used by any pod
     Prune,
+    /// Resize a base pod's config (affects future clones)
+    Resize {
+        /// Base pod name
+        name: String,
+        /// CPU cores (fractional allowed, e.g., 0.5, 2, 4)
+        #[arg(long)]
+        cpus: Option<f64>,
+        /// Memory limit (e.g., "512MB", "2GB", "16GB")
+        #[arg(long)]
+        memory: Option<String>,
+        /// /tmp tmpfs size (e.g., "512MB", "2GB")
+        #[arg(long)]
+        tmp_size: Option<String>,
+        /// Max disk size for overlay (e.g., "10GB")
+        #[arg(long)]
+        disk_size: Option<String>,
+        /// Max processes/threads
+        #[arg(long)]
+        max_pids: Option<u32>,
+        /// CPU affinity (e.g., "0-1", "0,2")
+        #[arg(long)]
+        cpu_affinity: Option<String>,
+        /// Enable GPU passthrough
+        #[arg(long)]
+        gpu: Option<bool>,
+        /// Enable display forwarding
+        #[arg(long)]
+        display: Option<bool>,
+        /// Enable audio forwarding
+        #[arg(long)]
+        audio: Option<bool>,
+        /// Desktop environment: none, xfce, openbox, sway
+        #[arg(long)]
+        desktop: Option<String>,
+        /// Web display type: none, novnc
+        #[arg(long)]
+        web_display: Option<String>,
+    },
 }
 
 #[derive(Subcommand)]
@@ -1814,6 +1852,22 @@ async fn cmd_base(store: &PodStore, base_dir: &std::path::Path, action: BaseActi
                 destroy_base(&bases_dir, name)?;
                 println!("Destroyed base pod '{name}'");
             }
+        }
+        BaseAction::Resize { name, cpus, memory, tmp_size, disk_size, max_pids, cpu_affinity, gpu, display, audio, desktop, web_display } => {
+            if !has_base(&bases_dir, &name) {
+                anyhow::bail!("base pod '{name}' not found");
+            }
+            let config_path = bases_dir.join(&name).join("pod.yaml");
+            if !config_path.exists() {
+                anyhow::bail!("base pod '{name}' has no pod.yaml");
+            }
+            apply_config_resize(
+                &config_path, cpus, memory.as_deref(), tmp_size.as_deref(),
+                disk_size.as_deref(), max_pids, cpu_affinity.as_deref(),
+                gpu, display, audio, desktop.as_deref(), web_display.as_deref(),
+            )?;
+            eprintln!("  {} base pod '{}' config updated", color::green("✓"), name);
+            eprintln!("  {} future clones will inherit these settings", color::dim("i"));
         }
         BaseAction::Prune => {
             let entries = if bases_dir.exists() {
@@ -5021,6 +5075,124 @@ fn cmd_vault(store: &PodStore, name: &str, action: VaultAction) -> Result<()> {
 // resize
 // ---------------------------------------------------------------------------
 
+/// Shared config mutation for resize (used by both pod resize and base resize).
+/// Validates inputs, mutates the PodConfig on disk, returns a summary string.
+fn apply_config_resize(
+    config_path: &Path,
+    cpus: Option<f64>,
+    memory: Option<&str>,
+    tmp_size: Option<&str>,
+    disk_size: Option<&str>,
+    max_pids: Option<u32>,
+    cpu_affinity: Option<&str>,
+    gpu: Option<bool>,
+    display: Option<bool>,
+    audio: Option<bool>,
+    desktop: Option<&str>,
+    web_display: Option<&str>,
+) -> Result<String> {
+    use envpod_core::config::{parse_memory_string, DesktopEnv, WebDisplayType};
+
+    // Validate at least one option
+    if cpus.is_none() && memory.is_none() && tmp_size.is_none() && disk_size.is_none()
+        && max_pids.is_none() && cpu_affinity.is_none() && gpu.is_none()
+        && display.is_none() && audio.is_none() && desktop.is_none() && web_display.is_none()
+    {
+        anyhow::bail!("nothing to resize — specify at least one option");
+    }
+
+    // Validate values
+    if let Some(m) = memory {
+        if parse_memory_string(m).is_none() {
+            anyhow::bail!("invalid memory value: '{m}' (expected e.g. 512MB, 2GB)");
+        }
+    }
+    if let Some(t) = tmp_size {
+        if parse_memory_string(t).is_none() {
+            anyhow::bail!("invalid tmp-size value: '{t}' (expected e.g. 512MB, 2GB)");
+        }
+    }
+    if let Some(d) = disk_size {
+        if parse_memory_string(d).is_none() {
+            anyhow::bail!("invalid disk-size value: '{d}' (expected e.g. 1GB, 10GB)");
+        }
+    }
+    if let Some(d) = desktop {
+        match d {
+            "none" | "xfce" | "openbox" | "sway" => {}
+            _ => anyhow::bail!("invalid desktop: '{d}' (expected: none, xfce, openbox, sway)"),
+        }
+    }
+    if let Some(w) = web_display {
+        match w {
+            "none" | "novnc" => {}
+            _ => anyhow::bail!("invalid web-display: '{w}' (expected: none, novnc)"),
+        }
+    }
+
+    let mut config = PodConfig::from_file(config_path)?;
+    let mut changes = Vec::new();
+
+    if let Some(c) = cpus {
+        config.processor.cores = Some(c);
+        changes.push(format!("cpus: {c}"));
+    }
+    if let Some(m) = memory {
+        config.processor.memory = Some(m.to_string());
+        changes.push(format!("memory: {m}"));
+    }
+    if let Some(t) = tmp_size {
+        config.processor.tmp_size = Some(t.to_string());
+        changes.push(format!("tmp_size: {t}"));
+    }
+    if let Some(d) = disk_size {
+        config.processor.disk_size = Some(d.to_string());
+        changes.push(format!("disk_size: {d}"));
+    }
+    if let Some(p) = max_pids {
+        config.processor.max_pids = Some(p);
+        changes.push(format!("max_pids: {p}"));
+    }
+    if let Some(a) = cpu_affinity {
+        config.processor.cpu_affinity = Some(a.to_string());
+        changes.push(format!("cpu_affinity: {a}"));
+    }
+    if let Some(g) = gpu {
+        config.devices.gpu = g;
+        changes.push(format!("gpu: {g}"));
+    }
+    if let Some(d) = display {
+        config.devices.display = d;
+        changes.push(format!("display: {d}"));
+    }
+    if let Some(a) = audio {
+        config.devices.audio = a;
+        changes.push(format!("audio: {a}"));
+    }
+    if let Some(d) = desktop {
+        config.devices.desktop_env = match d {
+            "xfce" => DesktopEnv::Xfce,
+            "openbox" => DesktopEnv::Openbox,
+            "sway" => DesktopEnv::Sway,
+            _ => DesktopEnv::None,
+        };
+        changes.push(format!("desktop: {d}"));
+    }
+    if let Some(w) = web_display {
+        config.web_display.display_type = match w {
+            "novnc" => WebDisplayType::Novnc,
+            _ => WebDisplayType::None,
+        };
+        changes.push(format!("web_display: {w}"));
+    }
+
+    let yaml = serde_yaml::to_string(&config).context("serialize pod.yaml")?;
+    std::fs::write(config_path, yaml)
+        .with_context(|| format!("write {}", config_path.display()))?;
+
+    Ok(changes.join(", "))
+}
+
 fn cmd_resize(
     store: &PodStore,
     base_dir: &Path,
@@ -5037,57 +5209,8 @@ fn cmd_resize(
     desktop: Option<&str>,
     web_display: Option<&str>,
 ) -> Result<()> {
-    use envpod_core::config::{parse_memory_string, DesktopEnv, WebDisplayType};
+    use envpod_core::config::parse_memory_string;
     use envpod_core::types::ResourceLimits;
-
-    // Validate that at least one option was given
-    if cpus.is_none()
-        && memory.is_none()
-        && tmp_size.is_none()
-        && disk_size.is_none()
-        && max_pids.is_none()
-        && cpu_affinity.is_none()
-        && gpu.is_none()
-        && display.is_none()
-        && audio.is_none()
-        && desktop.is_none()
-        && web_display.is_none()
-    {
-        anyhow::bail!(
-            "nothing to resize — specify at least one of: --cpus, --memory, --tmp-size, --disk-size, --max-pids, --cpu-affinity, --gpu, --display, --audio, --desktop, --web-display"
-        );
-    }
-
-    // Validate desktop/web-display values
-    if let Some(d) = desktop {
-        match d {
-            "none" | "xfce" | "openbox" | "sway" => {}
-            _ => anyhow::bail!("invalid desktop: '{d}' (expected: none, xfce, openbox, sway)"),
-        }
-    }
-    if let Some(w) = web_display {
-        match w {
-            "none" | "novnc" => {}
-            _ => anyhow::bail!("invalid web-display: '{w}' (expected: none, novnc)"),
-        }
-    }
-
-    // Validate memory strings before doing anything
-    if let Some(m) = memory {
-        if parse_memory_string(m).is_none() {
-            anyhow::bail!("invalid memory value: '{m}' (expected e.g. 512MB, 2GB)");
-        }
-    }
-    if let Some(t) = tmp_size {
-        if parse_memory_string(t).is_none() {
-            anyhow::bail!("invalid tmp-size value: '{t}' (expected e.g. 512MB, 2GB)");
-        }
-    }
-    if let Some(d) = disk_size {
-        if parse_memory_string(d).is_none() {
-            anyhow::bail!("invalid disk-size value: '{d}' (expected e.g. 1GB, 10GB)");
-        }
-    }
 
     let handle = store.load(name)?;
     let state = NativeState::from_handle(&handle)?;
@@ -5123,7 +5246,6 @@ fn cmd_resize(
     if is_running {
         if let Some(t) = tmp_size {
             if let Some(bytes) = parse_memory_string(t) {
-                // Remount /tmp inside the pod's mount namespace
                 let merged = state.pod_dir.join("merged");
                 let tmp_path = merged.join("tmp");
                 if tmp_path.exists() {
@@ -5139,68 +5261,12 @@ fn cmd_resize(
 
     // --- 2. Update pod.yaml (persists across restarts) ---
     let config_path = state.pod_dir.join("pod.yaml");
-    let mut config = PodConfig::from_file(&config_path)?;
-    let mut config_changes = Vec::new();
-
-    if let Some(c) = cpus {
-        config.processor.cores = Some(c);
-        config_changes.push(format!("cpus: {c}"));
-    }
-    if let Some(m) = memory {
-        config.processor.memory = Some(m.to_string());
-        config_changes.push(format!("memory: {m}"));
-    }
-    if let Some(t) = tmp_size {
-        config.processor.tmp_size = Some(t.to_string());
-        config_changes.push(format!("tmp_size: {t}"));
-    }
-    if let Some(d) = disk_size {
-        config.processor.disk_size = Some(d.to_string());
-        config_changes.push(format!("disk_size: {d}"));
-    }
-    if let Some(p) = max_pids {
-        config.processor.max_pids = Some(p);
-        config_changes.push(format!("max_pids: {p}"));
-    }
-    if let Some(a) = cpu_affinity {
-        config.processor.cpu_affinity = Some(a.to_string());
-        config_changes.push(format!("cpu_affinity: {a}"));
-    }
-    if let Some(g) = gpu {
-        config.devices.gpu = g;
-        config_changes.push(format!("gpu: {g}"));
-    }
-    if let Some(d) = display {
-        config.devices.display = d;
-        config_changes.push(format!("display: {d}"));
-    }
-    if let Some(a) = audio {
-        config.devices.audio = a;
-        config_changes.push(format!("audio: {a}"));
-    }
-    if let Some(d) = desktop {
-        config.devices.desktop_env = match d {
-            "xfce" => DesktopEnv::Xfce,
-            "openbox" => DesktopEnv::Openbox,
-            "sway" => DesktopEnv::Sway,
-            _ => DesktopEnv::None,
-        };
-        config_changes.push(format!("desktop: {d}"));
-    }
-    if let Some(w) = web_display {
-        config.web_display.display_type = match w {
-            "novnc" => WebDisplayType::Novnc,
-            _ => WebDisplayType::None,
-        };
-        config_changes.push(format!("web_display: {w}"));
-    }
-
-    let yaml = serde_yaml::to_string(&config).context("serialize pod.yaml")?;
-    std::fs::write(&config_path, yaml)
-        .with_context(|| format!("write {}", config_path.display()))?;
+    let detail = apply_config_resize(
+        &config_path, cpus, memory, tmp_size, disk_size,
+        max_pids, cpu_affinity, gpu, display, audio, desktop, web_display,
+    )?;
 
     // --- 3. Audit ---
-    let detail = config_changes.join(", ");
     let log = AuditLog::new(&state.pod_dir);
     log.append(&AuditEntry {
         timestamp: chrono::Utc::now(),
@@ -5222,7 +5288,6 @@ fn cmd_resize(
         eprintln!("  {} device/display changes take effect on next start", color::dim("i"));
     }
 
-    let _ = base_dir;
     Ok(())
 }
 
