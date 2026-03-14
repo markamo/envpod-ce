@@ -1450,7 +1450,7 @@ async fn run_setup_commands(
 
     // Pre-inject setup_script into overlay so inline setup commands can reference it
     if let Some(ref script_path) = config.setup_script {
-        inject_setup_script(&state, script_path)?;
+        inject_setup_script(&state, script_path, &config.filesystem.system_access)?;
     }
 
     let has_script = config.setup_script.is_some();
@@ -1517,7 +1517,7 @@ async fn run_setup_commands(
         let display_cmd = truncate_setup_cmd(script_path, 50);
         let quiet = if verbose { None } else { Some(setup_log.as_path()) };
         let step_start = std::time::Instant::now();
-        match run_setup_script(&handle, &state, &backend, script_path, quiet) {
+        match run_setup_script(&handle, &state, &backend, script_path, quiet, &config.filesystem.system_access) {
             Ok(()) => {
                 let step_time = color::dim(&fmt_duration(step_start.elapsed()));
                 eprintln!("  [{step}/{total}] {display_cmd}  {}  {step_time}", color::green("✓"));
@@ -1550,7 +1550,7 @@ fn truncate_setup_cmd(cmd: &str, max: usize) -> String {
 
 /// Pre-inject setup_script into the pod overlay so inline setup commands can call it.
 /// Copies to both /opt/.envpod-setup.sh and /usr/local/bin/<basename> for convenience.
-fn inject_setup_script(state: &NativeState, script_path: &str) -> Result<()> {
+fn inject_setup_script(state: &NativeState, script_path: &str, system_access: &config::SystemAccess) -> Result<()> {
     use std::os::unix::fs::PermissionsExt;
     use envpod_core::backend::native::expand_tilde;
 
@@ -1568,16 +1568,21 @@ fn inject_setup_script(state: &NativeState, script_path: &str) -> Result<()> {
 
     let upper_dir = state.upper_dir();
 
-    // Inject at /opt/.envpod-setup.sh (canonical path)
+    // Inject at /opt/.envpod-setup.sh (canonical path — /opt is always in the main upper)
     let opt_dir = upper_dir.join("opt");
     std::fs::create_dir_all(&opt_dir).context("create opt dir in upper layer")?;
     let canonical = opt_dir.join(".envpod-setup.sh");
     std::fs::write(&canonical, &script_content).context("write setup script to upper layer")?;
     std::fs::set_permissions(&canonical, std::fs::Permissions::from_mode(0o755))?;
 
-    // Also inject at /usr/local/bin/<basename> so setup commands can call it by name
+    // Also inject at /usr/local/bin/<basename> so setup commands can call it by name.
+    // In advanced/dangerous mode, /usr has its own overlay backed by sys_upper.
     if let Some(basename) = std::path::Path::new(script_path).file_name() {
-        let bin_dir = upper_dir.join("usr/local/bin");
+        let bin_dir = if matches!(system_access, config::SystemAccess::Advanced | config::SystemAccess::Dangerous) {
+            state.sys_upper_dir().join("usr/local/bin")
+        } else {
+            upper_dir.join("usr/local/bin")
+        };
         std::fs::create_dir_all(&bin_dir).context("create usr/local/bin in upper layer")?;
         let named_path = bin_dir.join(basename);
         std::fs::write(&named_path, &script_content).context("write named setup script")?;
@@ -1593,13 +1598,14 @@ fn run_setup_script(
     backend: &NativeBackend,
     script_path: &str,
     quiet_log: Option<&Path>,
+    system_access: &config::SystemAccess,
 ) -> Result<()> {
     // Script is already injected by inject_setup_script() — just verify it exists
     let upper_dir = state.upper_dir();
     let injected_path = upper_dir.join("opt/.envpod-setup.sh");
     if !injected_path.exists() {
         // Fallback: inject now (in case called without prior injection)
-        inject_setup_script(state, script_path)?;
+        inject_setup_script(state, script_path, system_access)?;
     }
 
     // Execute the script inside the pod
