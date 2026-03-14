@@ -105,25 +105,27 @@ install_gimp() {
 }
 
 install_libreoffice() {
-    # libreoffice-common postinst calls install(1) on /etc/apparmor.d/local/...
-    # which fails with EPERM in user namespaces (no CAP_MAC_ADMIN).
-    # Work around: pre-create the file, then force-configure on failure.
+    # libreoffice-common postinst uses install(1) to create apparmor local
+    # profile files. install(1) calls fchmod which fails with EPERM inside
+    # user namespaces (no CAP_MAC_ADMIN). Fix: patch postinst to use touch
+    # instead, then configure properly.
     mkdir -p /etc/apparmor.d/local
-    touch /etc/apparmor.d/local/usr.lib.libreoffice.program.oosplash
     set +e
     apt-get install -y --no-install-recommends libreoffice
     local rc=$?
     set -e
     if [ $rc -ne 0 ]; then
-        # The packages are unpacked but libreoffice-common failed to configure
-        # due to apparmor permission error. Force-configure to continue.
-        dpkg --configure -a --force-overwrite 2>/dev/null || true
-        # Verify the binary actually installed
+        # Replace "install --mode 644 /dev/null" with "touch" in the postinst
+        if [ -f /var/lib/dpkg/info/libreoffice-common.postinst ]; then
+            sed -i 's|install --mode 644 /dev/null|touch|g' \
+                /var/lib/dpkg/info/libreoffice-common.postinst
+        fi
+        dpkg --configure -a
         if ! command -v libreoffice >/dev/null 2>&1; then
             echo "ERROR: libreoffice failed to install"
             return 1
         fi
-        echo "libreoffice installed (apparmor config skipped — not needed in pod)"
+        echo "libreoffice installed (apparmor profile skipped — not needed in pod)"
     fi
 }
 
