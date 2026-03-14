@@ -8,6 +8,7 @@ envpod ships a test script that initializes all example pod configs and reports 
 sudo ./tests/test-all-examples.sh               # test all examples
 sudo ./tests/test-all-examples.sh --skip-desktop # skip slow desktop configs
 sudo ./tests/test-all-examples.sh --cleanup      # destroy all test pods
+sudo ./tests/test-all-examples.sh browser workstation-full  # test specific examples
 ```
 
 Each example is initialized as `test-<name>` (e.g., `test-claude-code`). The script runs `envpod init` with setup and reports live output.
@@ -55,13 +56,9 @@ Tested on Ubuntu 24.04 (x86_64), envpod v0.1.1.
 | `web-display-novnc.yaml` | Desktop |
 | `workstation.yaml` | Desktop |
 | `workstation-gpu.yaml` | Desktop |
-
-### Known Issues
-
-| Config | Issue | Status |
-|--------|-------|--------|
-| `browser.yaml` | `/etc` overlay not writable in `safe` system_access mode — `apt-get update` can't write to `/etc/apt` | Code fix needed |
-| `workstation-full.yaml` | `setup_script` path injection not implemented in `cmd_init` | Code fix needed |
+| `browser.yaml` | Browser agent |
+| `browser-wayland.yaml` | Browser agent |
+| `workstation-full.yaml` | Desktop |
 
 ### Skipped (platform-specific)
 
@@ -69,5 +66,12 @@ Tested on Ubuntu 24.04 (x86_64), envpod v0.1.1.
 |--------|--------|
 | `jetson-orin.yaml` | Requires ARM64 + NVIDIA Jetson hardware |
 | `raspberry-pi.yaml` | Requires ARM64 hardware |
-| `browser-wayland.yaml` | Requires Wayland compositor |
 | `monitoring-policy.yaml` | Not a pod config (monitoring policy definition) |
+
+### Fixed Issues (v0.1.1)
+
+| Config | Issue | Fix |
+|--------|-------|-----|
+| `browser.yaml` | ReadOnly mount on `/etc/alternatives` blocked `update-alternatives` during openbox post-install | Removed the unnecessary mount entry |
+| `workstation-full.yaml` | `inject_setup_script` wrote to `upper/usr/local/bin/` but with `system_access: advanced`, `/usr` uses `sys_upper/` overlay — script was invisible (exit 127) | Write to `sys_upper_dir()` when system_access is advanced/dangerous |
+| `workstation-full.yaml` | LibreOffice postinst calls `install(1)` on `/etc/apparmor.d/local/` which fails with EPERM in user namespaces | Pre-create AppArmor file, tolerate failure, force-configure |
