@@ -44,8 +44,6 @@ filesystem:
   mounts:
     - path: /opt/google
       permissions: ReadOnly
-    - path: /etc/alternatives
-      permissions: ReadOnly
   tracking:
     watch:
       - /home
