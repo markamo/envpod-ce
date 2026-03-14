@@ -56,6 +56,7 @@ pub enum AuditAction {
     WebDisplayStart,
     WebDisplayStop,
     FileUpload,
+    Resize,
 }
 
 impl std::fmt::Display for AuditAction {

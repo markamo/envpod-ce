@@ -516,6 +516,32 @@ enum Commands {
         #[command(subcommand)]
         action: SnapshotAction,
     },
+    /// Resize CPU, memory, or disk limits on a pod (live if running, persisted to config)
+    Resize {
+        /// Pod name
+        name: String,
+        /// CPU cores (fractional allowed, e.g., 0.5, 2, 4)
+        #[arg(long)]
+        cpus: Option<f64>,
+        /// Memory limit (e.g., "512MB", "2GB", "16GB")
+        #[arg(long)]
+        memory: Option<String>,
+        /// /tmp tmpfs size (e.g., "512MB", "2GB")
+        #[arg(long)]
+        tmp_size: Option<String>,
+        /// Max disk size for overlay (e.g., "10GB")
+        #[arg(long)]
+        disk_size: Option<String>,
+        /// Max processes/threads
+        #[arg(long)]
+        max_pids: Option<u32>,
+        /// CPU affinity (e.g., "0-1", "0,2")
+        #[arg(long)]
+        cpu_affinity: Option<String>,
+        /// Enable GPU passthrough (stopped pods only)
+        #[arg(long)]
+        gpu: Option<bool>,
+    },
     /// Generate shell tab completions
     Completions {
         /// Shell to generate completions for
@@ -859,6 +885,8 @@ async fn run(cli: Cli) -> Result<()> {
             cmd_discover(&store, base_dir, &name, on, off, &add_pods, &remove_pods).await,
         Commands::DnsDaemon { socket } => cmd_dns_daemon(base_dir, socket).await,
         Commands::Snapshot { name, action } => cmd_snapshot(&store, base_dir, &name, action),
+        Commands::Resize { name, cpus, memory, tmp_size, disk_size, max_pids, cpu_affinity, gpu } =>
+            cmd_resize(&store, base_dir, &name, cpus, memory.as_deref(), tmp_size.as_deref(), disk_size.as_deref(), max_pids, cpu_affinity.as_deref(), gpu),
         Commands::Prune { bases } => cmd_prune(&store, base_dir, bases).await,
         Commands::Gc => {
             let result = gc_all(&base_dir, &store)?;
@@ -4976,6 +5004,168 @@ fn cmd_vault(store: &PodStore, name: &str, action: VaultAction) -> Result<()> {
 // ---------------------------------------------------------------------------
 // remote
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// resize
+// ---------------------------------------------------------------------------
+
+fn cmd_resize(
+    store: &PodStore,
+    base_dir: &Path,
+    name: &str,
+    cpus: Option<f64>,
+    memory: Option<&str>,
+    tmp_size: Option<&str>,
+    disk_size: Option<&str>,
+    max_pids: Option<u32>,
+    cpu_affinity: Option<&str>,
+    gpu: Option<bool>,
+) -> Result<()> {
+    use envpod_core::config::parse_memory_string;
+    use envpod_core::types::ResourceLimits;
+
+    // Validate that at least one option was given
+    if cpus.is_none()
+        && memory.is_none()
+        && tmp_size.is_none()
+        && disk_size.is_none()
+        && max_pids.is_none()
+        && cpu_affinity.is_none()
+        && gpu.is_none()
+    {
+        anyhow::bail!(
+            "nothing to resize — specify at least one of: --cpus, --memory, --tmp-size, --disk-size, --max-pids, --cpu-affinity, --gpu"
+        );
+    }
+
+    // Validate memory strings before doing anything
+    if let Some(m) = memory {
+        if parse_memory_string(m).is_none() {
+            anyhow::bail!("invalid memory value: '{m}' (expected e.g. 512MB, 2GB)");
+        }
+    }
+    if let Some(t) = tmp_size {
+        if parse_memory_string(t).is_none() {
+            anyhow::bail!("invalid tmp-size value: '{t}' (expected e.g. 512MB, 2GB)");
+        }
+    }
+    if let Some(d) = disk_size {
+        if parse_memory_string(d).is_none() {
+            anyhow::bail!("invalid disk-size value: '{d}' (expected e.g. 1GB, 10GB)");
+        }
+    }
+
+    let handle = store.load(name)?;
+    let state = NativeState::from_handle(&handle)?;
+    let is_running = state.status == NativeStatus::Running;
+
+    // GPU can only be changed on stopped pods
+    if gpu.is_some() && is_running {
+        anyhow::bail!("GPU passthrough can only be changed on a stopped pod (device mounts are set at start)");
+    }
+
+    // --- 1. Apply live cgroup changes if pod is running ---
+    let mut live_changes = Vec::new();
+
+    if is_running && (cpus.is_some() || memory.is_some() || max_pids.is_some() || cpu_affinity.is_some()) {
+        let limits = ResourceLimits {
+            cpu_cores: cpus,
+            memory_bytes: memory.and_then(parse_memory_string),
+            disk_bytes: disk_size.and_then(parse_memory_string),
+            max_pids,
+            cpuset_cpus: cpu_affinity.map(|s| s.to_string()),
+        };
+        let backend = NativeBackend::new(base_dir)?;
+        backend.set_limits(&handle, &limits)?;
+
+        if let Some(c) = cpus { live_changes.push(format!("cpus → {c}")); }
+        if let Some(m) = memory { live_changes.push(format!("memory → {m}")); }
+        if max_pids.is_some() { live_changes.push(format!("max_pids → {}", max_pids.unwrap())); }
+        if let Some(a) = cpu_affinity { live_changes.push(format!("cpu_affinity → {a}")); }
+    }
+
+    // Live tmpfs remount if running
+    if is_running {
+        if let Some(t) = tmp_size {
+            if let Some(bytes) = parse_memory_string(t) {
+                // Remount /tmp inside the pod's mount namespace
+                let merged = state.pod_dir.join("merged");
+                let tmp_path = merged.join("tmp");
+                if tmp_path.exists() {
+                    std::process::Command::new("mount")
+                        .args(["-o", &format!("remount,size={bytes}"), tmp_path.to_str().unwrap()])
+                        .status()
+                        .context("remount /tmp")?;
+                    live_changes.push(format!("tmp_size → {t}"));
+                }
+            }
+        }
+    }
+
+    // --- 2. Update pod.yaml (persists across restarts) ---
+    let config_path = state.pod_dir.join("pod.yaml");
+    let mut config = PodConfig::from_file(&config_path)?;
+    let mut config_changes = Vec::new();
+
+    if let Some(c) = cpus {
+        config.processor.cores = Some(c);
+        config_changes.push(format!("cpus: {c}"));
+    }
+    if let Some(m) = memory {
+        config.processor.memory = Some(m.to_string());
+        config_changes.push(format!("memory: {m}"));
+    }
+    if let Some(t) = tmp_size {
+        config.processor.tmp_size = Some(t.to_string());
+        config_changes.push(format!("tmp_size: {t}"));
+    }
+    if let Some(d) = disk_size {
+        config.processor.disk_size = Some(d.to_string());
+        config_changes.push(format!("disk_size: {d}"));
+    }
+    if let Some(p) = max_pids {
+        config.processor.max_pids = Some(p);
+        config_changes.push(format!("max_pids: {p}"));
+    }
+    if let Some(a) = cpu_affinity {
+        config.processor.cpu_affinity = Some(a.to_string());
+        config_changes.push(format!("cpu_affinity: {a}"));
+    }
+    if let Some(g) = gpu {
+        config.devices.gpu = g;
+        config_changes.push(format!("gpu: {g}"));
+    }
+
+    let yaml = serde_yaml::to_string(&config).context("serialize pod.yaml")?;
+    std::fs::write(&config_path, yaml)
+        .with_context(|| format!("write {}", config_path.display()))?;
+
+    // --- 3. Audit ---
+    let detail = config_changes.join(", ");
+    let log = AuditLog::new(&state.pod_dir);
+    log.append(&AuditEntry {
+        timestamp: chrono::Utc::now(),
+        pod_name: name.to_string(),
+        action: AuditAction::Resize,
+        detail: detail.clone(),
+        success: true,
+    })?;
+
+    // --- 4. Print summary ---
+    if !live_changes.is_empty() {
+        eprintln!("  {} applied live: {}", color::green("✓"), live_changes.join(", "));
+    }
+    eprintln!("  {} config updated: {}", color::green("✓"), detail);
+    if !is_running && (cpus.is_some() || memory.is_some() || max_pids.is_some() || cpu_affinity.is_some()) {
+        eprintln!("  {} changes take effect on next start", color::dim("i"));
+    }
+    if gpu.is_some() {
+        eprintln!("  {} GPU change takes effect on next start", color::dim("i"));
+    }
+
+    let _ = base_dir;
+    Ok(())
+}
 
 async fn cmd_remote(store: &PodStore, name: &str, cmd: &str, payload: Option<&str>) -> Result<()> {
     let handle = store.load(name)?;
