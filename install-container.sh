@@ -24,7 +24,7 @@
 #
 set -euo pipefail
 
-ENVPOD_VERSION="0.1.0"
+ENVPOD_VERSION="0.1.1"
 ENVPOD_URL="https://github.com/markamo/envpod-ce/releases/latest/download/envpod-linux-x86_64.tar.gz"
 
 RED='\033[0;31m'

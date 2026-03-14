@@ -16,7 +16,7 @@
 #
 set -euo pipefail
 
-ENVPOD_VERSION="0.1.0"
+ENVPOD_VERSION="0.1.1"
 INSTALL_DIR="/usr/local/bin"
 STATE_DIR="/var/lib/envpod"
 EXAMPLES_DIR="${ENVPOD_EXAMPLES_DIR:-/usr/local/share/envpod/examples}"
