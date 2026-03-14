@@ -105,8 +105,26 @@ install_gimp() {
 }
 
 install_libreoffice() {
+    # libreoffice-common postinst calls install(1) on /etc/apparmor.d/local/...
+    # which fails with EPERM in user namespaces (no CAP_MAC_ADMIN).
+    # Work around: pre-create the file, then force-configure on failure.
+    mkdir -p /etc/apparmor.d/local
+    touch /etc/apparmor.d/local/usr.lib.libreoffice.program.oosplash
+    set +e
     apt-get install -y --no-install-recommends libreoffice
-    # LibreOffice works as-is under root
+    local rc=$?
+    set -e
+    if [ $rc -ne 0 ]; then
+        # The packages are unpacked but libreoffice-common failed to configure
+        # due to apparmor permission error. Force-configure to continue.
+        dpkg --configure -a --force-overwrite 2>/dev/null || true
+        # Verify the binary actually installed
+        if ! command -v libreoffice >/dev/null 2>&1; then
+            echo "ERROR: libreoffice failed to install"
+            return 1
+        fi
+        echo "libreoffice installed (apparmor config skipped — not needed in pod)"
+    fi
 }
 
 install_slack() {

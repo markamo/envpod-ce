@@ -30,7 +30,7 @@ SKIP_FILES=(
 SKIP_PLATFORM=(
     "jetson-orin.yaml"          # ARM64 + NVIDIA Jetson only
     "raspberry-pi.yaml"         # ARM64 only
-    "browser-wayland.yaml"      # needs Wayland compositor
+
 )
 
 # Desktop configs (slow — 2-5 min each due to apt-get install)
