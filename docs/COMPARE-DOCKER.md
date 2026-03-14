@@ -434,6 +434,26 @@ envpod's Docker backend (Premium roadmap) will let you run pods inside Docker co
 
 ---
 
+## Real-World Example: Full Desktop Workstation
+
+A full workstation with Chrome, Firefox, VS Code, GIMP, and LibreOffice in a desktop environment, accessible via browser (noVNC):
+
+| | envpod | Docker |
+|---|---|---|
+| **Config** | 83-line YAML + 9KB setup script | Dockerfile + docker-compose.yaml + supervisord.conf + VNC config (200+ lines across 4-5 files) |
+| **Config size** | 11.4 KB total | ~15-25 KB across multiple files |
+| **Disk usage** | 2.6 GB (overlay delta only) | 5-7 GB (full image with OS base) |
+| **Setup time** | `envpod init` — 5 min (incremental, resumable) | `docker build` — 10-15 min (restarts from failed layer) |
+| **Clone** | `envpod clone` — instant (symlinked rootfs) | `docker run` — new container from image (no state) |
+| **Add an app** | `envpod run ... -- bash desktop-app-setup.sh slack` | Rebuild entire image |
+| **Review changes** | `envpod diff` → `envpod commit` or `rollback` | Not possible — changes are permanent |
+| **Live resize** | `envpod resize --memory 16GB --cpus 8` | `docker update --memory 16g --cpus 8` (CPU/memory only) |
+| **Add GPU** | `envpod resize --gpu` (stopped) | `docker rm` + `docker run --gpus all` (recreate) |
+| **Audit trail** | `envpod audit` — every action logged | Manual logging setup required |
+| **DNS filtering** | Built-in per-pod DNS with blacklist/whitelist | Requires external DNS proxy |
+
+---
+
 ## Migration Cheatsheet
 
 ### Dockerfile → pod.yaml

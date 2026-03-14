@@ -74,4 +74,5 @@ Tested on Ubuntu 24.04 (x86_64), envpod v0.1.1.
 |--------|-------|-----|
 | `browser.yaml` | ReadOnly mount on `/etc/alternatives` blocked `update-alternatives` during openbox post-install | Removed the unnecessary mount entry |
 | `workstation-full.yaml` | `inject_setup_script` wrote to `upper/usr/local/bin/` but with `system_access: advanced`, `/usr` uses `sys_upper/` overlay — script was invisible (exit 127) | Write to `sys_upper_dir()` when system_access is advanced/dangerous |
-| `workstation-full.yaml` | LibreOffice postinst calls `install(1)` on `/etc/apparmor.d/local/` which fails with EPERM in user namespaces | Pre-create AppArmor file, tolerate failure, force-configure |
+| `workstation-full.yaml` | LibreOffice postinst calls `install(1)` on `/etc/apparmor.d/local/` which fails with EPERM in user namespaces (no `CAP_MAC_ADMIN`) | Patch postinst to replace `install --mode 644` with `touch`, then `dpkg --configure -a` completes properly — all components (Writer, Calc, Impress, Draw, Math, Base) fully functional |
+| `browser-wayland.yaml` | Had same `/etc/alternatives` ReadOnly mount as browser.yaml | Removed the mount entry |
