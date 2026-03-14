@@ -364,7 +364,26 @@ sudo envpod vault live set myagent KEY value   # add a secret
 sudo envpod discover myagent --add-pod service # enable pod-to-pod discovery
 ```
 
-No restart required. Docker cannot mutate a running container's network policy, secrets, or process state without a full restart.
+No restart required.
+
+#### Live and Stopped Mutation Comparison
+
+| Mutation | envpod | Docker |
+|----------|--------|--------|
+| CPU/memory resize (live) | `envpod resize --cpus 4 --memory 8GB` | `docker update --cpus 4 --memory 8g` |
+| /tmp resize (live) | `envpod resize --tmp-size 4GB` | Not possible |
+| DNS policy (live) | `envpod dns --allow/--deny` | Not possible (must recreate) |
+| Port forwarding (live) | `envpod ports --publish 8080:3000` | Not possible (must recreate) |
+| Mount paths (live) | `envpod mount ~/data` | Not possible (must recreate) |
+| Freeze/resume (live) | `envpod lock/unlock` | `docker pause/unpause` |
+| Secrets (live) | `envpod vault set` | Not possible (must recreate) |
+| Pod discovery (live) | `envpod discover --on` | Not possible |
+| GPU toggle (stopped) | `envpod resize --gpu true` | Not possible (must recreate) |
+| Display/audio (stopped) | `envpod resize --display true` | Not possible (must recreate) |
+| Desktop env (stopped) | `envpod resize --desktop xfce` | Not possible (must recreate) |
+| Web display (stopped) | `envpod resize --web-display novnc` | Not possible (must recreate) |
+
+Docker's fundamental limitation: most config changes require `docker rm` + `docker run`, which **destroys the container filesystem** unless you first `docker commit` to an image. envpod's overlay persists independently — stop, resize, start again with no data loss.
 
 ---
 
