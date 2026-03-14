@@ -174,18 +174,8 @@ ${RELEASE_NAME}/
 ├── install.sh      Universal installer (distro detection, online/offline)
 ├── README.md       This file
 ├── LICENSE         BSL 1.1
-├── docs/           Documentation
-│   ├── INSTALL.md
-│   ├── QUICKSTART.md
-│   ├── USER-GUIDE.md
-│   ├── FAQ.md
-│   ├── BENCHMARKS.md
-│   ├── SECURITY.md
-│   ├── TUTORIALS.md
-│   ├── POD-CONFIG.md
-│   ├── CAPABILITIES.md
-│   └── EMBEDDED.md     (Raspberry Pi / Jetson Orin guide)
-└── examples/       Pod configs (24 YAML) + jailbreak-test.sh
+├── docs/           Documentation (23 guides, reference, security)
+└── examples/       Pod configs (41 YAML) + test scripts
 \`\`\`
 
 ## Quick Start
@@ -263,7 +253,8 @@ See [docs/INSTALL.md](docs/INSTALL.md), [docs/QUICKSTART.md](docs/QUICKSTART.md)
 | \`envpod kill <name>\` | Stop and rollback |
 | \`envpod destroy <names...> [--base]\` | Remove pod(s) |
 | \`envpod clone <source> <name> [--current]\` | Clone a pod (fast) |
-| \`envpod base create/ls/destroy\` | Manage base pods |
+| \`envpod resize <name> [--cpus/--memory/--tmp-size/...]\` | Live/stopped resource mutation |
+| \`envpod base create/ls/destroy/resize\` | Manage base pods |
 | \`envpod ls [--json]\` | List all pods |
 | \`envpod vault <name> set/get/remove/bind/unbind\` | Manage credentials + proxy |
 | \`envpod ports <name> -p/-P/-i/--remove\` | Live port forwarding mutations |
@@ -320,13 +311,9 @@ README_EOF
     # 6. Copy docs and examples from repo
     # -----------------------------------------------------------------------
 
-    for doc in INSTALL.md QUICKSTART.md USER-GUIDE.md FAQ.md BENCHMARKS.md \
-               SECURITY.md TUTORIALS.md POD-CONFIG.md CAPABILITIES.md \
-               EMBEDDED.md; do
-        if [[ -f "${SCRIPT_DIR}/docs/${doc}" ]]; then
-            cp "${SCRIPT_DIR}/docs/${doc}" "${RELEASE_DIR}/docs/${doc}"
-        else
-            echo "  Warning: docs/${doc} not found — skipping"
+    for doc in "${SCRIPT_DIR}"/docs/*.md; do
+        if [[ -f "${doc}" ]]; then
+            cp "${doc}" "${RELEASE_DIR}/docs/"
         fi
     done
     info "Documentation copied"
