@@ -450,7 +450,7 @@ sudo envpod diff my-agent
 sudo envpod diff my-agent --json    # machine-readable
 ```
 
-#### `envpod commit <name> [paths...] [--exclude <paths...>] [--output <dir>] [--include-system]`
+#### `envpod commit <name> [paths...] [--exclude <paths...>] [--output <dir>] [--include-system] [--rollback-rest]`
 
 Apply overlay changes to the host filesystem. Supports several modes:
 
@@ -471,6 +471,9 @@ sudo envpod commit my-agent --output /tmp/agent-output
 
 # Include system directory changes (/usr, /bin, /sbin, /lib, /lib64)
 sudo envpod commit my-agent --include-system
+
+# Commit specific paths and discard everything else in one step
+sudo envpod commit my-agent src/ --rollback-rest
 ```
 
 | Option | Description |
@@ -480,8 +483,24 @@ sudo envpod commit my-agent --include-system
 | `-o`, `--output <dir>` | Export committed files to this directory instead of the host filesystem |
 | `--all` | Commit all changes including protected paths |
 | `--include-system` | Include system directory changes (`/usr`, `/bin`, `/sbin`, `/lib`, `/lib64`) |
+| `--rollback-rest` | After committing specified paths, automatically roll back all remaining changes |
 
 Paths must match entries shown by `envpod diff`. Selective commit removes committed files from the overlay and leaves the rest — you can run additional commits for remaining files.
+
+**Single-step selective accept + discard:** Use `--rollback-rest` with specific paths to commit only what you want and discard everything else in one command. This is useful when an agent produces a mix of wanted output and unwanted side effects:
+
+<!-- no-exec -->
+```bash
+$ envpod diff my-agent
+M  .gitconfig
+A  src/utils.py
+A  src/helper.py
+D  tests/old_test.py
+A  node_modules/...  (47 files)
+
+$ envpod commit my-agent src/ --rollback-rest
+Committed 2 file(s). Rolled back 48.
+```
 
 #### `envpod rollback <name>`
 
@@ -1077,6 +1096,7 @@ sudo envpod commit my-agent                              # accept tracked change
 sudo envpod commit my-agent --all                        # accept ALL changes
 sudo envpod commit my-agent /opt/results/output.csv      # accept one file
 sudo envpod commit my-agent --exclude /etc/config.ini    # accept all but one
+sudo envpod commit my-agent src/ --rollback-rest         # accept src/, discard the rest
 # or
 sudo envpod rollback my-agent                            # discard everything
 ```

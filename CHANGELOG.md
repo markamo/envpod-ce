@@ -15,6 +15,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - `envpod base resize <name>` — resize base pod configs so future clones inherit settings
 - `envpod prune` — remove all stopped pods
 - `envpod about` / `envpod --about` — version, license, project info, and system details
+- `--rollback-rest` flag for `envpod commit` — selective commit + automatic rollback in one step (commit specified paths, discard everything else)
 
 ### New Configuration
 

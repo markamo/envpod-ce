@@ -111,6 +111,7 @@ Pre-built configs in `examples/`:
 | `envpod commit --exclude /path` | Commit everything except specific paths |
 | `envpod commit --output /dir` | Export changes to a custom directory |
 | `envpod commit --include-system` | Include system directory changes (advanced mode) |
+| `envpod commit <name> <paths> --rollback-rest` | Commit specified paths and discard everything else |
 | `envpod rollback` | Discard all changes (reset overlay) |
 | `envpod run -w` | Mount working directory into pod (COW isolated) |
 | `envpod diff --all` | Show changes including ignored paths |

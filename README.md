@@ -19,6 +19,20 @@ Every AI agent runs inside a **pod** — an isolated environment with a foundati
 
 > **Why not just Docker?** Docker isolates processes but provides zero governance. No file change review, no action queue, no credential vault, no undo. Envpod adds the governance layer on top of the same Linux primitives. See [Docker vs Envpod](docs/COMPARE-DOCKER.md) for a full comparison.
 
+### Docker's default: everything lands immediately or everything disappears. Envpod's default: nothing lands until you review it.
+
+```
+$ envpod diff my-agent
+M  .gitconfig
+A  src/utils.py
+A  src/helper.py
+D  tests/old_test.py
+A  node_modules/...  (47 files)
+
+$ envpod commit my-agent src/ --rollback-rest
+Committed 2 file(s). Rolled back 48.
+```
+
 ## Why Envpod
 
 AI agents are powerful but dangerous without boundaries. They can read sensitive files, exfiltrate data over the network, consume unbounded resources, and make irreversible changes — all while running with your credentials.

@@ -103,6 +103,7 @@ This is where envpod and Docker diverge significantly.
 | `docker commit` (persist) | ✓ | ✓ | But Docker auto-commits; envpod requires human review |
 | **Human review before commit** | — | ✓ | Host sees every change before it reaches the host FS |
 | **Selective commit (per-path)** | — | ✓ | `envpod commit --paths src/` |
+| **Selective commit + auto-rollback** | — | ✓ | `envpod commit src/ --rollback-rest` — commit what you want, discard the rest in one step |
 | **Rollback** | — | ✓ | `envpod rollback` undoes all agent changes |
 | **Named snapshots** | — | ✓ | Save/restore filesystem state mid-run |
 | **Auto-snapshot before run** | — | ✓ | Always safe to rollback to pre-run state |

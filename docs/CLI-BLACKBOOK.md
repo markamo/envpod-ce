@@ -383,7 +383,7 @@ sudo envpod diff myagent --all
 Apply the agent's overlay changes to the real host filesystem. **Human review step** — always run `diff` first. The overlay is cleared after a successful commit.
 
 ```
-envpod commit <name> [paths...] [--exclude path] [--output dir] [--all] [--include-system]
+envpod commit <name> [paths...] [--exclude path] [--output dir] [--all] [--include-system] [--rollback-rest]
 ```
 
 | Flag | Description |
@@ -394,6 +394,7 @@ envpod commit <name> [paths...] [--exclude path] [--output dir] [--all] [--inclu
 | `-o, --output <dir>` | Export to this directory instead of the host filesystem |
 | `--all` | Commit all changes including system/ignored paths |
 | `--include-system` | Also commit changes in `/usr`, `/bin`, `/lib`, etc. |
+| `--rollback-rest` | After committing specified paths, roll back all remaining changes |
 
 **Use cases:**
 
@@ -422,6 +423,10 @@ sudo envpod commit myagent --include-system
 
 # Commit everything including system
 sudo envpod commit myagent --all
+
+# Selective accept + discard: commit src/, roll back everything else
+sudo envpod commit myagent src/ --rollback-rest
+# Committed 2 file(s). Rolled back 48.
 ```
 
 **If `queue.require_commit_approval: true`:** The commit is queued as a staged action — requires `envpod approve` before applying.
