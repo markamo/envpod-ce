@@ -81,12 +81,24 @@
         <p class="demo-tagline">Nothing lands on the host until you review it.</p>
       </div>
       <div class="hero-slide" data-slide="1">
+        <pre class="demo-terminal"><code><span class="dim">$</span> envpod init full-ws -c workstation-full.yaml
+<span style="color:#b8bb26">Pod Created · full-ws</span>  1.1s
+  Display  noVNC → http://10.200.3.2:6080/vnc.html
+
+<span class="dim">$</span> envpod start full-ws
+<span style="color:#b8bb26">✓</span> Chrome, Firefox, VS Code, GIMP, LibreOffice
+<span style="color:#b8bb26">✓</span> XFCE desktop via noVNC in your browser
+<span style="color:#b8bb26">✓</span> GPU passthrough, audio streaming
+<span style="color:#b8bb26">✓</span> 2.6 GB overlay <span class="dim">(host not duplicated)</span></code></pre>
+        <p class="demo-tagline">Full desktop for AI agents. 83 lines of YAML.</p>
+      </div>
+      <div class="hero-slide" data-slide="2">
         <div class="demo-screenshot">
           <img src="images/desktop-novnc.png" alt="envpod full desktop — Chrome, VS Code, terminal in XFCE via noVNC" loading="lazy">
         </div>
         <p class="demo-tagline">Full desktop in your browser. Chrome, VS Code, GIMP, LibreOffice — governed.</p>
       </div>
-      <div class="hero-slide" data-slide="2">
+      <div class="hero-slide" data-slide="3">
         <pre class="demo-terminal"><code><span class="dim">$</span> envpod vault my-agent set ANTHROPIC_API_KEY
 <span style="color:#b8bb26">✓</span> Encrypted with ChaCha20-Poly1305
 
@@ -97,7 +109,7 @@
 <span class="dim"># requests transparently. Zero-knowledge.</span></code></pre>
         <p class="demo-tagline">Agent never sees your API keys.</p>
       </div>
-      <div class="hero-slide" data-slide="3">
+      <div class="hero-slide" data-slide="4">
         <pre class="demo-terminal"><code><span class="dim">$</span> envpod audit my-agent
 <span class="dim">14:23:01</span>  Create    pod initialized
 <span class="dim">14:23:05</span>  DnsQuery  api.anthropic.com <span style="color:#b8bb26">✓</span>
@@ -115,6 +127,7 @@
       <button class="hero-dot" onclick="goSlide(1)"></button>
       <button class="hero-dot" onclick="goSlide(2)"></button>
       <button class="hero-dot" onclick="goSlide(3)"></button>
+      <button class="hero-dot" onclick="goSlide(4)"></button>
     </div>
   </div>
 </section>
@@ -715,7 +728,7 @@ function showTab(n){['x86','arm64','wsl2','macos','src'].forEach(t=>{document.ge
 function copyBlock(btn){const b=btn.closest('.code-block');const t=Array.from(b.querySelectorAll('.cl')).map(el=>el.textContent).join('\n').trim();navigator.clipboard.writeText(t).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)}).catch(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)})}
 
 // ══ HERO SLIDESHOW ══
-let heroSlide=0;const heroTotal=4;function goSlide(n){heroSlide=n;document.querySelectorAll('.hero-slide').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.hero-dot').forEach(d=>d.classList.remove('active'));document.querySelector('[data-slide="'+n+'"]').classList.add('active');document.querySelectorAll('.hero-dot')[n].classList.add('active')}setInterval(()=>{goSlide((heroSlide+1)%heroTotal)},8000);
+let heroSlide=0;const heroTotal=5;function goSlide(n){heroSlide=n;document.querySelectorAll('.hero-slide').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.hero-dot').forEach(d=>d.classList.remove('active'));document.querySelector('[data-slide="'+n+'"]').classList.add('active');document.querySelectorAll('.hero-dot')[n].classList.add('active')}setInterval(()=>{goSlide((heroSlide+1)%heroTotal)},8000);
 
 // ══ SCROLL REVEAL ══
 (function(){const o=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('vis')})},{threshold:0.1});document.querySelectorAll('.reveal').forEach(el=>o.observe(el))})();
