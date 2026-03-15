@@ -356,7 +356,7 @@ Pods run as the non-root `agent` user by default, giving full pod boundary prote
 
 <!-- output -->
 ```
-envpod jailbreak test v0.1.0
+envpod jailbreak test v0.1.1
 Probing isolation boundaries...
 
 === Filesystem Wall (F-01 to F-10) ===

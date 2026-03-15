@@ -2,7 +2,7 @@
 # Copyright 2026 Mark Amo-Boateng / Xtellix Inc.
 # SPDX-License-Identifier: BSL-1.1
 
-# envpod jailbreak test v0.1.0
+# envpod jailbreak test v0.1.1
 # Probes all isolation boundaries inside an envpod pod.
 #
 # Usage:
@@ -1115,7 +1115,7 @@ print_header() {
 START_TIME=$SECONDS
 if [[ "$JSON_MODE" == "false" ]]; then
     echo ""
-    echo -e "${BOLD}envpod jailbreak test v0.1.0${RESET}"
+    echo -e "${BOLD}envpod jailbreak test v0.1.1${RESET}"
     echo -e "${DIM}Probing isolation boundaries...${RESET}"
 fi
 
@@ -1330,7 +1330,7 @@ HARDENING_NR_TOTAL=$((HARDENING_NR_PASS + HARDENING_NR_FAIL + HARDENING_NR_SKIP)
 if [[ "$JSON_MODE" == "true" ]]; then
     # JSON output
     echo "{"
-    echo "  \"version\": \"0.1.0\","
+    echo "  \"version\": \"0.1.1\","
     echo "  \"summary\": {"
     echo "    \"total\": $TOTAL,"
     echo "    \"pass\": $PASS,"

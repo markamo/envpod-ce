@@ -27,14 +27,14 @@ Install a specific version:
 
 <!-- no-exec -->
 ```bash
-curl -fsSL https://envpod.dev/install.sh | sudo bash -s -- --version 0.1.0
+curl -fsSL https://envpod.dev/install.sh | sudo bash -s -- --version 0.1.1
 ```
 
 Or set the version via environment variable:
 
 <!-- no-exec -->
 ```bash
-ENVPOD_VERSION=0.1.0 curl -fsSL https://envpod.dev/install.sh | sudo bash
+ENVPOD_VERSION=0.1.1 curl -fsSL https://envpod.dev/install.sh | sudo bash
 ```
 
 ## Install from Tarball

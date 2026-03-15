@@ -314,8 +314,8 @@ cargo zigbuild --release --target aarch64-unknown-linux-musl.2.17
 
 Output:
 ```
-release/envpod-0.1.0-linux-x86_64/     x86_64 release
-release/envpod-0.1.0-linux-arm64/      ARM64 release
+release/envpod-0.1.1-linux-x86_64/     x86_64 release
+release/envpod-0.1.1-linux-arm64/      ARM64 release
 envpod-linux-x86_64.tar.gz
 envpod-linux-arm64.tar.gz
 ```

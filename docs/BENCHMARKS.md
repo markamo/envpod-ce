@@ -8,7 +8,7 @@
 
 This document covers envpod's performance characteristics in detail — startup times, disk footprint, GPU passthrough overhead, and behavior at scale. All benchmarks are reproducible via scripts in `tests/`.
 
-**Test environment:** Ubuntu 24.04, Docker 29.2.1, Podman 4.9.3, envpod 0.1.0, NVIDIA TITAN RTX x2.
+**Test environment:** Ubuntu 24.04, Docker 29.2.1, Podman 4.9.3, envpod 0.1.1, NVIDIA TITAN RTX x2.
 
 ---
 
