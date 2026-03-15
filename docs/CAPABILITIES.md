@@ -62,6 +62,8 @@ Every pod has a foundation, four walls, and a governance ceiling:
 ### What the agent cannot do
 
 - **Escape the pod** — 17/17 jailbreak tests pass (non-root user)
+- **Escalate to root** — `NO_NEW_PRIVS` flag + seccomp-BPF blocks `sudo`, `su`, and all setuid-based escalation. The only way to run as root is `envpod run --root` from the host.
+- **Fingerprint host CPU** — `/proc/cpuinfo` model name is always sanitized to "CPU" regardless of actual hardware
 - **See host processes** — PID namespace, /proc masked
 - **Write to host filesystem** — all writes go to COW overlay
 - **Reach unauthorized network** — DNS resolver + iptables per pod

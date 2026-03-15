@@ -53,6 +53,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 
+- **`/proc/cpuinfo` host CPU model always masked** — model name sanitized to "CPU" to prevent host fingerprinting (I-01)
+- **Privilege escalation prevention confirmed** — `NO_NEW_PRIVS` + seccomp blocks `sudo`/`su` inside pods; agent cannot escalate from non-root to root
 - **TUI apps broken in pods** — devpts not mounted, seccomp blocking `restart_syscall`, SIGINT not forwarded to child process. Vim, htop, claude, and other terminal apps now work correctly.
 - **XFCE desktop startup failures** — D-Bus auth cookie path, ICE authority, seccomp syscalls for desktop session
 - **Display wrapper killing user shell on exit** — wrapper now detaches cleanly

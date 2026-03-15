@@ -229,11 +229,11 @@ Resource-reporting files are replaced with cgroup-accurate values:
 
 | File | Masking method | Source of truth |
 |------|---------------|-----------------|
-| `/proc/cpuinfo` | Bind-mount staged file | `cpuset.cpus` — filtered/renumbered processors |
-| `/proc/meminfo` | Bind-mount staged file | `memory.max`, `memory.current`, `memory.stat` |
+| `/proc/cpuinfo` | Bind-mount staged file | `cpuset.cpus` — filtered/renumbered processors. Model name is always sanitized to "CPU" (prevents host CPU fingerprinting). |
+| `/proc/meminfo` | Bind-mount staged file | `memory.max`, `memory.current`, `memory.stat`. When cgroup memory limits are set, values reflect cgroup limits instead of host totals. |
 | `/sys/devices/system/cpu/` | tmpfs overlay | Only allowed `cpuN` directories visible |
 
-`/proc/stat` is **not** masked (live-updating; a static bind would freeze CPU percentages).
+`/proc/stat` is intentionally **not** masked — it provides live-updating CPU counters that tools like `htop` and `top` require for accurate CPU percentage display. A static bind-mount would freeze CPU percentages at the values from pod startup time.
 
 CPU affinity is enforced via `sched_setaffinity()` so `nproc` reports the correct count.
 
@@ -302,7 +302,9 @@ setrlimit(RLIMIT_CORE, {0, 0})     // Zero core limit
 prctl(PR_SET_NO_NEW_PRIVS, 1)      // Block suid/file-cap escalation
 ```
 
-Then privilege drop:
+`NO_NEW_PRIVS` is set for **all pods** — both root and non-root. This flag is inherited across `fork()` and `execve()` and cannot be unset. It prevents any process in the pod from gaining privileges through setuid binaries, file capabilities, or any other mechanism.
+
+Then privilege drop (non-root pods):
 
 ```c
 // Collect supplementary groups (device owners: display, audio, GPU)
@@ -312,6 +314,11 @@ setuid(uid)       // Default: 60000 (user "agent")
 ```
 
 Capabilities are stripped implicitly — non-root UIDs have no capabilities by default in Linux. The seccomp filter allows `capget`/`capset` syscalls but the kernel enforces that non-root can't actually acquire capabilities.
+
+**Privilege escalation prevention (sudo/su blocked):** Two independent layers prevent an agent from escalating from non-root to root inside a pod:
+
+1. **NO_NEW_PRIVS flag** — causes `sudo` to refuse with "The no new privileges flag is set, which prevents acquiring new privileges" and causes setuid binaries (like `su`) to run without privilege gain.
+2. **seccomp-BPF** — while `setuid`/`setgid` syscalls are in the allowlist (needed for the initial privilege drop), the combination of `NO_NEW_PRIVS` and non-root UID means the kernel rejects any attempt to escalate. The only way to run as root inside a pod is `envpod run --root` from the host.
 
 ### 2.6 Device Isolation
 

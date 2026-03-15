@@ -439,6 +439,26 @@ This runs 48 tests across 8 categories (filesystem, PID, network, seccomp, harde
 
 ---
 
+## Can an agent running as non-root escalate to root inside a pod?
+
+No. Two hard blocks prevent this:
+
+1. **NO_NEW_PRIVS flag is set** — this kernel flag is applied to all pods (root and non-root). It causes `sudo` to refuse with "The no new privileges flag is set, which prevents acquiring new privileges." Setuid binaries like `su` run without privilege gain.
+
+2. **seccomp-BPF blocks the escalation path** — while `setuid`/`setgid` syscalls are in the allowlist (needed for the initial privilege drop during pod setup), the combination of `NO_NEW_PRIVS` and non-root UID means the kernel rejects any attempt to acquire new privileges.
+
+These two layers are independent — even if one were bypassed, the other still blocks escalation.
+
+The only way to run as root inside a pod is to explicitly request it from the host:
+
+```bash
+sudo envpod run my-agent --root -- whoami   # → root
+```
+
+Or set `user: root` in `pod.yaml`. Both are host-side decisions that the agent cannot influence.
+
+---
+
 ## Can I run GUI applications (browsers, desktop apps) inside a pod?
 
 Yes. Envpod supports display and audio forwarding with automatic protocol detection:
