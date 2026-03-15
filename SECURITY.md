@@ -48,6 +48,12 @@ We follow coordinated disclosure. Once a fix is released, we will:
 2. Publish a security advisory on GitHub
 3. Release a patched version
 
+## Detailed Security Documentation
+
+- **[Security Model](docs/SECURITY-MODEL.md)** — isolation architecture, /proc masking, privilege escalation prevention, threat analysis
+- **[Security Posture](docs/SECURITY-POSTURE.md)** — audit matrix for all 42 example configs, jailbreak test methodology
+- **[Capabilities](docs/CAPABILITIES.md)** — what the agent can and cannot do
+
 ## Contact
 
 - **Security:** security@envpod.dev
