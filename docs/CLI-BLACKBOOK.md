@@ -1905,4 +1905,55 @@ exit $DIRTY
 
 ---
 
+## Common Operations (One-Liners)
+
+```bash
+# Stop all running pods
+sudo envpod stop --all
+
+# Start all stopped pods
+sudo envpod start --all
+
+# Restart all running pods
+sudo envpod restart --all
+
+# Destroy all pods
+sudo envpod ls --json | jq -r '.[].name' | xargs sudo envpod destroy
+
+# Destroy all pods including their base pods
+sudo envpod ls --json | jq -r '.[].name' | xargs sudo envpod destroy --base
+
+# Remove all stopped pods (keep running/frozen)
+sudo envpod prune
+
+# Clean up orphaned iptables, cgroups, netns
+sudo envpod gc
+
+# Full reset — stop everything, prune, clean up
+sudo envpod stop --all && sudo envpod prune && sudo envpod gc
+
+# Nuclear reset — remove all pod data
+sudo envpod stop --all 2>/dev/null; sudo rm -rf /var/lib/envpod/pods/* /var/lib/envpod/bases/*; sudo envpod gc
+
+# List all pods with resource usage
+sudo envpod ls
+
+# List as JSON (for scripting)
+sudo envpod ls --json
+
+# Diff all pods at once
+for pod in $(sudo envpod ls --json | jq -r '.[].name'); do echo "=== $pod ===" && sudo envpod diff "$pod"; done
+
+# Audit all pods at once
+for pod in $(sudo envpod ls --json | jq -r '.[].name'); do echo "=== $pod ===" && sudo envpod audit "$pod" | tail -5; done
+
+# Security audit all example configs
+for f in examples/*.yaml; do echo "=== $(basename $f) ===" && sudo envpod audit --security -c "$f" 2>&1 | head -5; done
+
+# Uninstall envpod
+sudo bash uninstall.sh
+```
+
+---
+
 *Copyright 2026 Xtellix Inc. All rights reserved.*
