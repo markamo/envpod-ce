@@ -416,13 +416,13 @@ fn pre_exec_setup(
     bind_virtual_filesystems(merged, shm_size, tmp_size, devices)?;
 
     // 5.1. Mask /proc to reflect pod's cgroup limits (non-fatal)
-    if let Some(ref cg_procs) = cgroup_procs {
-        if let Err(e) = super::proc_mask::mask_proc_files(merged, cg_procs) {
-            let _ = std::io::Write::write_all(
-                &mut std::io::stderr(),
-                format!("envpod: /proc masking failed (non-fatal): {e}\n").as_bytes(),
-            );
-        }
+    // Always mask sensitive /proc entries to prevent host fingerprinting,
+    // even without cgroup limits (standard mode).
+    if let Err(e) = super::proc_mask::mask_proc_files(merged, cgroup_procs.as_deref()) {
+        let _ = std::io::Write::write_all(
+            &mut std::io::stderr(),
+            format!("envpod: /proc masking failed (non-fatal): {e}\n").as_bytes(),
+        );
     }
 
     // 5.2. Mask GPU info in /proc and /sys when GPU is not allowed (non-fatal)

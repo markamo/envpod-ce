@@ -217,6 +217,22 @@ pub fn mask_cpuinfo(host_cpuinfo: &str, allowed_cpus: &[usize]) -> String {
     out
 }
 
+/// Sanitize cpuinfo without filtering CPUs — strips model name to prevent
+/// host CPU fingerprinting. Used when no cgroup CPU limits are set.
+pub fn sanitize_cpuinfo(host_cpuinfo: &str) -> String {
+    host_cpuinfo
+        .lines()
+        .map(|line| {
+            if line.starts_with("model name") {
+                "model name\t: CPU"
+            } else {
+                line
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 // ---------------------------------------------------------------------------
 // /proc/meminfo masking
 // ---------------------------------------------------------------------------
@@ -436,28 +452,21 @@ fn compute_aggregate_cpu_line(cpu_lines: &[(usize, String)]) -> String {
 /// the correct count, and masks sysfs CPU topology files for `lscpu`.
 ///
 /// This function is non-fatal — callers should log and continue on error.
-pub fn mask_proc_files(merged: &Path, cgroup_procs: &Path) -> io::Result<()> {
-    let cg_dir = cgroup_procs
-        .parent()
-        .ok_or_else(|| io::Error::other("cgroup_procs has no parent directory"))?;
+///
+/// When `cgroup_procs` is None (standard mode without cgroups), we still
+/// sanitize /proc/cpuinfo to prevent host CPU fingerprinting.
+pub fn mask_proc_files(merged: &Path, cgroup_procs: Option<&Path>) -> io::Result<()> {
+    let limits = if let Some(cg_procs) = cgroup_procs {
+        let cg_dir = cg_procs
+            .parent()
+            .ok_or_else(|| io::Error::other("cgroup_procs has no parent directory"))?;
+        read_cgroup_limits(cg_dir)
+    } else {
+        CgroupLimits::default()
+    };
 
-    let limits = read_cgroup_limits(cg_dir);
-
-    // Nothing to mask
-    if limits.is_empty() {
-        return Ok(());
-    }
-
-    // Determine which CPUs to show
+    // Determine which CPUs to show (only when cgroup limits restrict them)
     let effective_cpus = effective_cpu_list(&limits);
-
-    // Need at least one thing to mask
-    let has_cpu_mask = effective_cpus.is_some();
-    let has_mem_mask = limits.memory_bytes.is_some();
-
-    if !has_cpu_mask && !has_mem_mask {
-        return Ok(());
-    }
 
     // Create staging directory for masked files
     let staging = merged.join(".proc_mask");
@@ -465,7 +474,8 @@ pub fn mask_proc_files(merged: &Path, cgroup_procs: &Path) -> io::Result<()> {
 
     let proc_dir = merged.join("proc");
 
-    // Mask /proc/cpuinfo
+    // Always mask /proc/cpuinfo — either filter to allowed CPUs (cgroup mode)
+    // or sanitize model name to prevent host fingerprinting (all modes).
     if let Some(ref cpus) = effective_cpus {
         if let Err(e) = mask_and_bind(&staging, &proc_dir, "cpuinfo", |content| {
             mask_cpuinfo(content, cpus)
@@ -475,9 +485,19 @@ pub fn mask_proc_files(merged: &Path, cgroup_procs: &Path) -> io::Result<()> {
                 format!("envpod: cpuinfo masking failed: {e}\n").as_bytes(),
             );
         }
+    } else {
+        // No CPU limit — show all CPUs but strip model name
+        if let Err(e) = mask_and_bind(&staging, &proc_dir, "cpuinfo", |content| {
+            sanitize_cpuinfo(content)
+        }) {
+            let _ = io::Write::write_all(
+                &mut io::stderr(),
+                format!("envpod: cpuinfo sanitize failed: {e}\n").as_bytes(),
+            );
+        }
     }
 
-    // Mask /proc/meminfo
+    // Mask /proc/meminfo when cgroup memory limit is set
     if let Some(mem_bytes) = limits.memory_bytes {
         let mem_info = MemoryMaskInfo {
             limit_bytes: mem_bytes,
