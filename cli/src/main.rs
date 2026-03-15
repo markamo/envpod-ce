@@ -1181,6 +1181,8 @@ async fn cmd_init(
             if config.web_display.display_type == envpod_core::config::WebDisplayType::Novnc {
                 let favicon_svg = r#"%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%2324292e%27/%3E%3Ctext x=%2716%27 y=%2722%27 text-anchor=%27middle%27 font-family=%27monospace%27 font-weight=%27bold%27 font-size=%2714%27 fill=%27%2358a6ff%27%3Eep%3C/text%3E%3C/svg%3E"#;
                 let mut patches = vec![
+                    // Disable browser cache so patched vnc.html is always fresh
+                    r#"sed -i 's|</head>|<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"></head>|' /usr/share/novnc/vnc.html"#.to_string(),
                     // Side panel logo: "noVNC" → "envpod"
                     r#"sed -i 's|<h1 class="noVNC_logo"[^>]*><span>no</span><br>VNC</h1>|<h1 class="noVNC_logo" translate="no"><span>env</span><br>pod</h1>|' /usr/share/novnc/vnc.html"#.to_string(),
                     // Connect dialog logo: "noVNC" → "envpod"
