@@ -1539,7 +1539,35 @@ async fn run_setup_commands(
         }
     }
 
+    // Fix ownership of agent home directory in the upper layer.
+    // Setup runs as root inside the pod, so files created under /home/agent/
+    // are owned by root in the overlay upper. The agent user (uid 60000) needs
+    // write access for config files, OAuth tokens, etc.
+    let agent_home = state.upper_dir().join("home/agent");
+    if agent_home.exists() {
+        fix_upper_ownership(&agent_home, 60000, 60000);
+    }
+
     Ok((total, total, true, setup_log))
+}
+
+/// Recursively chown files in the overlay upper layer to the given uid:gid.
+/// This fixes ownership for files created by root during setup that the
+/// non-root agent user needs to write to.
+fn fix_upper_ownership(path: &std::path::Path, uid: u32, gid: u32) {
+    use std::os::unix::fs::MetadataExt;
+    if let Ok(meta) = std::fs::metadata(path) {
+        if meta.uid() == 0 {
+            nix::unistd::chown(path, Some(nix::unistd::Uid::from_raw(uid)), Some(nix::unistd::Gid::from_raw(gid))).ok();
+        }
+    }
+    if path.is_dir() {
+        if let Ok(entries) = std::fs::read_dir(path) {
+            for entry in entries.flatten() {
+                fix_upper_ownership(&entry.path(), uid, gid);
+            }
+        }
+    }
 }
 
 /// Truncate a setup command for display. Takes the first line only

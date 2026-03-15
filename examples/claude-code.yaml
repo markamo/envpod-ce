@@ -161,3 +161,5 @@ setup:
     claude --dangerously-skip-permissions -p "respond with: OK" --max-turns 1 2>/dev/null \
       && echo "PASS: non-interactive mode works" \
       || echo "WARN: non-interactive test skipped (no API key during setup)"
+  # Fix ownership — setup runs as root, agent user needs write access for OAuth tokens
+  - "chown -R agent:agent /home/agent/.claude /home/agent/.claude.json /workspace 2>/dev/null; true"
