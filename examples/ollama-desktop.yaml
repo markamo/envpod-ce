@@ -93,7 +93,7 @@ processor:
   cores: 4.0
   memory: "16GB"
   max_pids: 4096
-  tmp_size: "2GB"
+  tmp_size: "4GB"
 
 security:
   seccomp_profile: browser

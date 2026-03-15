@@ -69,7 +69,7 @@ processor:
   cores: 4.0
   memory: "8GB"
   max_pids: 512
-  tmp_size: "1GB"
+  tmp_size: "4GB"
 
 devices:
   gpu: true
