@@ -11,6 +11,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - `envpod start <names...> [--all]` — start stopped pods in background (uses `start_command` from pod.yaml, or `sleep infinity`)
 - `envpod stop <names...> [--all]` — stop running pods gracefully
 - `envpod restart <names...> [--all]` — stop + start in one step
+- `envpod resize <name>` — live resource mutation on running pods (CPU, memory, tmpfs, pids), config-only mutation on stopped pods (GPU, display, audio, desktop)
+- `envpod base resize <name>` — resize base pod configs so future clones inherit settings
 - `envpod prune` — remove all stopped pods
 - `envpod about` / `envpod --about` — version, license, project info, and system details
 
@@ -56,10 +58,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - **noVNC clipboard error on non-HTTPS** — clipboard API requires secure context; error bar added with dismiss button
 - **VS Code desktop shortcut** — patches original `.desktop` instead of overwriting (preserves icon path)
 - **Chrome set as default browser** in desktop pod examples
+- **setup_script injection in advanced mode** — `inject_setup_script` now writes to `sys_upper/` when `system_access` is advanced/dangerous, fixing exit 127 for configs with `setup_script`
+- **browser.yaml /etc/alternatives** — removed ReadOnly mount that blocked `update-alternatives` during openbox post-install
+- **LibreOffice install in pods** — postinst `install(1)` fails with EPERM in user namespaces; patched to use `touch`, all 7 components (Writer, Calc, Impress, Draw, Math, Base) now fully functional
+- **Idempotent git clone in setup** — `test -d || git clone` pattern prevents failure on re-run
+- **PEP 668 in Ubuntu 24.04** — setup commands remove `EXTERNALLY-MANAGED` file before pip installs
+- **tmp_size for large installs** — aider, google-adk, ml-training, python-env, swe-agent configs bumped to 1-8GB to prevent ENOSPC during pip downloads
 
 ### Example Configs
 
-- 41 example configs (up from 20 in v0.1.0): added desktop-user, desktop-agent, workstation, web-display variants, and updated all existing configs with `start_command`, API key docs, and fixed desktop shortcuts
+- 41 example configs, all 37 testable configs pass (3 skipped: ARM64-only, monitoring policy)
+- Test suite: `tests/test-all-examples.sh` with selective execution, pass/fail/skip summary
 
 ## [0.1.0] - 2026-03-03
 
