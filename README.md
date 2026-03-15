@@ -110,6 +110,11 @@ Existing sandboxes (Docker, E2B, Firecrackers) provide isolation but zero govern
 curl -fsSL https://github.com/markamo/envpod-ce/releases/latest/download/envpod-linux-x86_64.tar.gz \
   | tar xz && sudo ./envpod-linux-x86_64/install.sh
 
+# Windows (WSL2) — open PowerShell as Admin:
+wsl --install Ubuntu-24.04
+# Then in the Ubuntu terminal:
+curl -fsSL https://envpod.dev/install.sh | sudo bash
+
 # Create a pod using a built-in preset (18 available)
 sudo envpod init my-agent --preset claude-code
 

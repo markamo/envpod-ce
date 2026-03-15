@@ -62,7 +62,7 @@
       <span class="hero-install-cmd">curl -fsSL https://envpod.dev/install.sh | sh</span>
       <button class="hero-install-copy" onclick="copyHeroInstall(this)">Copy</button>
     </div>
-    <span class="hero-install-note">Linux · x86_64 or ARM64 · requires root · ~12 MB</span>
+    <span class="hero-install-note">Linux · x86_64 or ARM64 · Windows via WSL2 · requires root · ~12 MB</span>
   </div>
 </section>
 
@@ -443,6 +443,7 @@
     <div class="install-tabs">
       <button class="itab active" onclick="showTab('x86')">x86_64</button>
       <button class="itab" onclick="showTab('arm64')">ARM64</button>
+      <button class="itab" onclick="showTab('wsl2')">Windows (WSL2)</button>
       <button class="itab" onclick="showTab('src')">Build from source</button>
     </div>
 
@@ -451,6 +452,9 @@
     </div>
     <div id="tab-arm64" style="display:none">
       <div class="code-block"><button class="copy-btn" onclick="copyBlock(this)">Copy</button><div class="cp"># Raspberry Pi 4/5 (64-bit OS) or NVIDIA Jetson Orin</div><div><span class="pr">$ </span><span class="cl">curl -fsSL https://envpod.dev/install.sh | sh</span></div></div>
+    </div>
+    <div id="tab-wsl2" style="display:none">
+      <div class="code-block"><button class="copy-btn" onclick="copyBlock(this)">Copy</button><div class="cp"># 1. Install WSL2 (PowerShell as Admin)</div><div><span class="pr">$ </span><span class="cl">wsl --install Ubuntu-24.04</span></div><div style="margin-top:12px"><div class="cp"># 2. Open Ubuntu terminal, then:</div></div><div><span class="pr">$ </span><span class="cl">curl -fsSL https://envpod.dev/install.sh | sudo bash</span></div></div>
     </div>
     <div id="tab-src" style="display:none">
       <div class="code-block"><button class="copy-btn" onclick="copyBlock(this)">Copy</button><div class="cp"># Requires Rust toolchain — rustup.rs</div><div><span class="pr">$ </span><span class="cl">git clone https://github.com/markamo/envpod-ce</span></div><div><span class="pr">$ </span><span class="cl">cd envpod-ce && cargo build --release</span></div><div><span class="pr">$ </span><span class="cl">sudo cp target/release/envpod /usr/local/bin/</span></div></div>
@@ -471,7 +475,7 @@
     </div>
 
     <div class="req-box">
-      <strong>Requirements:</strong> Linux kernel 5.15+ · cgroups v2 · OverlayFS · root (for namespace setup) · ~12 MB disk
+      <strong>Requirements:</strong> Linux kernel 5.15+ · cgroups v2 · OverlayFS · root (for namespace setup) · ~12 MB disk<br>Windows users: install <a href="https://learn.microsoft.com/en-us/windows/wsl/install">WSL2</a> with Ubuntu 24.04, then use the Linux installer above.
       <br><br>
       <a href="https://github.com/markamo/envpod-ce/blob/main/docs/INSTALL.md">Installation guide</a> ·
       <a href="https://github.com/markamo/envpod-ce/blob/main/docs/QUICKSTART.md">Quick start</a> ·
@@ -663,7 +667,7 @@
 })();
 
 // ══ INSTALL TABS ══
-function showTab(n){['x86','arm64','src'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===n?'':'none'});document.querySelectorAll('.itab').forEach((el,i)=>{el.classList.toggle('active',['x86','arm64','src'][i]===n)})}
+function showTab(n){['x86','arm64','wsl2','src'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===n?'':'none'});document.querySelectorAll('.itab').forEach((el,i)=>{el.classList.toggle('active',['x86','arm64','wsl2','src'][i]===n)})}
 function copyBlock(btn){const b=btn.closest('.code-block');const t=Array.from(b.querySelectorAll('.cl')).map(el=>el.textContent).join('\n').trim();navigator.clipboard.writeText(t).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)}).catch(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)})}
 
 // ══ SCROLL REVEAL ══

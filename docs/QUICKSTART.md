@@ -15,6 +15,8 @@ This tutorial takes you from zero to a governed AI agent in about 10 minutes. Yo
 
 **Prerequisites:** envpod installed and working (`sudo envpod ls` prints an empty list). See [Installation](INSTALL.md) if you haven't set up yet.
 
+**Supported platforms:** Any Linux distribution with kernel 5.11+ and cgroup v2 — including **Windows via WSL2** (Ubuntu 24.04 recommended). See [Installation — Windows (WSL2)](INSTALL.md#windows-wsl2) for setup.
+
 ---
 
 ## 1. Your First Pod

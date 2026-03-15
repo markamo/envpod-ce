@@ -94,6 +94,26 @@ fail()  { echo -e "${RED}[✗]${NC} $*"; exit 1; }
 step()  { echo -e "\n${BOLD}→ $*${NC}"; }
 
 # ═══════════════════════════════════════════════════════════════════════
+# macOS detection — envpod requires Linux
+# ═══════════════════════════════════════════════════════════════════════
+
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    echo ""
+    echo "  envpod requires a Linux kernel (namespaces, cgroups, OverlayFS)."
+    echo ""
+    echo "  On macOS, use a lightweight Linux VM:"
+    echo ""
+    echo "    brew install orbstack"
+    echo "    orb create ubuntu envpod-vm"
+    echo "    orb shell envpod-vm"
+    echo "    curl -fsSL https://envpod.dev/install.sh | sudo bash"
+    echo ""
+    echo "  Or use Lima, UTM, or any Linux VM with kernel 5.11+."
+    echo ""
+    exit 1
+fi
+
+# ═══════════════════════════════════════════════════════════════════════
 # Detect: architecture, distro, package manager, container
 # ═══════════════════════════════════════════════════════════════════════
 

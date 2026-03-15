@@ -81,6 +81,37 @@ curl -fsSL https://envpod.dev/install.sh | bash
 
 See `docs/DOCKER-TESTING.md` for details.
 
+## Windows (WSL2)
+
+WSL2 runs a real Linux kernel (not emulation), so envpod works natively — namespaces, cgroups v2, and OverlayFS all function exactly as on bare-metal Linux.
+
+**Step 1: Install WSL2 with Ubuntu 24.04**
+
+Open PowerShell as Administrator:
+
+```powershell
+wsl --install Ubuntu-24.04
+```
+
+Follow the prompts to create a username and password, then you'll be dropped into an Ubuntu terminal.
+
+**Step 2: Install envpod**
+
+Inside the Ubuntu terminal, run the standard install script:
+
+<!-- no-exec -->
+```bash
+curl -fsSL https://envpod.dev/install.sh | sudo bash
+```
+
+That's it. All envpod commands work the same as on native Linux.
+
+**Notes:**
+
+- **All features work on WSL2**, including host user clone (`host_user: { clone_host: true }` clones the WSL user), COW filesystem, network isolation, DNS filtering, vault, audit, and snapshots.
+- **GPU passthrough** requires WSL2 GPU support. Install the NVIDIA GPU driver on the Windows host (not inside WSL) — WSL2 automatically exposes `/dev/dxg` and CUDA libraries. See [Microsoft's WSL GPU docs](https://learn.microsoft.com/en-us/windows/ai/directml/gpu-cuda-in-wsl) for setup.
+- **Kernel version:** WSL2 ships kernel 5.15+ by default, which exceeds envpod's 5.11 minimum.
+
 ## Per-Distro Notes
 
 The one-line installer handles prerequisites automatically. These notes are for manual installation or troubleshooting.
