@@ -1014,7 +1014,7 @@ Sensitive directories (.ssh, .gnupg, .aws, etc.) are excluded by default. The ag
 
 ## Setup Commands
 
-Commands to run inside the pod during `envpod init` or `envpod setup`. These run as root regardless of the `user` setting, since they typically install packages.
+Commands to run inside the pod during `envpod init` or `envpod setup`. These run as root regardless of the `user` setting, since they typically install packages. See [Setup Patterns](SETUP-PATTERNS.md) for common patterns and troubleshooting.
 
 ```yaml
 # Inline commands (run in order)

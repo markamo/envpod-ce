@@ -1020,6 +1020,8 @@ setup:                                   # Shell commands run during init (alway
 setup_script: ~/my-project/setup.sh      # Host script injected + executed after setup commands
 ```
 
+For common setup patterns, known issues, and DNS domain requirements, see [Setup Patterns](SETUP-PATTERNS.md).
+
 <!-- pause 2 -->
 
 ### Secure Defaults
