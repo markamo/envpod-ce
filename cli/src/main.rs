@@ -1458,6 +1458,27 @@ async fn run_setup_commands(
         inject_setup_script(&state, script_path, &config.filesystem.system_access)?;
     }
 
+    // Silent pre-setup: fix common issues before user's setup commands.
+    // These are idempotent, fast, and run without output (unless --verbose).
+    let pre_setup_cmds = vec![
+        // PEP 668: Ubuntu 24.04 blocks system pip installs
+        "rm -f /usr/lib/python*/EXTERNALLY-MANAGED 2>/dev/null; true",
+        // Stale apt lists in overlay cause "Unable to locate package"
+        "rm -rf /var/lib/apt/lists/* 2>/dev/null; true",
+        // Disable 3rd-party apt sources that may not resolve through DNS whitelist
+        "cd /etc/apt/sources.list.d 2>/dev/null && for f in *.list *.sources; do [ -f \"$f\" ] && sed -i 's/^deb /# deb /' \"$f\"; done; true",
+    ];
+    for pre_cmd in &pre_setup_cmds {
+        let args = vec!["sh".to_string(), "-c".to_string(), pre_cmd.to_string()];
+        let quiet = Some(setup_log.as_path());
+        if let Ok(proc_handle) = backend.start_setup(&handle, &args, quiet) {
+            nix::sys::wait::waitpid(
+                nix::unistd::Pid::from_raw(proc_handle.pid as i32),
+                None,
+            ).ok();
+        }
+    }
+
     let has_script = config.setup_script.is_some();
     let total = config.setup.len() + if has_script { 1 } else { 0 };
 
