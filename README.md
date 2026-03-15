@@ -19,7 +19,7 @@ Every AI agent runs inside a **pod** — an isolated environment with a foundati
 
 > **Why not just Docker?** Docker isolates processes but provides zero governance. No file change review, no action queue, no credential vault, no undo. Envpod adds the governance layer on top of the same Linux primitives. See [Docker vs Envpod](docs/COMPARE-DOCKER.md) for a full comparison.
 
-### Docker's default: everything lands immediately or everything disappears. Envpod's default: nothing lands until you review it.
+### Docker's default: everything touches the host immediately or everything disappears. Envpod's default: nothing touches the host until you review it.
 
 ```
 $ envpod diff my-agent
@@ -41,7 +41,7 @@ Existing sandboxes (Docker, E2B, Firecrackers) provide isolation but zero govern
 
 ## Features
 
-**COW Foundation** — OverlayFS copy-on-write. Every write lands in a private overlay — the host is untouched. Review changes with `diff`, accept with `commit`, discard with `rollback`. The foundation makes everything else reversible.
+**COW Foundation** — OverlayFS copy-on-write. Every write goes to a private overlay — the host is untouched. Review changes with `diff`, accept with `commit`, discard with `rollback`. The foundation makes everything else reversible.
 
 <p align="center">
   <img src="assets/demos/02-governance.gif" alt="envpod governance — diff, commit, rollback" width="800">
