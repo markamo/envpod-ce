@@ -721,7 +721,7 @@ function showTab(n){['x86','arm64','wsl2','macos','src'].forEach(t=>{document.ge
 function copyBlock(btn){const b=btn.closest('.code-block');const t=Array.from(b.querySelectorAll('.cl')).map(el=>el.textContent).join('\n').trim();navigator.clipboard.writeText(t).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)}).catch(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)})}
 
 // ══ HERO SLIDESHOW ══
-let heroSlide=0;const heroTotal=4;function goSlide(n){heroSlide=n;document.querySelectorAll('.hero-slide').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.hero-dot').forEach(d=>d.classList.remove('active'));document.querySelector('[data-slide="'+n+'"]').classList.add('active');document.querySelectorAll('.hero-dot')[n].classList.add('active')}setInterval(()=>{goSlide((heroSlide+1)%heroTotal)},5000);
+let heroSlide=0;const heroTotal=4;function goSlide(n){heroSlide=n;document.querySelectorAll('.hero-slide').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.hero-dot').forEach(d=>d.classList.remove('active'));document.querySelector('[data-slide="'+n+'"]').classList.add('active');document.querySelectorAll('.hero-dot')[n].classList.add('active')}setInterval(()=>{goSlide((heroSlide+1)%heroTotal)},8000);
 
 // ══ SCROLL REVEAL ══
 (function(){const o=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('vis')})},{threshold:0.1});document.querySelectorAll('.reveal').forEach(el=>o.observe(el))})();
