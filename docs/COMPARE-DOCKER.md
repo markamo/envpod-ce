@@ -146,7 +146,7 @@ This is where envpod and Docker diverge significantly.
 | PID limit | `--pids-limit` | `processor.max_pids` | |
 | CPU affinity | — | `processor.cpu_affinity` | Pin to specific CPU cores |
 | GPU access | `--gpus` | `devices.gpu: true` | envpod auto-mounts all GPU devices |
-| **Cache partitioning (Intel CAT)** | — | Planned (v0.3) | Side-channel defense |
+| **Cache partitioning (Intel CAT)** | — | Planned | Side-channel defense |
 
 ---
 
@@ -396,7 +396,7 @@ envpod is purpose-built for AI agent governance on a single Linux machine. It is
 |---|---|
 | Pre-built image library (Docker Hub) | Not applicable — envpod uses host rootfs |
 | Multi-stage builds (Dockerfile) | Setup commands in pod.yaml are the equivalent; multi-stage not needed |
-| macOS and Windows support | Planned when a VM backend ships (v0.3) |
+| macOS and Windows support | Planned (VM backend) |
 | Kubernetes CRI compatibility | Not planned — envpod is not a container runtime |
 | Docker Compose (multi-service declarative) | Planned for fleet config |
 | Docker Swarm orchestration | Enterprise fleet roadmap |

@@ -85,7 +85,7 @@ Controls the security posture template. Options:
 
 ### `backend`
 
-The isolation backend. Currently only `native` (Linux namespaces + cgroups v2 + OverlayFS). Docker and VM backends are planned for v0.2 and v0.3.
+The isolation backend. Currently only `native` (Linux namespaces + cgroups v2 + OverlayFS). Docker and VM backends are planned.
 
 ### `user`
 

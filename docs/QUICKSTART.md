@@ -258,7 +258,7 @@ sudo envpod commit claude-code /opt/output.txt  # or accept specific files
 sudo envpod rollback claude-code   # reject everything
 ```
 
-### Vault Proxy Injection (v0.2)
+### Vault Proxy Injection
 
 For maximum security, use vault proxy injection — the agent never sees the real API key:
 
@@ -578,7 +578,7 @@ sudo envpod ls    # empty
 ## What's Next
 
 - `envpod --help` — full command reference
-- `envpod dashboard` — start the web dashboard for browser-based fleet management (v0.2)
+- `envpod dashboard` — start the web dashboard for browser-based fleet management
 - `examples/` — pre-built configs for popular AI agents
 - [Pod Config Reference](POD-CONFIG.md) — every pod.yaml option explained (including vault proxy)
 - [Tutorials](TUTORIALS.md) — detailed use-case guides (browser, audio, GPU, coding agents)

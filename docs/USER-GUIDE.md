@@ -1750,7 +1750,7 @@ jailbreak-test.sh --category seccomp
 
 <!-- pause 2 -->
 
-N-05 and N-06 only affect pods running as root (`--root` flag or `user: root` in pod.yaml). The default non-root `agent` user is immune — 17/17 pod boundary tests pass. IPv6 DNS bypass (N-04) is blocked since v0.1 (IPv6 is disabled in the pod network namespace); full ip6tables rules are planned for v0.2.
+N-05 and N-06 only affect pods running as root (`--root` flag or `user: root` in pod.yaml). The default non-root `agent` user is immune — 17/17 pod boundary tests pass. IPv6 DNS bypass (N-04) is blocked since v0.1 (IPv6 is disabled in the pod network namespace); full ip6tables rules are planned.
 
 The DNS policy engine is the primary enforcement layer; iptables is defense-in-depth.
 
@@ -1797,7 +1797,7 @@ sudo envpod vault my-agent rm KEY    # delete
 - Secrets are injected as environment variables at pod runtime — the agent never sees raw credentials in config files
 - **Automatic migration** — plaintext vaults from older versions are auto-encrypted on first access
 
-### Vault Proxy Injection (v0.2)
+### Vault Proxy Injection
 
 For high-security deployments, vault proxy injection eliminates credential exposure entirely. Instead of injecting secrets as environment variables (where a compromised agent can read and exfiltrate them), the proxy intercepts API requests at the transport layer and injects real credentials — the agent never has access to real API keys.
 

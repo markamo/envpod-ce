@@ -48,8 +48,8 @@ However, envpod's `IsolationBackend` trait is pluggable. Future backends will un
 | Backend | Status | OS Flexibility |
 |---------|--------|----------------|
 | **Native** (current) | v0.1 | Same as host only |
-| **Docker** (planned) | v0.2 | Any Linux distro via Docker images, with envpod's governance on top |
-| **VM** (planned) | v0.3 | Full OS flexibility via Firecracker/QEMU microVMs |
+| **Docker** (planned) | planned | Any Linux distro via Docker images, with envpod's governance on top |
+| **VM** (planned) | planned | Full OS flexibility via Firecracker/QEMU microVMs |
 
 The governance layer (audit, vault, queue, diff/commit) works identically regardless of backend — that's the point of the trait separation.
 
@@ -59,7 +59,7 @@ The governance layer (audit, vault, queue, diff/commit) works identically regard
 |----------|-----------|--------------|
 | **Docker inside envpod** | Technically yes, but requires relaxing seccomp filters and granting device access | No — undermines the security model |
 | **Envpod inside Docker** | Requires `--privileged` Docker container for namespace/cgroup access | No — nesting isolation layers is fragile |
-| **Envpod's Docker backend** | Designed approach — envpod governs, Docker isolates | Yes — this is the planned v0.2 integration |
+| **Envpod's Docker backend** | Designed approach — envpod governs, Docker isolates | Yes — this is the planned integration |
 
 The right way to combine them is envpod's Docker backend: Docker provides the container (and OS flexibility), envpod provides the governance ceiling (audit, vault, diff/commit, action queue, monitoring). You don't nest one inside the other — envpod sits on top and drives Docker as its isolation engine.
 
@@ -311,7 +311,7 @@ No. They serve different purposes and can coexist.
 
 Use Docker when you need reproducible application deployment. Use envpod when you need to let an AI agent run on your system with full governance — audit trails, credential vaults, filesystem review, network restrictions, and remote lockdown.
 
-Envpod's architecture actually supports Docker as a pluggable backend (planned for v0.2). In that mode, envpod's governance ceiling sits on top of Docker's container isolation — you get both Docker's packaging and envpod's governance.
+Envpod's architecture actually supports Docker as a pluggable backend (planned). In that mode, envpod's governance ceiling sits on top of Docker's container isolation — you get both Docker's packaging and envpod's governance.
 
 ---
 
@@ -536,7 +536,7 @@ The vault directory is mode `0700`, each secret file is mode `0600`, and the key
 
 None of these exist on macOS or Windows.
 
-**Future path:** The pluggable `IsolationBackend` trait enables platform-specific backends. The Docker backend (v0.2) would unblock macOS and Windows users — run Docker on your platform, envpod governs it. The VM backend (v0.3) using Firecracker/QEMU would add another option.
+**Future path:** The pluggable `IsolationBackend` trait enables platform-specific backends. The Docker backend would unblock macOS and Windows users — run Docker on your platform, envpod governs it. The VM backend using Firecracker/QEMU would add another option.
 
 **Minimum Linux requirement:** Kernel 5.11+, cgroups v2 enabled, root access.
 

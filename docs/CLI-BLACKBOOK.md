@@ -78,7 +78,7 @@ envpod init <name> [--config <pod.yaml>] [--backend native] [--create-base [base
 |---|---|---|
 | `name` | required | Pod name (alphanumeric, hyphens) |
 | `-c, --config <path>` | auto-detect | Path to pod.yaml. If omitted, looks for `<name>/pod.yaml` or `pod.yaml` in CWD |
-| `--backend <name>` | `native` | Isolation backend (`native` only in v0.2) |
+| `--backend <name>` | `native` | Isolation backend (`native` only, more planned) |
 | `--create-base [name]` | none | Create a base snapshot after init (for `envpod clone`). Uses pod name if no name given. Auto-increments on collision (e.g. `my-agent-2`). |
 | `-v, --verbose` | false | Stream live output from setup commands |
 
