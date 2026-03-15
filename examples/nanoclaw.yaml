@@ -1,0 +1,98 @@
+# NanoClaw — AI messaging agent (WhatsApp, Telegram, Slack, Discord)
+#
+# Runs NanoClaw inside an envpod with full governance. Envpod replaces
+# NanoClaw's Docker sandboxes — the pod IS the sandbox, plus you get
+# diff/commit, vault, audit, DNS filtering, and live mutation.
+#
+# Prerequisites:
+#   - Anthropic API key (stored in vault)
+#   - Messaging app credentials (WhatsApp QR, Telegram bot token, etc.)
+#
+# Setup:
+#   sudo envpod init nanoclaw -c examples/nanoclaw.yaml
+#   sudo envpod vault nanoclaw set ANTHROPIC_API_KEY sk-ant-...
+#   sudo envpod run nanoclaw -- bash
+#   # Inside the pod:
+#   cd /workspace && claude    # then run /setup
+#
+# See: https://github.com/qwibitai/nanoclaw
+
+name: nanoclaw
+type: standard
+user: root
+
+filesystem:
+  system_access: advanced
+  workspace: /workspace
+  mount_cwd: false
+  tracking:
+    watch:
+      - /workspace
+      - /home
+      - /opt
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+      - /workspace/node_modules
+
+network:
+  mode: Monitored
+  dns:
+    mode: Whitelist
+    allow:
+      # Anthropic API
+      - api.anthropic.com
+      - statsig.anthropic.com
+      - sentry.io
+      # GitHub (clone repo)
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+      # npm (dependencies)
+      - registry.npmjs.org
+      - "*.npmjs.org"
+      # WhatsApp Web
+      - "*.whatsapp.net"
+      - "*.whatsapp.com"
+      - web.whatsapp.com
+      # Telegram
+      - api.telegram.org
+      - "*.telegram.org"
+      # Slack
+      - "*.slack.com"
+      - slack.com
+      # Discord
+      - "*.discord.com"
+      - discord.com
+      - gateway.discord.gg
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+  max_pids: 512
+  tmp_size: "500MB"
+
+security:
+  seccomp_profile: default
+
+vault:
+  env:
+    - ANTHROPIC_API_KEY
+
+budget:
+  max_duration: "24h"
+
+audit:
+  action_log: true
+
+setup:
+  - "rm -f /usr/lib/python*/EXTERNALLY-MANAGED"
+  - "rm -rf /var/lib/apt/lists/*"
+  - "cd /etc/apt/sources.list.d && for f in *.list *.sources; do [ -f \"$f\" ] && sed -i 's/^deb /# deb /' \"$f\"; done; true"
+  - "DEBIAN_FRONTEND=noninteractive apt-get update -qq && apt-get install -y --no-install-recommends git curl ca-certificates"
+  - "export NVM_DIR=/opt/nvm && mkdir -p $NVM_DIR && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash && . $NVM_DIR/nvm.sh && nvm install 20 && ln -sf $NVM_DIR/versions/node/*/bin/node /usr/local/bin/node && ln -sf $NVM_DIR/versions/node/*/bin/npm /usr/local/bin/npm && ln -sf $NVM_DIR/versions/node/*/bin/npx /usr/local/bin/npx"
+  - "test -d /workspace/nanoclaw || git clone https://github.com/qwibitai/nanoclaw.git /workspace/nanoclaw"
+  - "cd /workspace/nanoclaw && npm install"
