@@ -38,11 +38,15 @@ What envpod can do today (v0.1.1). For how-to guides, see [Quickstart](QUICKSTAR
 | **Devices** | NVIDIA GPU passthrough (zero-copy bind-mount) | Shipped |
 | | Display forwarding (Wayland / X11 / auto-detect) | Shipped |
 | | Audio forwarding (PipeWire / PulseAudio / auto-detect) | Shipped |
+| | Web display via noVNC (full desktop in browser, audio, clipboard, file upload) | Shipped v0.2 |
 | | Desktop environment auto-install (`desktop_env`: xfce / openbox / sway) | Shipped v0.2 |
 | | Custom device passthrough (`/dev/fuse`, `/dev/kvm`, etc.) | Shipped |
-| **Discovery** | Pod-to-pod resolution (`<name>.pods.local`) via central daemon | Shipped v0.2 |
-| | Live discovery mutations (`envpod discover`) | Shipped v0.2 |
+| **Live Mutation** | Live resource resize (CPU, memory, tmpfs, PIDs) on running pods | Shipped |
+| | Stopped mutation (GPU, display, audio, desktop) on stopped pods | Shipped |
+| | Base pod resize (`envpod base resize`) | Shipped |
 | | Live port forwarding mutations (`envpod ports`) | Shipped v0.2 |
+| | Live discovery mutations (`envpod discover`) | Shipped v0.2 |
+| **Discovery** | Pod-to-pod resolution (`<name>.pods.local`) via central daemon | Shipped v0.2 |
 | **Backends** | Native Linux (namespaces + cgroups + OverlayFS) | Shipped |
 | | x86_64 static binary (`musl`) | Shipped |
 | | aarch64 static binary (Raspberry Pi / Jetson Orin) | Shipped v0.2 |
@@ -73,6 +77,7 @@ Every pod has a foundation, four walls, and a governance ceiling:
 - **Undo actions** after the fact (`envpod undo`)
 - **Audit everything** that happened (`envpod audit`)
 - **Mutate policy** on a live pod (`envpod dns`, `envpod remote`, `envpod discover`)
+- **Resize resources** live or stopped (`envpod resize`)
 
 ## Supported AI Agents
 
@@ -82,13 +87,19 @@ Pre-built configs in `examples/`:
 |-------|--------|---------|-------|
 | Claude Code (Anthropic) | `claude-code.yaml` | Anthropic API, GitHub, npm/pip/cargo | Native installer |
 | Codex (OpenAI) | `codex.yaml` | OpenAI API, GitHub, npm | nvm + npm |
+| Gemini CLI (Google) | `gemini-cli.yaml` | Google API, GitHub, npm | nvm + npm |
+| Google ADK | `google-adk.yaml` | Google API, PyPI | pip |
 | Aider | `aider.yaml` | Multi-provider APIs, GitHub, PyPI | pip |
 | SWE-agent (Princeton) | `swe-agent.yaml` | Multi-provider APIs, GitHub, PyPI | git clone + pip |
+| LangGraph | `langgraph.yaml` | Multi-provider APIs, PyPI | pip |
+| FUSE Agent | `fuse-agent.yaml` | Multi-provider APIs, npm | nvm + npm |
 | OpenClaw | `openclaw.yaml` | Multi-provider APIs, messaging, npm | nvm + npm |
 | OpenCode | `opencode.yaml` | Multi-provider APIs, GitHub | Go binary |
 | browser-use | `browser-use.yaml` | Open web (blacklist mode) | pip + Playwright |
+| Playwright | `playwright.yaml` | Open web (blacklist mode) | pip + Playwright |
+| Full Workstation | `workstation-full.yaml` | Blacklist mode | Chrome, Firefox, VS Code, GIMP, LibreOffice in XFCE via noVNC |
 
-Any tool that runs on Linux works inside a pod — envpod doesn't require agent-specific integration.
+41 example configs ship with envpod. Any tool that runs on Linux works inside a pod — no agent-specific integration required.
 
 ## Filesystem Operations
 
@@ -134,6 +145,37 @@ Pods can resolve each other by name (`<name>.pods.local`) using the central `env
 | `envpod discover <pod> --remove-pod '*'` | Clear entire allow_pods list |
 
 All `envpod discover` mutations take effect immediately in the running daemon and are persisted to `pod.yaml`. No pod restart required. If the daemon is not running, mutations are written to `pod.yaml` only.
+
+## Live and Stopped Mutation
+
+| Resource | Running Pod | Stopped Pod | Base Pod |
+|----------|------------|-------------|----------|
+| CPU cores | `--cpus` (cgroup write) | `--cpus` (config) | `--cpus` (config) |
+| Memory | `--memory` (cgroup write) | `--memory` (config) | `--memory` (config) |
+| tmpfs /tmp | `--tmp-size` (remount) | `--tmp-size` (config) | `--tmp-size` (config) |
+| Max PIDs | `--max-pids` (cgroup write) | `--max-pids` (config) | `--max-pids` (config) |
+| GPU | — | `--gpu` (config) | `--gpu` (config) |
+| Display | — | `--display` (config) | `--display` (config) |
+| Audio | — | `--audio` (config) | `--audio` (config) |
+| Desktop env | — | `--desktop` (config) | `--desktop` (config) |
+| Web display | — | `--web-display` (config) | `--web-display` (config) |
+| DNS policy | `envpod dns` (live) | config only | — |
+| Port forwarding | `envpod ports` (live) | config only | — |
+| Discovery | `envpod discover` (live) | config only | — |
+
+## Web Display (noVNC)
+
+Full desktop accessible via browser — no VNC client required.
+
+| Feature | Details |
+|---------|---------|
+| Display server | Xvfb + x11vnc + websockify → noVNC |
+| Desktop environments | XFCE, Openbox, Sway |
+| Audio | PulseAudio → Opus/WebM streaming (speaker icon in noVNC) |
+| Clipboard | Bidirectional sync between host and pod |
+| File upload | Drag-and-drop via noVNC → `/tmp/uploads/` |
+| Resolution | Configurable (default 1920x1080) |
+| GPU | Direct passthrough — hardware acceleration in browser apps |
 
 ## Pod Types
 
