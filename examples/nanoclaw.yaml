@@ -41,33 +41,13 @@ filesystem:
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
-    allow:
-      # Anthropic API
-      - api.anthropic.com
-      - statsig.anthropic.com
-      - sentry.io
-      # GitHub (clone repo)
-      - github.com
-      - "*.github.com"
-      - "*.githubusercontent.com"
-      # npm (dependencies)
-      - registry.npmjs.org
-      - "*.npmjs.org"
-      # WhatsApp Web
-      - "*.whatsapp.net"
-      - "*.whatsapp.com"
-      - web.whatsapp.com
-      # Telegram
-      - api.telegram.org
-      - "*.telegram.org"
-      # Slack
-      - "*.slack.com"
-      - slack.com
-      # Discord
-      - "*.discord.com"
-      - discord.com
-      - gateway.discord.gg
+    mode: Blacklist
+    deny:
+      # Block internal/private networks
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+      - "*.private"
 
 processor:
   cores: 2.0
