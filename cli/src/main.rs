@@ -1460,7 +1460,7 @@ async fn run_setup_commands(
 
     // Silent pre-setup: fix common issues before user's setup commands.
     // These are idempotent, fast, and run without output (unless --verbose).
-    let pre_setup_cmds = vec![
+    let mut pre_setup_cmds: Vec<&str> = vec![
         // PEP 668: Ubuntu 24.04 blocks system pip installs
         "rm -f /usr/lib/python*/EXTERNALLY-MANAGED 2>/dev/null; true",
         // Stale apt lists in overlay cause "Unable to locate package"
@@ -1470,6 +1470,26 @@ async fn run_setup_commands(
         // Refresh apt so setup commands can just `apt-get install` without `apt-get update` first
         "DEBIAN_FRONTEND=noninteractive apt-get update -qq 2>/dev/null; true",
     ];
+    // Auto-install nvm + Node.js if setup commands use npm/npx/node
+    let setup_text = config.setup.join(" ");
+    let needs_node = setup_text.contains("npm ") || setup_text.contains("npx ")
+        || setup_text.contains("npm\"") || setup_text.contains("npx\"")
+        || setup_text.contains("node ") || setup_text.contains("nvm ");
+    if needs_node {
+        pre_setup_cmds.push(concat!(
+            "command -v node >/dev/null 2>&1 && exit 0; ",
+            "export NVM_DIR=/opt/nvm; ",
+            "mkdir -p $NVM_DIR; ",
+            "curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash; ",
+            ". $NVM_DIR/nvm.sh; ",
+            "nvm install 22; ",
+            "ln -sf $(which node) /usr/local/bin/node; ",
+            "ln -sf $(which npm) /usr/local/bin/npm; ",
+            "ln -sf $(which npx) /usr/local/bin/npx; ",
+            "true"
+        ));
+    }
+
     for pre_cmd in &pre_setup_cmds {
         let args = vec!["sh".to_string(), "-c".to_string(), pre_cmd.to_string()];
         let quiet = Some(setup_log.as_path());
