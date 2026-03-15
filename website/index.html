@@ -371,7 +371,7 @@
 
     <div class="compare-grid">
       <div class="compare-col"><div class="compare-label">Docker / Containers</div><div class="compare-verdict">Isolate.</div><div class="compare-desc">Draw a box around the process. Great for deployment and microservices. Not designed for reviewing what an AI agent changed.</div></div>
-      <div class="compare-col"><div class="compare-label">E2B / Daytona</div><div class="compare-verdict">Isolate in the cloud.</div><div class="compare-desc">Ephemeral cloud sandboxes. No diff/commit, no audit trail, no credential vault. Code runs on their infrastructure, not yours.</div></div>
+      <div class="compare-col"><div class="compare-label">E2B / Daytona</div><div class="compare-verdict">Sandbox in the cloud.</div><div class="compare-desc">Ephemeral cloud sandboxes. No diff/commit, no audit trail, no credential vault. Code runs on their infrastructure, not yours.</div></div>
       <div class="compare-col"><div class="compare-label">Firejail / gVisor</div><div class="compare-verdict">Sandbox.</div><div class="compare-desc">Syscall filtering and process restrictions. No filesystem review, no action queue, no credential interception.</div></div>
       <div class="compare-col col-envpod"><div class="compare-label">envpod</div><div class="compare-verdict">Isolates, sandboxes, <em style="font-style:normal;color:var(--green)">and</em> governs.</div><div class="compare-desc">OS-level isolation, syscall sandboxing, and a governance ceiling. Every write captured, every action queued, every secret protected, every decision audited. On your machine.</div></div>
     </div>
