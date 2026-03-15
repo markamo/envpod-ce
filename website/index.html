@@ -370,9 +370,9 @@
     </div>
 
     <div class="compare-grid">
-      <div class="compare-col"><div class="compare-label">Containers</div><div class="compare-verdict">Isolate.</div><div class="compare-desc">Draw a box around the process. Great for deployment and microservices. Not designed for reviewing what an AI agent changed.</div></div>
-      <div class="compare-col"><div class="compare-label">E2B / Daytona</div><div class="compare-verdict">Governs.</div><div class="compare-desc">Managed sandboxes in the cloud. Your agent's code runs on their infrastructure. Requires network, account, and trust in a third party.</div></div>
-      <div class="compare-col"><div class="compare-label">Firejail</div><div class="compare-verdict">Sandboxes.</div><div class="compare-desc">Syscall filtering and filesystem restrictions. No action queue. No credential vault. No overlay-as-review-gate. No way to approve what the process did.</div></div>
+      <div class="compare-col"><div class="compare-label">Docker / Containers</div><div class="compare-verdict">Isolate.</div><div class="compare-desc">Draw a box around the process. Great for deployment and microservices. Not designed for reviewing what an AI agent changed.</div></div>
+      <div class="compare-col"><div class="compare-label">E2B / Daytona</div><div class="compare-verdict">Isolate in the cloud.</div><div class="compare-desc">Ephemeral cloud sandboxes. No diff/commit, no audit trail, no credential vault. Code runs on their infrastructure, not yours.</div></div>
+      <div class="compare-col"><div class="compare-label">Firejail / gVisor</div><div class="compare-verdict">Sandbox.</div><div class="compare-desc">Syscall filtering and process restrictions. No filesystem review, no action queue, no credential interception.</div></div>
       <div class="compare-col col-envpod"><div class="compare-label">envpod</div><div class="compare-verdict">Isolates <em style="font-style:normal;color:var(--green)">and</em> governs.</div><div class="compare-desc">OS-level isolation on your own machine. Every write captured in overlay, every action queued, every secret protected, every decision audited. On-premise. No third party.</div></div>
     </div>
 
