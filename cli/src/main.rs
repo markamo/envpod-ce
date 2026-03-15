@@ -239,6 +239,9 @@ enum Commands {
         /// Include system directory changes (/usr, /bin, /sbin, /lib, /lib64)
         #[arg(long)]
         include_system: bool,
+        /// Rollback all uncommitted changes after selective commit
+        #[arg(long)]
+        rollback_rest: bool,
     },
     /// Discard overlay changes
     Rollback {
@@ -873,7 +876,7 @@ async fn run(cli: Cli) -> Result<()> {
         }
         Commands::Fg { name } => cmd_fg(&store, base_dir, &name).await,
         Commands::Diff { name, json, all } => cmd_diff(&store, base_dir, &name, json, all),
-        Commands::Commit { name, paths, exclude, output, all, include_system } => cmd_commit(&store, base_dir, &name, &paths, &exclude, output.as_deref(), all, include_system),
+        Commands::Commit { name, paths, exclude, output, all, include_system, rollback_rest } => cmd_commit(&store, base_dir, &name, &paths, &exclude, output.as_deref(), all, include_system, rollback_rest),
         Commands::Rollback { name } => cmd_rollback(&store, base_dir, &name),
         Commands::Audit { name, json, security, config } => {
             if security {
@@ -3431,6 +3434,7 @@ fn cmd_commit(
     output: Option<&str>,
     all: bool,
     include_system: bool,
+    rollback_rest: bool,
 ) -> Result<()> {
     let handle = store.load(name)?;
     let backend = create_backend(&handle.backend, base_dir)?;
@@ -3574,7 +3578,26 @@ fn cmd_commit(
     }
 
     backend.commit(&handle, commit_paths.as_deref(), output.map(Path::new))?;
-    println!("Done");
+
+    // Rollback uncommitted changes if --rollback-rest was specified
+    if rollback_rest && commit_paths.is_some() {
+        let remaining = backend.diff(&handle)?;
+        if remaining.is_empty() {
+            println!(
+                "Committed {} file(s). Nothing to roll back.",
+                commit_count
+            );
+        } else {
+            let rollback_count = remaining.len();
+            backend.rollback(&handle)?;
+            println!(
+                "Committed {} file(s). Rolled back {}.",
+                commit_count, rollback_count
+            );
+        }
+    } else {
+        println!("Done");
+    }
 
     Ok(())
 }
