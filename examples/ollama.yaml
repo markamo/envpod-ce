@@ -1,0 +1,89 @@
+# Ollama (self-contained) — local AI coding agent, fully isolated
+#
+# Installs Ollama inside the pod. No host dependencies — everything
+# runs inside the governed environment. Downloads model on first use.
+#
+# GPU passthrough gives near-native inference speed.
+# All agent writes are governed — diff/commit/rollback as usual.
+#
+# Usage:
+#   sudo envpod init ollama -c examples/ollama.yaml
+#   sudo envpod run ollama -- bash
+#   # Inside the pod:
+#   ollama serve &
+#   ollama pull qwen3-coder
+#   ollama run qwen3-coder "write a python fibonacci function"
+#
+# With aider (AI pair programming):
+#   ollama serve &
+#   aider --model ollama/qwen3-coder
+#
+# Fully airgapped after model pull — disconnect network and code offline.
+
+name: ollama-pod
+type: standard
+
+filesystem:
+  system_access: advanced
+  workspace: /workspace
+  mount_cwd: true
+  tracking:
+    watch:
+      - /home
+      - /workspace
+      - /opt
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+      - /root/.ollama/models    # models are large, don't track
+
+network:
+  mode: Monitored
+  dns:
+    mode: Whitelist
+    allow:
+      # Ollama model registry
+      - ollama.ai
+      - "*.ollama.ai"
+      - "*.ollama.com"
+      - registry.ollama.ai
+      # GitHub (for cloning repos)
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+      # PyPI (for aider, other tools)
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+      # Hugging Face (alternative model source)
+      - huggingface.co
+      - "*.huggingface.co"
+
+processor:
+  cores: 4.0
+  memory: "16GB"
+  max_pids: 512
+  tmp_size: "2GB"
+
+devices:
+  gpu: true
+
+security:
+  seccomp_profile: default
+
+budget:
+  max_duration: "24h"
+
+audit:
+  action_log: true
+
+setup:
+  - "rm -f /usr/lib/python*/EXTERNALLY-MANAGED"
+  - "rm -rf /var/lib/apt/lists/*"
+  - "cd /etc/apt/sources.list.d && for f in *.list *.sources; do [ -f \"$f\" ] && sed -i 's/^deb /# deb /' \"$f\"; done; true"
+  - "DEBIAN_FRONTEND=noninteractive apt-get update -qq && apt-get install -y --no-install-recommends git curl ca-certificates python3 python3-pip"
+  - "curl -fsSL https://ollama.ai/install.sh | sed 's/tar /tar --no-same-permissions --warning=no-file-changed /' | sh || test -x /usr/local/bin/ollama"
+  - "pip3 install --break-system-packages --ignore-installed urllib3 aider-chat"
