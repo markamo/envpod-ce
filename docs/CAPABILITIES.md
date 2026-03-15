@@ -22,8 +22,8 @@ What envpod can do today (v0.1.1). For how-to guides, see [Quickstart](QUICKSTAR
 | | Selective commit (per-path, `--output`, `--exclude`) | Shipped |
 | | Mount working directory (`mount_cwd` / `-w`) | Shipped |
 | | Credential vault (encrypted, env var injection) | Shipped |
-| | Vault proxy injection (transparent HTTPS, zero-knowledge) | Shipped v0.2 |
-| | Web dashboard (fleet overview, pod detail, actions) | Shipped v0.2 |
+| | Vault proxy injection (transparent HTTPS, zero-knowledge) | Shipped |
+| | Web dashboard (fleet overview, pod detail, actions) | Shipped |
 | | Action staging queue (approve / cancel) | Shipped |
 | | Undo registry (reverse any reversible action) | Shipped |
 | | Append-only audit trail (JSONL) | Shipped |
@@ -32,26 +32,26 @@ What envpod can do today (v0.1.1). For how-to guides, see [Quickstart](QUICKSTAR
 | | Remote control (freeze / resume / kill / restrict) | Shipped |
 | | Monitoring agent (policy-driven auto-freeze/restrict) | Shipped |
 | **Performance** | Pod init: ~1.3s | Shipped |
-| | Pod clone: ~130ms (10x faster than init) | Shipped |
+| | Pod clone: ~8ms (170x faster than init) | Shipped |
 | | Warm run: ~23ms | Shipped |
 | | 50-pod fleet: 407ms creation, 9.5s full lifecycle | Shipped |
 | **Devices** | NVIDIA GPU passthrough (zero-copy bind-mount) | Shipped |
 | | Display forwarding (Wayland / X11 / auto-detect) | Shipped |
 | | Audio forwarding (PipeWire / PulseAudio / auto-detect) | Shipped |
-| | Web display via noVNC (full desktop in browser, audio, clipboard, file upload) | Shipped v0.2 |
-| | Desktop environment auto-install (`desktop_env`: xfce / openbox / sway) | Shipped v0.2 |
+| | Web display via noVNC (full desktop in browser, audio, clipboard, file upload) | Shipped |
+| | Desktop environment auto-install (`desktop_env`: xfce / openbox / sway) | Shipped |
 | | Custom device passthrough (`/dev/fuse`, `/dev/kvm`, etc.) | Shipped |
 | **Live Mutation** | Live resource resize (CPU, memory, tmpfs, PIDs) on running pods | Shipped |
 | | Stopped mutation (GPU, display, audio, desktop) on stopped pods | Shipped |
 | | Base pod resize (`envpod base resize`) | Shipped |
-| | Live port forwarding mutations (`envpod ports`) | Shipped v0.2 |
-| | Live discovery mutations (`envpod discover`) | Shipped v0.2 |
-| **Discovery** | Pod-to-pod resolution (`<name>.pods.local`) via central daemon | Shipped v0.2 |
+| | Live port forwarding mutations (`envpod ports`) | Shipped |
+| | Live discovery mutations (`envpod discover`) | Shipped |
+| **Discovery** | Pod-to-pod resolution (`<name>.pods.local`) via central daemon | Shipped |
 | **Backends** | Native Linux (namespaces + cgroups + OverlayFS) | Shipped |
 | | x86_64 static binary (`musl`) | Shipped |
-| | aarch64 static binary (Raspberry Pi / Jetson Orin) | Shipped v0.2 |
-| | Docker (container isolation) | Planned v0.2 |
-| | VM (Firecracker / QEMU microVMs) | Planned v0.3 |
+| | aarch64 static binary (Raspberry Pi / Jetson Orin) | Shipped |
+| | Docker (container isolation) | Planned |
+| | VM (Firecracker / QEMU microVMs) | Planned |
 
 ## Isolation Boundaries
 
@@ -211,7 +211,7 @@ Run `envpod audit --security -c config.yaml` to see the security posture of any 
 
 | Count | Create | Run | Destroy | Full lifecycle |
 |-------|--------|-----|---------|---------------|
-| 1 pod | 130ms (clone) | 23ms | 30ms | 183ms |
+| 1 pod | 8ms (clone) | 23ms | 30ms | 61ms |
 | 10 pods | 80ms | 1.5s | 320ms | 1.9s |
 | 50 pods | 407ms | 7.5s | 1.6s | 9.5s |
 
