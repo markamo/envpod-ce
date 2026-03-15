@@ -1467,6 +1467,8 @@ async fn run_setup_commands(
         "rm -rf /var/lib/apt/lists/* 2>/dev/null; true",
         // Disable 3rd-party apt sources that may not resolve through DNS whitelist
         "cd /etc/apt/sources.list.d 2>/dev/null && for f in *.list *.sources; do [ -f \"$f\" ] && sed -i 's/^deb /# deb /' \"$f\"; done; true",
+        // Refresh apt so setup commands can just `apt-get install` without `apt-get update` first
+        "DEBIAN_FRONTEND=noninteractive apt-get update -qq 2>/dev/null; true",
     ];
     for pre_cmd in &pre_setup_cmds {
         let args = vec!["sh".to_string(), "-c".to_string(), pre_cmd.to_string()];
