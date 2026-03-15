@@ -1,0 +1,119 @@
+# Ollama Desktop — local AI coding with full desktop via noVNC
+#
+# VS Code + Ollama + XFCE desktop accessible in your browser.
+# GPU passthrough for fast inference. All agent writes governed.
+#
+# Prerequisites:
+#   - Ollama models on host: ollama pull qwen3-coder
+#   - Adjust the models bind-mount path below to match your setup
+#
+# Usage:
+#   sudo envpod init ollama-desktop -c examples/ollama-desktop.yaml
+#   sudo envpod start ollama-desktop
+#   # Open the noVNC URL from `envpod ls` in your browser
+#   # In the desktop terminal:
+#   ollama serve &
+#   ollama list                    # sees host models
+#   aider --model ollama_chat/qwen3-coder
+#
+# Or run VS Code with Continue extension for Ollama-powered autocomplete.
+
+name: ollama-desktop
+type: standard
+user: root
+
+web_display:
+  type: novnc
+  port: 6080
+  resolution: "1920x1080"
+  audio: true
+
+devices:
+  desktop_env: xfce
+  gpu: true
+
+filesystem:
+  system_access: advanced
+  workspace: /workspace
+  mount_cwd: true
+  mounts:
+    # Bind-mount host Ollama models (read-only, avoids re-downloading)
+    # Adjust to your path: ~/.ollama/models (user) or /usr/share/ollama/.ollama/models (system)
+    - path: /home/mymark/.ollama/models
+      permissions: ReadOnly
+  tracking:
+    watch:
+      - /home
+      - /workspace
+      - /opt
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+network:
+  mode: Monitored
+  dns:
+    mode: Whitelist
+    allow:
+      # Ollama (installer + model registry)
+      - ollama.ai
+      - "*.ollama.ai"
+      - "*.ollama.com"
+      - registry.ollama.ai
+      # GitHub
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+      # PyPI
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+      # VS Code (packages, extensions, updates)
+      - packages.microsoft.com
+      - "*.microsoft.com"
+      - "*.vscode-cdn.net"
+      - "*.visualstudio.com"
+      - "*.gallerycdn.vsassets.io"
+      - marketplace.visualstudio.com
+      - update.code.visualstudio.com
+      # npm
+      - registry.npmjs.org
+      - "*.npmjs.org"
+      # Ubuntu packages (apt)
+      - "*.ubuntu.com"
+      - "*.archive.ubuntu.com"
+      # Hugging Face
+      - huggingface.co
+      - "*.huggingface.co"
+
+processor:
+  cores: 4.0
+  memory: "16GB"
+  max_pids: 4096
+  tmp_size: "2GB"
+
+security:
+  seccomp_profile: browser
+  shm_size: "512MB"
+
+budget:
+  max_duration: "24h"
+
+audit:
+  action_log: true
+
+setup_script: examples/desktop-app-setup.sh
+
+setup:
+  - "bash /usr/local/bin/desktop-app-setup.sh vscode"
+  - |
+    curl -fsSL https://ollama.ai/install.sh | sed 's/tar /tar --no-same-permissions --warning=no-file-changed /' | sh || test -x /usr/local/bin/ollama
+  - |
+    cat >> /etc/profile.d/ollama.sh << 'EOF'
+    export OLLAMA_MODELS=/home/mymark/.ollama/models
+    EOF
+  - "rm -f /usr/lib/python*/EXTERNALLY-MANAGED"
+  - "pip3 install --break-system-packages --ignore-installed urllib3 aider-chat"
