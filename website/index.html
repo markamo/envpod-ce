@@ -283,7 +283,7 @@
     <div class="install-tabs" style="margin-bottom:24px">
       <button class="itab active" onclick="showAgentTab('coding')">Coding Agents</button>
       <button class="itab" onclick="showAgentTab('browser')">Browser &amp; Desktop</button>
-      <button class="itab" onclick="showAgentTab('messaging')">Messaging Agents</button>
+      <button class="itab" onclick="showAgentTab('messaging')">Assistants &amp; Local LLMs</button>
       <button class="itab" onclick="showAgentTab('infra')">GPU &amp; Infrastructure</button>
     </div>
 
@@ -309,13 +309,14 @@
       <div class="agent-grid">
         <div class="agent-card"><div class="agent-header"><span class="agent-name">OpenClaw</span><span class="agent-tag tag-coding">Messaging</span></div><div class="agent-desc">Personal AI assistant on WhatsApp, Telegram, Discord, Slack, Signal. Multi-LLM support. Node.js 22.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init openclaw -c examples/openclaw.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run openclaw -- openclaw</span></div></div></div>
         <div class="agent-card"><div class="agent-header"><span class="agent-name">NanoClaw</span><span class="agent-tag tag-coding">Messaging</span></div><div class="agent-desc">Lightweight messaging agent with Claude. WhatsApp, Telegram, Slack, Discord. Web search, scheduled tasks.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init nanoclaw -c examples/nanoclaw.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run nanoclaw -- bash</span></div></div></div>
+        <div class="agent-card"><div class="agent-header"><span class="agent-name">Ollama (Terminal)</span><span class="agent-tag tag-gpu">Local LLM</span></div><div class="agent-desc">Ollama + aider with host models via bind-mount. GPU passthrough for fast inference. Fully governed.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init ollama -c examples/ollama-host.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run ollama -- bash</span></div></div></div>
+        <div class="agent-card"><div class="agent-header"><span class="agent-name">Ollama Desktop</span><span class="agent-tag tag-gpu">Local LLM + Desktop</span></div><div class="agent-desc">VS Code + Ollama + XFCE via noVNC. Local coding with governed AI. Host models shared, GPU passthrough.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init ollama-desktop -c examples/ollama-desktop.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod start ollama-desktop</span></div></div></div>
       </div>
     </div>
     <div id="atab-infra" style="display:none">
       <div class="agent-grid">
         <div class="agent-card"><div class="agent-header"><span class="agent-name">ML Training</span><span class="agent-tag tag-gpu">GPU</span></div><div class="agent-desc">PyTorch / TensorFlow with full NVIDIA GPU passthrough. 16 GB memory, 8-hour budget.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init ml-trainer -c examples/ml-training.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run ml-trainer -- python train.py</span></div></div></div>
         <div class="agent-card"><div class="agent-header"><span class="agent-name">GPU Workstation</span><span class="agent-tag tag-gpu">Desktop + GPU</span></div><div class="agent-desc">XFCE desktop with Chrome, GIMP, VS Code, and NVIDIA GPU. Access via noVNC at localhost:6080.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init gpu-ws -c examples/workstation-gpu.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod start gpu-ws</span></div></div></div>
-        <div class="agent-card"><div class="agent-header"><span class="agent-name">Ollama (Local LLM)</span><span class="agent-tag tag-gpu">GPU</span></div><div class="agent-desc">Ollama + aider with host models via bind-mount. GPU passthrough for fast inference. Fully governed.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init ollama -c examples/ollama-host.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run ollama -- bash</span></div></div></div>
         <div class="agent-card"><div class="agent-header"><span class="agent-name">Hardened Sandbox</span><span class="agent-tag tag-sandbox">Sandbox</span></div><div class="agent-desc">Maximum isolation. No network. No GPU. 256 MB memory. 64 PID cap. For untrusted code.</div><div class="agent-cmd"><div><span class="pr">$ </span><span class="cm">envpod init sandbox -c examples/hardened-sandbox.yaml</span></div><div><span class="pr">$ </span><span class="cm">envpod run sandbox -- /bin/sh</span></div></div></div>
       </div>
     </div>
