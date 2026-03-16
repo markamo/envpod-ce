@@ -42,5 +42,5 @@ envpod Premium and Enterprise editions include additional features (vault proxy 
 
 Copyright 2026 Xtellix Inc. All rights reserved.
 
-**Author:** Mark Amoboateng
+**Author:** Mark Amo-Boateng, PhD
 **Patent:** Provisional patent filed February 22, 2026.

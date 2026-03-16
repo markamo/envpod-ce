@@ -1,7 +1,7 @@
 # Running envpod on Embedded / Edge Systems
 
 > **EnvPod v0.1** — Zero-trust governance environments for AI agents
-> Author: Mark Amoboateng · mark@envpod.dev
+> Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Business Source License 1.1
 
 ---

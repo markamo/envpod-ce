@@ -6,7 +6,7 @@
 # envpod
 
 > **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
-> Author: Mark Amoboateng · mark@envpod.dev
+> Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc.
 
 **Envpod is the zero-trust governance layer for AI agents.**
