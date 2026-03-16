@@ -1129,6 +1129,8 @@ filesystem:
       permissions: ReadOnly       # agent can read, not write
 ```
 
+Mount paths support `~` (tilde expansion). Under sudo, `~` resolves to the real user's home directory (via `SUDO_USER`), not root's home. Example: `path: ~/.ollama/models` resolves to `/home/youruser/.ollama/models`.
+
 Or at runtime:
 
 <!-- no-exec -->

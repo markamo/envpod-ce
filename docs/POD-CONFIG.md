@@ -221,6 +221,8 @@ filesystem:
       permissions: ReadOnly
 ```
 
+Mount paths support `~` (tilde expansion). Under sudo, `~` resolves to the real user's home directory (via `SUDO_USER`), not root's home. Example: `path: ~/.ollama/models` resolves to `/home/youruser/.ollama/models`.
+
 Mounts bypass the COW overlay — `ReadWrite` mounts write directly to the host filesystem. Use with care.
 
 ### `tracking`

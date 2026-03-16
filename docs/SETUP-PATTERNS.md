@@ -114,6 +114,8 @@ setup:
   - "curl -fsSL https://ollama.ai/install.sh | sed 's/tar /tar --no-same-permissions --warning=no-file-changed /' | sh || test -x /usr/local/bin/ollama"
 ```
 
+**Mounting models:** `~/.ollama/models` now works in pod.yaml mount paths (tilde auto-expands to the real user's home). For system-installed Ollama, use `/usr/share/ollama/.ollama/models` instead.
+
 ### LibreOffice
 
 **Problem:** `libreoffice-common` postinst calls `install(1)` on AppArmor files, which fails with EPERM in user namespaces.

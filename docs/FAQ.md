@@ -513,6 +513,7 @@ This is by design: read-only bind mounts are **live**, not snapshots. When you i
 - The binaries are **read-only** — the agent can see them but can't modify them
 - Running the binary usually fails inside the pod (no config, no data, ports blocked)
 - Example: `ollama` appears in all pods but `ollama serve` fails without models and network access
+- Mount paths support `~` for user-specific bind mounts (e.g., `path: ~/.ollama/models`)
 
 **If you don't want host binaries visible:** Use `system_access: advanced`, which creates per-directory COW overlays for `/usr`, `/bin`, etc. The pod gets a snapshot at init time, not a live view.
 
