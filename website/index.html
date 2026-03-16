@@ -50,7 +50,7 @@
   <div class="hero-left">
     <div class="hero-badge">Linux x86_64 &amp; ARM64 · Windows WSL2 · macOS (beta)</div>
     <h1><span class="accent">The zero-trust governance layer</span><br><span class="dim">for AI agents.</span></h1>
-    <p class="hero-sub">Docker isolates environments. Envpod governs access to real ones.<br><br>AI agents need your real files, tools, and credentials to be useful &mdash; but direct host access breaks the trust model. Envpod gives agents governed access through a copy-on-write overlay under zero-trust policy.</p>
+    <p class="hero-sub">Docker isolates environments. Envpod governs access to real ones.<br><br>AI agents are only useful when they can work with your real files, tools, and workflows. But direct host access breaks the trust model. Envpod lets agents work in your real environment through a copy-on-write layer, so every change is reviewable before it reaches the host.</p>
     <div class="hero-ctas">
       <a href="#install" class="btn-p">Get started ↓</a>
       <a href="https://github.com/markamo/envpod-ce" class="btn-s">
@@ -241,20 +241,28 @@
       </div>
     </div>
 
+    <h3 style="color:var(--green);font-family:var(--mono);font-size:13px;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px">Reversibility</h3>
+    <div class="feature-grid" style="margin-bottom:48px">
+      <div class="feature-card"><div class="feature-icon">🗂️</div><div class="feature-title">Copy-on-Write Filesystem</div><div class="feature-desc">Every write goes to an OverlayFS overlay. Host untouched until you approve. <code>envpod diff</code>, <code>envpod commit</code>, <code>envpod rollback</code>. Named snapshots with auto-checkpoint and promote-to-base.</div></div>
+      <div class="feature-card"><div class="feature-icon">⚡</div><div class="feature-title">Base Pods &amp; Fast Cloning</div><div class="feature-desc">Run <code>envpod init</code> once. Clone from it in ~8ms. Spin up 50 identical agents in seconds, each with its own isolated overlay.</div></div>
+      <div class="feature-card"><div class="feature-icon">🖥️</div><div class="feature-title">Web Dashboard</div><div class="feature-desc"><code>envpod dashboard</code> — local web UI. Fleet overview, live resource stats, audit timeline, diff viewer with commit/rollback buttons.</div></div>
+    </div>
+
+    <h3 style="color:var(--green);font-family:var(--mono);font-size:13px;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px">Governance</h3>
+    <div class="feature-grid" style="margin-bottom:48px">
+      <div class="feature-card"><div class="feature-icon">🔐</div><div class="feature-title">Encrypted Credential Vault</div><div class="feature-desc">ChaCha20-Poly1305 encrypted at rest. Injected as env vars at runtime — never in config, CLI args, or logs. Proxy injection keeps secrets out of agent memory entirely.</div></div>
+      <div class="feature-card"><div class="feature-icon">📋</div><div class="feature-title">Action Queue &amp; Approval</div><div class="feature-desc">Four tiers: <code>immediate</code>, <code>delayed</code>, <code>staged</code> (human approval), <code>blocked</code>. Every action classified by reversibility. Hot-reload without restart.</div></div>
+      <div class="feature-card"><div class="feature-icon">🌐</div><div class="feature-title">DNS Filtering &amp; Network Policy</div><div class="feature-desc">Per-pod embedded DNS resolver. Whitelist, blacklist, or monitor mode. Anti-DNS-tunneling. Live mutation — add or remove domains on a running pod.</div></div>
+      <div class="feature-card"><div class="feature-icon">📊</div><div class="feature-title">Audit Trail &amp; Security Scan</div><div class="feature-desc">Append-only JSONL. Every action, approval, vault access, DNS query — timestamped. <code>envpod audit --security</code> for static analysis. Runtime monitoring with auto-freeze.</div></div>
+      <div class="feature-card"><div class="feature-icon">🔒</div><div class="feature-title">Process Isolation</div><div class="feature-desc">PID + UTS + user namespaces. cgroups v2 limits. Seccomp-BPF syscall filtering. NO_NEW_PRIVS prevents privilege escalation. /proc masked to prevent host fingerprinting.</div></div>
+    </div>
+
+    <h3 style="color:var(--green);font-family:var(--mono);font-size:13px;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px">Local Context</h3>
     <div class="feature-grid">
-      <div class="feature-card"><div class="feature-icon">🗂️</div><div class="feature-title">Copy-on-Write Filesystem</div><div class="feature-desc">Every write goes to an OverlayFS overlay. Host untouched until you explicitly approve. <code>envpod diff</code> shows the changeset. <code>envpod commit</code> or <code>envpod rollback</code> in one command. Named snapshots with auto-checkpoint, restore, and promote-to-base.</div></div>
-      <div class="feature-card"><div class="feature-icon">🔐</div><div class="feature-title">Encrypted Credential Vault</div><div class="feature-desc">ChaCha20-Poly1305 encrypted at rest. Injected as env vars at runtime — never in <code>pod.yaml</code>, CLI args, shell history, or logs. <code>envpod vault import .env</code> to bulk-load. Bind credentials to specific domains.</div></div>
-      <div class="feature-card"><div class="feature-icon">📋</div><div class="feature-title">Action Queue &amp; Approval</div><div class="feature-desc">20 built-in action types: HTTP (6), filesystem (7), git (6), custom (1). Four tiers: <code>immediate</code>, <code>delayed</code>, <code>staged</code> (human approval), <code>blocked</code>. MCP-style tool discovery. Hot-reload without restart.</div></div>
-      <div class="feature-card"><div class="feature-icon">🌐</div><div class="feature-title">DNS Filtering</div><div class="feature-desc">Each pod runs its own embedded DNS resolver. Exact allow-list of reachable domains. Anti-DNS-tunneling protection. Live mutation — add or remove domains on a running pod with no restart.</div></div>
-      <div class="feature-card"><div class="feature-icon">📊</div><div class="feature-title">Audit Log &amp; Security Scan</div><div class="feature-desc">Append-only JSONL. Every action, approval, vault access, DNS query — timestamped. <code>envpod audit --security</code> runs static analysis on <code>pod.yaml</code> before you ever run. Runtime monitoring with auto-freeze on alerts.</div></div>
-      <div class="feature-card"><div class="feature-icon">🖥️</div><div class="feature-title">Web Dashboard</div><div class="feature-desc"><code>envpod dashboard</code> — local web UI on port 9090. Fleet overview, live cgroup stats, filterable audit timeline, diff viewer with commit/rollback buttons. No database, no dependencies.</div></div>
-      <div class="feature-card"><div class="feature-icon">🔒</div><div class="feature-title">Process Isolation</div><div class="feature-desc">PID + UTS + user namespace. cgroups v2 CPU/memory/IO/PID limits. Seccomp-BPF syscall filtering. A runaway agent cannot starve the host. A compromised agent cannot see host processes.</div></div>
-      <div class="feature-card"><div class="feature-icon">⚡</div><div class="feature-title">Base Pods &amp; Fast Cloning</div><div class="feature-desc">Run <code>envpod init</code> once. That becomes a base. Clone from it in ~8ms — 10× faster. Spin up 50 identical agents in seconds, each with its own isolated overlay.</div></div>
-      <div class="feature-card"><div class="feature-icon">📡</div><div class="feature-title">Display, Audio &amp; GPU</div><div class="feature-desc">Wayland forwarding with per-window isolation. PipeWire/PulseAudio passthrough. noVNC audio streaming via Opus/WebM. NVIDIA and AMD GPUs — no toolkit, no drivers. ARM64: Raspberry Pi, Jetson Orin.</div></div>
-      <div class="feature-card"><div class="feature-icon">🖥️</div><div class="feature-title">Web Display &amp; Desktop</div><div class="feature-desc">Access a pod's graphical desktop from any browser via noVNC. Audio streaming (PulseAudio + Opus/WebM). File upload from host to pod. Auto-connect, custom branding, auto-restart on crash. Set <code>desktop_env: xfce</code> — open <code>localhost:6080</code> and you're in.</div></div>
-      <div class="feature-card"><div class="feature-icon">📦</div><div class="feature-title">Host App Auto-Mount</div><div class="feature-desc">List apps in <code>pod.yaml</code> — envpod resolves binaries, shared libraries, and data dirs via <code>which</code> + <code>ldd</code>, then bind-mounts them read-only. No reinstalling Chrome, Python, or Node inside the pod.</div></div>
-      <div class="feature-card"><div class="feature-icon">📂</div><div class="feature-title">Mount Working Directory</div><div class="feature-desc"><code>mount_cwd: true</code> or <code>envpod run -w</code> — your project directory is visible inside the pod with COW isolation. Agent reads real files, writes go to the overlay. <code>diff</code>/<code>commit</code>/<code>rollback</code> as usual.</div></div>
-      <div class="feature-card"><div class="feature-icon">👤</div><div class="feature-title">Clone Host User</div><div class="feature-desc">Your username, shell, dotfiles, and workspace directories — cloned into the pod with COW isolation. The agent works in your real environment, but every change is staged for human review. <code>.ssh</code>, <code>.gnupg</code>, <code>.aws</code> excluded by default.</div></div>
+      <div class="feature-card"><div class="feature-icon">📂</div><div class="feature-title">Mount Working Directory</div><div class="feature-desc"><code>mount_cwd: true</code> — your project directory visible inside the pod with COW isolation. Agent reads real files, writes go to the overlay.</div></div>
+      <div class="feature-card"><div class="feature-icon">👤</div><div class="feature-title">Clone Host User</div><div class="feature-desc">Your username, shell, dotfiles, and workspace — cloned into the pod with COW isolation. <code>.ssh</code>, <code>.gnupg</code>, <code>.aws</code> excluded by default.</div></div>
+      <div class="feature-card"><div class="feature-icon">📦</div><div class="feature-title">Host App Auto-Mount</div><div class="feature-desc">List apps in <code>pod.yaml</code> — envpod resolves binaries and libraries, bind-mounts them read-only. No reinstalling Chrome, Python, or Node inside the pod.</div></div>
+      <div class="feature-card"><div class="feature-icon">📡</div><div class="feature-title">Display, Audio &amp; GPU</div><div class="feature-desc">Full desktop via noVNC in the browser. Wayland/X11 forwarding. PipeWire/PulseAudio passthrough. NVIDIA GPU passthrough — zero overhead. ARM64 support (Pi, Jetson).</div></div>
     </div>
   </div>
 </section>
@@ -287,7 +295,7 @@
 <section class="section-tinted reveal" id="usecases">
   <div class="wrap">
     <h2>Where governed execution wins</h2>
-    <p class="section-sub">Strictly better than "just run it in a container" when the agent has real-world side effects.</p>
+    <p class="section-sub">Better than "just run it in a container" when the agent has real-world side effects.</p>
     <div class="usecase-grid">
       <div class="usecase-card"><div class="usecase-badge">local coding agents</div><h3>Safe code generation</h3><p>Let an agent refactor your repo. Review every diff. Approve only what you want. Roll back the rest. No files lost, no surprise commits.</p></div>
       <div class="usecase-card"><div class="usecase-badge">security-first automation</div><h3>Controlled tool use</h3><p>Restrict DNS egress, scope secrets to specific domains, and keep a tamper-evident audit trail for sensitive workflows and regulated environments.</p></div>
@@ -429,7 +437,7 @@
     </div>
 
     <div class="compare-callout">
-      <p>The agent thinks it's on your real system —<br>but every write is captured, diffable, and reversible.<br><span class="dim">Nobody else has this model.</span></p>
+      <p>The agent thinks it's on your real system —<br>but every write is captured, diffable, and reversible.<br><span class="dim">Envpod combines isolation, reversibility, and governance in one local-first workflow.</span></p>
     </div>
   </div>
 </section>
