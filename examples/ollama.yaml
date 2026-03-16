@@ -1,4 +1,4 @@
-# Ollama (self-contained) — local AI coding agent, fully isolated
+# Ollama (self-contained) — private AI coding, fully isolated, nothing leaves the machine
 #
 # Installs Ollama inside the pod. No host dependencies — everything
 # runs inside the governed environment. Downloads model on first use.

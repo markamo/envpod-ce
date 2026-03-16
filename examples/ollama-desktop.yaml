@@ -1,4 +1,4 @@
-# Ollama Desktop — local AI coding with full desktop via noVNC
+# Ollama Desktop — private AI coding with full desktop via noVNC, nothing leaves the machine
 #
 # VS Code + Ollama + XFCE desktop accessible in your browser.
 # GPU passthrough for fast inference. All agent writes governed.

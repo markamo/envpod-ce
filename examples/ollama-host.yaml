@@ -1,4 +1,4 @@
-# Ollama (host bind-mount) — local AI coding agent with governance
+# Ollama (host bind-mount) — private AI coding, code and model never leave your machine
 #
 # Uses Ollama installed on the host via bind-mount. No download needed
 # inside the pod — the host's Ollama binary and models are shared read-only.
