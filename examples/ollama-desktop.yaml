@@ -115,5 +115,4 @@ setup:
     cat >> /etc/profile.d/ollama.sh << 'EOF'
     export OLLAMA_MODELS=/home/mymark/.ollama/models
     EOF
-  - "rm -f /usr/lib/python*/EXTERNALLY-MANAGED"
   - "pip3 install --break-system-packages --ignore-installed urllib3 aider-chat"

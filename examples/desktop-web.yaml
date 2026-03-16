@@ -60,7 +60,6 @@ audit:
 start_command: ["sleep", "infinity"]  # Desktop auto-starts via daemon; this keeps the pod alive
 
 setup:
-  - "rm -rf /var/lib/apt/lists/*"
   # Chrome
   - |
     if command -v google-chrome >/dev/null 2>&1; then

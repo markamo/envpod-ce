@@ -58,6 +58,5 @@ audit:
   action_log: true
 
 setup:
-  - "rm -rf /var/lib/apt/lists/*"
   - "apt-get install -y python3 curl --quiet"
   - "mkdir -p /workspace"
