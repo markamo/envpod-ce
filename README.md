@@ -9,17 +9,22 @@
 > Author: Mark Amoboateng · mark@envpod.dev
 > Copyright 2026 Xtellix Inc.
 
-**Docker isolates. Envpod governs.**
+**Envpod is a governance layer for AI agents.**
+
+**Docker isolates environments. Envpod governs access to real ones.**
 
 <p align="center">
   <img src="assets/demos/00-readme-quickstart.gif" alt="envpod quickstart demo" width="800">
 </p>
 
-Every AI agent runs inside a **pod** — an isolated environment with a foundation (OverlayFS COW), four walls (processor, network, memory, devices), and a governance ceiling (vault, action queue, monitoring, remote control, audit). All agent actions are isolated, monitored, and reversible.
+AI agents are useful only when they can work with real local context: your code, files, tools, shell state, and workflows. But direct host access creates a broken trust model.
 
-> **Why not just Docker?** Docker isolates processes but provides zero governance. No file change review, no action queue, no credential vault, no undo. Envpod adds the governance layer on top of the same Linux primitives. See [Docker vs Envpod](docs/COMPARE-DOCKER.md) for a full comparison.
+Docker forces a tradeoff: either the agent works in an isolated environment and loses real context, or you bind-mount the host and lose meaningful control. Envpod removes that tradeoff — agents work with your real environment through a copy-on-write layer, with review, rollback, audit, approval gates, secret isolation, and per-pod DNS governance.
 
-### Docker's default: everything touches the host immediately or everything disappears. Envpod's default: nothing touches the host until you review it.
+**Isolation is a wall. Governance is a policy.**
+**Docker was built for microservices. Envpod was built for agents.**
+
+### Nothing touches the host until you review it.
 
 ```
 $ envpod diff my-agent
@@ -33,11 +38,16 @@ $ envpod commit my-agent src/ --rollback-rest
 Committed 2 file(s). Rolled back 48.
 ```
 
-## Why Envpod
+## Why Not Just Docker?
 
-AI agents are powerful but dangerous without boundaries. They can read sensitive files, exfiltrate data over the network, consume unbounded resources, and make irreversible changes — all while running with your credentials.
+Because Docker gives you **coarse isolation**, not **fine-grained governance**.
 
-Existing sandboxes (Docker, E2B, Firecrackers) provide isolation but zero governance. Envpod adds the governance layer: every file change goes through copy-on-write review, every DNS query is logged, every action can be undone.
+With Docker, you usually end up in one of two modes:
+
+1. **Strong isolation, weak usefulness** — the agent works in a separate environment, losing access to your real files, tools, and working context.
+2. **Strong access, weak control** — you bind-mount the host so the agent can work on real files, but lose the review-and-commit model.
+
+Envpod lets the agent work with real local context through a copy-on-write layer, while keeping changes reviewable and adding controls: audit, approval, secret isolation, and per-pod DNS policy. See [Docker vs Envpod](docs/COMPARE-DOCKER.md) for a full comparison.
 
 ## Features
 
