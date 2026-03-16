@@ -503,6 +503,24 @@ The `-d` flag auto-detects Wayland or X11 and sets the correct environment varia
 
 **Known limitation (beta):** GTK4 apps (gnome-text-editor, nautilus, etc.) have a cursor theme crash on Wayland inside pods. Chrome and Qt apps work fine. GTK4 fix deferred.
 
+## Why do I see host applications (like Ollama) inside my pod?
+
+With `system_access: safe` (default), system directories like `/usr/local/bin` are bind-mounted read-only from the host. This means any binary installed on the host is **immediately visible** inside every pod — even if the pod's config has nothing to do with that application.
+
+This is by design: read-only bind mounts are **live**, not snapshots. When you install or uninstall software on the host, the change is instantly reflected in all safe-mode pods.
+
+**Why it's not a problem:**
+- The binaries are **read-only** — the agent can see them but can't modify them
+- Running the binary usually fails inside the pod (no config, no data, ports blocked)
+- Example: `ollama` appears in all pods but `ollama serve` fails without models and network access
+
+**If you don't want host binaries visible:** Use `system_access: advanced`, which creates per-directory COW overlays for `/usr`, `/bin`, etc. The pod gets a snapshot at init time, not a live view.
+
+```yaml
+filesystem:
+  system_access: advanced   # snapshot, not live bind-mount
+```
+
 See `examples/browser.yaml` (auto-detect) and `examples/browser-wayland.yaml` (Wayland + PipeWire enforced).
 
 ---
