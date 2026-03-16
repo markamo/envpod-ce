@@ -1467,6 +1467,8 @@ async fn run_setup_commands(
         "rm -rf /var/lib/apt/lists/* 2>/dev/null; true",
         // Disable 3rd-party apt sources that may not resolve through DNS whitelist
         "cd /etc/apt/sources.list.d 2>/dev/null && for f in *.list *.sources; do [ -f \"$f\" ] && sed -i 's/^deb /# deb /' \"$f\"; done; true",
+        // Remove broken dist-info dirs (no RECORD file) so pip doesn't choke on debian-installed packages
+        "find /usr/lib/python3/dist-packages -maxdepth 1 -name '*.dist-info' -exec sh -c 'test ! -f \"$1/RECORD\" && rm -rf \"$1\"' _ {} \\; 2>/dev/null; true",
     ];
     let setup_text = config.setup.join(" ");
 

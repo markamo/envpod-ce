@@ -86,5 +86,4 @@ audit:
 
 setup:
   - "test -d /opt/swe-agent || git clone https://github.com/SWE-agent/SWE-agent.git /opt/swe-agent"
-  - "find /usr/lib/python3/dist-packages -maxdepth 1 -name '*.dist-info' -exec sh -c 'test ! -f \"$1/RECORD\" && rm -rf \"$1\"' _ {} \\;"
   - "cd /opt/swe-agent && pip install --editable ."

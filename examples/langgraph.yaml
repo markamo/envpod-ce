@@ -71,5 +71,4 @@ audit:
   action_log: true
 
 setup:
-  - "find /usr/lib/python3/dist-packages -maxdepth 1 -name '*.dist-info' -exec sh -c 'test ! -f \"$1/RECORD\" && rm -rf \"$1\"' _ {} \\;"
   - "pip install langgraph langchain-openai langchain-anthropic"
