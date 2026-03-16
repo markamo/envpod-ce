@@ -50,7 +50,7 @@
   <div class="hero-left">
     <div class="hero-badge">Linux x86_64 &amp; ARM64 · Windows WSL2 · macOS (beta)</div>
     <h1><span class="accent">The zero-trust governance layer</span><br><span class="dim">for AI agents.</span></h1>
-    <p class="hero-sub">Docker isolates environments. Envpod governs access to real ones. Agents work with your real files through a copy-on-write layer &mdash; with review, rollback, audit, and policy. One 12&thinsp;MB static binary.</p>
+    <p class="hero-sub">Docker isolates environments. Envpod governs access to real ones.<br><br>AI agents need your real files, tools, and credentials to be useful &mdash; but direct host access breaks the trust model. Envpod gives agents governed access through a copy-on-write overlay under zero-trust policy.</p>
     <div class="hero-ctas">
       <a href="#install" class="btn-p">Get started ↓</a>
       <a href="https://github.com/markamo/envpod-ce" class="btn-s">
@@ -179,9 +179,9 @@
 
 <!-- ═══ PHILOSOPHY ═══ -->
 <section class="philosophy reveal">
-  <p class="philosophy-line dim">Containers isolate processes.</p>
-  <p class="philosophy-line" style="color:var(--text)">Envpod governs autonomous side effects.</p>
-  <p class="philosophy-line dim" style="font-size:clamp(15px,2vw,18px);margin-top:24px;max-width:600px">No volume mounts. No path remapping. No container brain. Your agent runs on your real filesystem layout — but every write is captured in the overlay.</p>
+  <p class="philosophy-line dim">Isolation is a wall. Governance is a policy.</p>
+  <p class="philosophy-line" style="color:var(--text)">Walls are useful but blunt. Policies are precise.</p>
+  <p class="philosophy-line dim" style="font-size:clamp(15px,2vw,18px);margin-top:24px;max-width:600px">Zero-trust governance means nothing is permitted unless explicitly granted. Every write captured. Every action audited. Every secret isolated.</p>
 </section>
 
 <!-- ═══ FOUNDATION + FOUR WALLS + CEILING ═══ -->
@@ -422,7 +422,7 @@
     </div>
 
     <div class="compare-grid">
-      <div class="compare-col"><div class="compare-label">Docker / Containers</div><div class="compare-verdict">Isolate.</div><div class="compare-desc">Draw a box around the process. Great for deployment and microservices. Not designed for reviewing what an AI agent changed.</div></div>
+      <div class="compare-col"><div class="compare-label">Docker / Containers</div><div class="compare-verdict">Isolate.</div><div class="compare-desc">Coarse isolation, not fine-grained governance. Either keep the agent isolated and lose real context, or bind-mount the host and give up precise control.</div></div>
       <div class="compare-col"><div class="compare-label">E2B / Daytona</div><div class="compare-verdict">Sandbox in the cloud.</div><div class="compare-desc">Ephemeral cloud sandboxes. No diff/commit, no audit trail, no credential vault. Code runs on their infrastructure, not yours.</div></div>
       <div class="compare-col"><div class="compare-label">Firejail / gVisor</div><div class="compare-verdict">Sandbox.</div><div class="compare-desc">Syscall filtering and process restrictions. No filesystem review, no action queue, no credential interception.</div></div>
       <div class="compare-col col-envpod"><div class="compare-label">envpod</div><div class="compare-verdict">Isolates, sandboxes, <em style="font-style:normal;color:var(--green)">and</em> governs.</div><div class="compare-desc">OS-level isolation, syscall sandboxing, and a governance ceiling. Every write captured, every action queued, every secret protected, every decision audited. On your machine.</div></div>
@@ -650,8 +650,8 @@
 <!-- ═══ CTA ═══ -->
 <section class="cta-section">
   <div class="cta-box">
-    <h2>Autonomous systems should not have<br>irrevocable side effects.</h2>
-    <p>Envpod makes autonomy safe by default. Free to use. Single binary. Zero dependencies. On your own machine.</p>
+    <h2>Docker was built for microservices.<br>Envpod was built for agents.</h2>
+    <p>Zero-trust governance for AI agents. Free to use. Single binary. On your own machine.</p>
     <div class="cta-actions">
       <a href="https://github.com/markamo/envpod-ce" class="btn-p">Get started →</a>
       <a href="https://github.com/markamo/envpod-ce/tree/main/examples" class="btn-s">Browse examples</a>
