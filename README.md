@@ -9,7 +9,7 @@
 > Author: Mark Amoboateng · mark@envpod.dev
 > Copyright 2026 Xtellix Inc.
 
-**Envpod is the governance layer for AI agents.**
+**Envpod is the zero-trust governance layer for AI agents.**
 
 **Docker isolates environments. Envpod governs access to real ones.**
 
