@@ -1419,7 +1419,7 @@ async fn run_setup_commands(
 ) -> Result<(usize, usize, bool, PathBuf)> {
     let handle = store.load(name)?;
     let state = NativeState::from_handle(&handle)?;
-    let config = state
+    let mut config = state
         .load_config()?
         .context("no pod.yaml found — cannot run setup")?;
 
@@ -1467,9 +1467,15 @@ async fn run_setup_commands(
         "rm -rf /var/lib/apt/lists/* 2>/dev/null; true",
         // Disable 3rd-party apt sources that may not resolve through DNS whitelist
         "cd /etc/apt/sources.list.d 2>/dev/null && for f in *.list *.sources; do [ -f \"$f\" ] && sed -i 's/^deb /# deb /' \"$f\"; done; true",
-        // Refresh apt so setup commands can just `apt-get install` without `apt-get update` first
-        "DEBIAN_FRONTEND=noninteractive apt-get update -qq 2>/dev/null; true",
     ];
+    let setup_text = config.setup.join(" ");
+
+    // Auto-prepend apt-get update if setup uses apt-get install (visible step)
+    let needs_apt = setup_text.contains("apt-get install") || setup_text.contains("apt install");
+    if needs_apt && !setup_text.contains("apt-get update") && !setup_text.contains("apt update") {
+        config.setup.insert(0, "DEBIAN_FRONTEND=noninteractive apt-get update -qq".to_string());
+    }
+
     // Auto-install nvm + Node.js if setup commands use npm/npx/node
     let setup_text = config.setup.join(" ");
     let needs_node = setup_text.contains("npm ") || setup_text.contains("npx ")
