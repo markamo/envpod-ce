@@ -33,7 +33,7 @@ filesystem:
   mounts:
     # Bind-mount host Ollama models (read-only, avoids re-downloading)
     # Adjust to your Ollama models path: typically ~/.ollama/models
-    - path: /home/mymark/.ollama/models
+    - path: ~/.ollama/models
       permissions: ReadOnly
   tracking:
     watch:
@@ -89,6 +89,6 @@ setup:
   # Point Ollama at bind-mounted host models via env var
   - |
     cat >> /etc/profile.d/ollama.sh << 'EOF'
-    export OLLAMA_MODELS=/home/mymark/.ollama/models
+    export OLLAMA_MODELS=~/.ollama/models
     EOF
   - "pip3 install --break-system-packages --ignore-installed urllib3 aider-chat"

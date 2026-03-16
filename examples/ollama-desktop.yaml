@@ -39,7 +39,7 @@ filesystem:
   mounts:
     # Bind-mount host Ollama models (read-only, avoids re-downloading)
     # Adjust to your path: ~/.ollama/models (user) or /usr/share/ollama/.ollama/models (system)
-    - path: /home/mymark/.ollama/models
+    - path: ~/.ollama/models
       permissions: ReadOnly
   tracking:
     watch:
@@ -113,6 +113,6 @@ setup:
     curl -fsSL https://ollama.ai/install.sh | sed 's/tar /tar --no-same-permissions --warning=no-file-changed /' | sh || test -x /usr/local/bin/ollama
   - |
     cat >> /etc/profile.d/ollama.sh << 'EOF'
-    export OLLAMA_MODELS=/home/mymark/.ollama/models
+    export OLLAMA_MODELS=~/.ollama/models
     EOF
   - "pip3 install --break-system-packages --ignore-installed urllib3 aider-chat"

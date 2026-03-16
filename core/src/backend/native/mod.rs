@@ -53,11 +53,29 @@ use crate::types::{
 /// Expand `~` prefix to the current user's home directory.
 pub fn expand_tilde(path: &Path) -> PathBuf {
     if let Ok(stripped) = path.strip_prefix("~") {
+        // Under sudo, $HOME is /root. Use SUDO_USER's home instead.
+        if let Ok(sudo_user) = std::env::var("SUDO_USER") {
+            if let Some(home) = home_dir_for_user(&sudo_user) {
+                return home.join(stripped);
+            }
+        }
         if let Some(home) = std::env::var_os("HOME") {
             return PathBuf::from(home).join(stripped);
         }
     }
     path.to_path_buf()
+}
+
+/// Look up a user's home directory from /etc/passwd.
+fn home_dir_for_user(username: &str) -> Option<PathBuf> {
+    let passwd = std::fs::read_to_string("/etc/passwd").ok()?;
+    for line in passwd.lines() {
+        let fields: Vec<&str> = line.split(':').collect();
+        if fields.len() >= 6 && fields[0] == username {
+            return Some(PathBuf::from(fields[5]));
+        }
+    }
+    None
 }
 
 /// Resolve the real (non-root) UID, preferring SUDO_UID when running under sudo.
