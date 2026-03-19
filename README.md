@@ -1,11 +1,11 @@
-[![Release](https://img.shields.io/badge/release-v0.1.1-brightgreen)](https://github.com/markamo/envpod-ce/releases/tag/v0.1.1)
+[![Release](https://img.shields.io/badge/release-v0.1.3-brightgreen)](https://github.com/markamo/envpod-ce/releases/tag/v0.1.3)
 [![License](https://img.shields.io/badge/license-BSL--1.1-blue)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Linux%20x86__64%20%7C%20ARM64-lightgrey)](docs/EMBEDDED.md)
 [![Built with Rust](https://img.shields.io/badge/built%20with-Rust-orange)](https://www.rust-lang.org/)
 
 # envpod
 
-> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc.
 
