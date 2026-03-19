@@ -6507,7 +6507,7 @@ const POD_SUBCOMMANDS: &[&str] = &[
     "init", "setup", "run", "start", "stop", "restart", "fg", "diff", "commit", "rollback", "audit",
     "lock", "unlock", "kill", "destroy", "queue", "approve", "cancel", "status", "logs",
     "vault", "mount", "unmount", "undo", "remote", "monitor", "dns", "clone", "actions",
-    "ports", "discover", "snapshot",
+    "ports", "discover", "snapshot", "resize",
 ];
 
 fn print_completions(shell: Shell, base_dir: &std::path::Path) {
@@ -6581,7 +6581,7 @@ _envpod() {{
                     *) base_sub="${{COMP_WORDS[j]}}"; break ;;
                 esac
             done
-            if [[ "$base_sub" == "destroy" ]]; then
+            if [[ "$base_sub" == "destroy" || "$base_sub" == "resize" ]]; then
                 compopt +o default +o bashdefault 2>/dev/null
                 local bases_dir="${{ENVPOD_DIR:-{base_dir_str}}}/bases"
                 if [[ -d "$bases_dir" ]]; then
@@ -6648,7 +6648,7 @@ _envpod() {{
                 *) base_sub="${{words[j]}}"; break ;;
             esac
         done
-        if [[ "$base_sub" == "destroy" ]]; then
+        if [[ "$base_sub" == "destroy" || "$base_sub" == "resize" ]]; then
             local bases_dir="${{ENVPOD_DIR:-{base_dir_str}}}/bases"
             if [[ -d "$bases_dir" ]]; then
                 local bases=()
@@ -6692,7 +6692,7 @@ complete -c envpod -n "__fish_seen_subcommand_from {subcmd}" -f -a "(
     // Add dynamic base pod name completion for `envpod base destroy`
     print!(
         r#"
-complete -c envpod -n "__fish_seen_subcommand_from base; and __fish_seen_subcommand_from destroy" -f -a "(
+complete -c envpod -n "__fish_seen_subcommand_from base; and __fish_seen_subcommand_from destroy resize" -f -a "(
     set -l bases_dir (set -q ENVPOD_DIR; and echo \$ENVPOD_DIR/bases; or echo '{base_dir_str}/bases')
     if test -d \$bases_dir
         for d in \$bases_dir/*/
