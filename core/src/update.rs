@@ -76,6 +76,39 @@ fn mark_checked(base_dir: &Path) {
     fs::write(&path, "").ok();
 }
 
+/// Force an update check regardless of cache. Used by `envpod update`.
+pub fn force_check(
+    base_dir: &Path,
+    current_version: &str,
+) -> Option<UpdateCheckResult> {
+    let response = fetch_update_json()?;
+    mark_checked(base_dir);
+
+    let mut result = UpdateCheckResult {
+        new_version: None,
+        rules_updated: false,
+    };
+
+    if version_newer(&response.envpod.latest, current_version) {
+        result.new_version = Some(response.envpod.latest);
+    }
+
+    let rules_path = base_dir.join("screening").join("rules.json");
+    let current_rules_version = read_rules_version(&rules_path);
+    if current_rules_version.as_deref() != Some(&response.screening.latest) {
+        if let Some(new_rules) = fetch_url(&response.screening.url) {
+            if serde_json::from_str::<serde_json::Value>(&new_rules).is_ok() {
+                fs::create_dir_all(base_dir.join("screening")).ok();
+                if fs::write(&rules_path, &new_rules).is_ok() {
+                    result.rules_updated = true;
+                }
+            }
+        }
+    }
+
+    Some(result)
+}
+
 /// Perform the update check. Non-blocking, 2-second timeout, fails silently.
 ///
 /// Returns None if the check was skipped (too recent) or failed.

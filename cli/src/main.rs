@@ -565,6 +565,8 @@ enum Commands {
         /// Shell to generate completions for
         shell: Shell,
     },
+    /// Check for envpod updates and download latest screening rules
+    Update,
     /// Screen text or files for prompt injection, credential exposure, PII, and exfiltration
     Screen {
         /// Text to screen (or use --file)
@@ -987,6 +989,31 @@ async fn run(cli: Cli) -> Result<()> {
                 if result.index_files > 0 {
                     println!("Removed {} stale index file{}", result.index_files, if result.index_files == 1 { "" } else { "s" });
                 }
+            }
+            Ok(())
+        }
+        Commands::Update => {
+            let current = env!("CARGO_PKG_VERSION");
+            eprintln!("  Checking for updates...");
+            if let Some(result) = envpod_core::update::force_check(base_dir, current) {
+                if let Some(ref new_ver) = result.new_version {
+                    eprintln!(
+                        "  {} envpod {} available (you have {})",
+                        color::green("↑"),
+                        color::green(new_ver),
+                        current,
+                    );
+                    eprintln!("  Install: curl -fsSL https://envpod.dev/install.sh | sudo bash");
+                } else {
+                    eprintln!("  {} envpod {} is the latest version", color::green("✓"), current);
+                }
+                if result.rules_updated {
+                    eprintln!("  {} Screening rules updated", color::green("✓"));
+                } else {
+                    eprintln!("  {} Screening rules up to date", color::green("✓"));
+                }
+            } else {
+                eprintln!("  {} Could not reach update server", color::dim("⚠"));
             }
             Ok(())
         }
