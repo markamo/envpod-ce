@@ -22,3 +22,4 @@ pub mod vault;
 pub mod web_display;
 pub mod screening;
 pub mod snapshot;
+pub mod update;

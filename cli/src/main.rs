@@ -107,6 +107,9 @@ enum Commands {
         /// Show live output from setup commands
         #[arg(short, long)]
         verbose: bool,
+        /// Skip version and screening rules update check
+        #[arg(long)]
+        no_update_check: bool,
     },
     /// List available presets for `envpod init --preset`
     Presets,
@@ -822,7 +825,13 @@ async fn run(cli: Cli) -> Result<()> {
             preset,
             create_base,
             verbose,
-        } => cmd_init(&store, base_dir, &name, &backend, config.as_deref(), preset.as_deref(), create_base.as_deref(), verbose).await,
+            no_update_check,
+        } => {
+            if !no_update_check {
+                run_update_check(base_dir);
+            }
+            cmd_init(&store, base_dir, &name, &backend, config.as_deref(), preset.as_deref(), create_base.as_deref(), verbose).await
+        }
         Commands::Presets => {
             eprint!("{}", presets::format_table());
             Ok(())
@@ -1678,6 +1687,21 @@ fn fix_upper_ownership(path: &std::path::Path, uid: u32, gid: u32) {
 
 /// Truncate a setup command for display. Takes the first line only
 /// (for multi-line `|` blocks) and truncates to `max` chars with `…`.
+/// Run update check — version + screening rules. Non-blocking, fails silently.
+fn run_update_check(base_dir: &std::path::Path) {
+    let current = env!("CARGO_PKG_VERSION");
+    if let Some(result) = envpod_core::update::check_for_updates(base_dir, current) {
+        if let Some(ref new_ver) = result.new_version {
+            eprintln!(
+                "  {} envpod {} available (you have {}) — visit https://envpod.dev",
+                color::dim("ℹ"),
+                color::green(new_ver),
+                current,
+            );
+        }
+    }
+}
+
 fn truncate_setup_cmd(cmd: &str, max: usize) -> String {
     let first_line = cmd.lines().next().unwrap_or(cmd).trim();
     if first_line.chars().count() <= max {
