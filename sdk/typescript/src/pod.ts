@@ -124,6 +124,21 @@ export class Pod {
   }
 
   /**
+   * Copy a local file into the pod's overlay.
+   */
+  inject(localPath: string, podPath: string = '/tmp/', executable: boolean = false): void {
+    const { readFileSync } = require('fs');
+    const { basename } = require('path');
+    const content = readFileSync(localPath);
+    const encoded = content.toString('base64');
+    const name = basename(localPath);
+    const dest = podPath.endsWith('/') ? `${podPath}${name}` : podPath;
+    let cmd = `echo "${encoded}" | base64 -d > ${dest}`;
+    if (executable) cmd += ` && chmod +x ${dest}`;
+    this.run(cmd, { root: true });
+  }
+
+  /**
    * Show filesystem changes.
    */
   diff(opts?: { all?: boolean; json?: boolean }): string {

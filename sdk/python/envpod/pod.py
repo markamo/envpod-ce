@@ -147,6 +147,36 @@ class Pod:
         return self.run_script(code, interpreter=interpreter, root=root,
                                env=env, capture=capture)
 
+    def inject(self, local_path: str, pod_path: str = "/tmp/",
+               executable: bool = False) -> None:
+        """Copy a local file into the pod's overlay.
+
+        Args:
+            local_path: Path to file on host.
+            pod_path: Destination path inside pod (directory or full path).
+            executable: If True, chmod +x after copying.
+        """
+        import os
+        import base64
+
+        if not os.path.exists(local_path):
+            raise PodError(f"file not found: {local_path}")
+
+        with open(local_path, "rb") as f:
+            encoded = base64.b64encode(f.read()).decode()
+
+        basename = os.path.basename(local_path)
+        if pod_path.endswith("/"):
+            dest = f"{pod_path}{basename}"
+        else:
+            dest = pod_path
+
+        cmd = f'echo "{encoded}" | base64 -d > {dest}'
+        if executable:
+            cmd += f' && chmod +x {dest}'
+
+        self.run(cmd, root=True)
+
     def diff(self, all_changes: bool = False, json_output: bool = False) -> str:
         """Show filesystem changes in the pod's overlay.
 
