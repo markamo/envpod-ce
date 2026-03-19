@@ -20,4 +20,5 @@ pub mod undo;
 pub mod user_clone;
 pub mod vault;
 pub mod web_display;
+pub mod screening;
 pub mod snapshot;
