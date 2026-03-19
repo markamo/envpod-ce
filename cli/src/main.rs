@@ -562,6 +562,20 @@ enum Commands {
         /// Shell to generate completions for
         shell: Shell,
     },
+    /// Screen text or files for prompt injection, credential exposure, PII, and exfiltration
+    Screen {
+        /// Text to screen (or use --file)
+        text: Vec<String>,
+        /// Screen a file's contents
+        #[arg(long, short)]
+        file: Option<String>,
+        /// Screen as an API request body (parses JSON for message content)
+        #[arg(long)]
+        api: bool,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Show envpod version, license, and project info
     About,
 }
@@ -967,6 +981,44 @@ async fn run(cli: Cli) -> Result<()> {
             }
             Ok(())
         }
+        Commands::Screen { text, file, api, json } => {
+            let rules = envpod_core::screening::ScreeningRules::load_default();
+            let content = if let Some(path) = file {
+                std::fs::read_to_string(&path)
+                    .with_context(|| format!("read file: {path}"))?
+            } else if !text.is_empty() {
+                text.join(" ")
+            } else {
+                // Read from stdin
+                let mut buf = String::new();
+                std::io::Read::read_to_string(&mut std::io::stdin(), &mut buf)?;
+                buf
+            };
+
+            let result = if api {
+                rules.screen_api_request(&content)
+            } else {
+                rules.screen(&content)
+            };
+
+            if json {
+                println!("{}", serde_json::to_string_pretty(&result)?);
+            } else if result.matched {
+                eprintln!(
+                    "  {} [{}] {}",
+                    color::red("BLOCKED"),
+                    result.category.as_deref().unwrap_or("unknown"),
+                    result.pattern.as_deref().unwrap_or("")
+                );
+                if let Some(ref frag) = result.fragment {
+                    eprintln!("  Context: {}", color::dim(frag));
+                }
+                std::process::exit(1);
+            } else {
+                eprintln!("  {} No issues detected", color::green("CLEAN"));
+            }
+            Ok(())
+        }
         Commands::Completions { shell } => {
             print_completions(shell, base_dir);
             Ok(())
@@ -1008,6 +1060,9 @@ async fn cmd_init(
     if store.exists(name) {
         anyhow::bail!("pod '{name}' already exists");
     }
+
+    // Install default screening rules (first init only, non-fatal)
+    envpod_core::screening::install_default_rules(base_dir).ok();
 
     let mut config = if let Some(path) = config_path {
         // Explicit config file
