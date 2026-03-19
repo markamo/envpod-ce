@@ -91,6 +91,62 @@ class Pod:
         args.extend(["sh", "-c", command])
         return self._run(args, capture=capture)
 
+    def run_script(self, code: str, interpreter: str = "python3",
+                   root: bool = False, env: Optional[dict] = None,
+                   capture: bool = False) -> Optional[str]:
+        """Run inline code inside the pod.
+
+        Writes code to a temp file in the overlay, executes it, cleans up.
+
+        Args:
+            code: Source code string to execute.
+            interpreter: Interpreter to use (python3, node, bash, etc.)
+            root: Run as root inside the pod.
+            env: Additional environment variables.
+            capture: If True, capture and return stdout.
+        """
+        import base64
+        encoded = base64.b64encode(code.encode()).decode()
+        shell_cmd = (
+            f'echo "{encoded}" | base64 -d > /tmp/.envpod-script && '
+            f'{interpreter} /tmp/.envpod-script && '
+            f'rm -f /tmp/.envpod-script'
+        )
+        return self.run(shell_cmd, root=root, env=env, capture=capture)
+
+    def run_file(self, path: str, interpreter: Optional[str] = None,
+                 root: bool = False, env: Optional[dict] = None,
+                 capture: bool = False) -> Optional[str]:
+        """Copy a local file into the pod and run it.
+
+        Args:
+            path: Path to local file.
+            interpreter: Interpreter (auto-detected from extension if not set).
+            root: Run as root inside the pod.
+            env: Additional environment variables.
+            capture: If True, capture and return stdout.
+        """
+        import os
+        if not os.path.exists(path):
+            raise PodError(f"file not found: {path}")
+
+        with open(path) as f:
+            code = f.read()
+
+        if interpreter is None:
+            ext = os.path.splitext(path)[1].lower()
+            interpreter = {
+                '.py': 'python3',
+                '.js': 'node',
+                '.ts': 'npx tsx',
+                '.sh': 'bash',
+                '.rb': 'ruby',
+                '.pl': 'perl',
+            }.get(ext, 'bash')
+
+        return self.run_script(code, interpreter=interpreter, root=root,
+                               env=env, capture=capture)
+
     def diff(self, all_changes: bool = False, json_output: bool = False) -> str:
         """Show filesystem changes in the pod's overlay.
 

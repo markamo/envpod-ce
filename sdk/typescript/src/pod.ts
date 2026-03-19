@@ -98,6 +98,32 @@ export class Pod {
   }
 
   /**
+   * Run inline code inside the pod.
+   * Writes to a temp file in the overlay, executes, cleans up.
+   */
+  runScript(code: string, opts: RunOptions & { interpreter?: string } = {}): string | void {
+    const interp = opts.interpreter || 'python3';
+    const encoded = Buffer.from(code).toString('base64');
+    const cmd = `echo "${encoded}" | base64 -d > /tmp/.envpod-script && ${interp} /tmp/.envpod-script && rm -f /tmp/.envpod-script`;
+    return this.run(cmd, opts);
+  }
+
+  /**
+   * Copy a local file into the pod and run it.
+   * Auto-detects interpreter from file extension.
+   */
+  runFile(path: string, opts: RunOptions & { interpreter?: string } = {}): string | void {
+    const { readFileSync } = require('fs');
+    const code = readFileSync(path, 'utf-8');
+    const ext = path.split('.').pop()?.toLowerCase();
+    const interp = opts.interpreter || ({
+      py: 'python3', js: 'node', ts: 'npx tsx',
+      sh: 'bash', rb: 'ruby', pl: 'perl',
+    } as Record<string, string>)[ext || ''] || 'bash';
+    return this.runScript(code, { ...opts, interpreter: interp });
+  }
+
+  /**
    * Show filesystem changes.
    */
   diff(opts?: { all?: boolean; json?: boolean }): string {
