@@ -508,6 +508,13 @@ sudo ./tests/e2e.sh
 - **`core/`** — Core library (isolation, governance, policy logic, vault proxy)
 - **`dns/`** — Embedded per-pod DNS resolver with filtering
 
+## Community
+
+- **Discord:** [discord.gg/envpod](https://discord.gg/envpod)
+- **Reddit:** [r/envpod](https://reddit.com/r/envpod)
+- **GitHub Issues:** [Report bugs](https://github.com/markamo/envpod-ce/issues)
+- **Email:** mark@envpod.dev
+
 ## License
 
 [![License](https://img.shields.io/badge/license-BSL--1.1-blue)](LICENSE)
