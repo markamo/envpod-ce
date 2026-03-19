@@ -153,10 +153,30 @@ pub fn check_for_updates(
     Some(result)
 }
 
-/// Fetch the update.json from envpod.dev.
+/// Fetch the update.json from envpod.dev with install ID for unique tracking.
 fn fetch_update_json() -> Option<UpdateInfo> {
-    let body = fetch_url(UPDATE_URL)?;
+    // Include install ID + version as query params for anonymous telemetry
+    let base_dir = Path::new("/var/lib/envpod");
+    let id = get_install_id(base_dir);
+    let version = env!("CARGO_PKG_VERSION");
+    let url = format!("{UPDATE_URL}?id={id}&v={version}");
+    let body = fetch_url(&url)?;
     serde_json::from_str(&body).ok()
+}
+
+/// Get or create a persistent install ID (anonymous UUID).
+fn get_install_id(base_dir: &Path) -> String {
+    let path = base_dir.join("install-id");
+    if let Ok(id) = fs::read_to_string(&path) {
+        let id = id.trim().to_string();
+        if !id.is_empty() {
+            return id;
+        }
+    }
+    let id = uuid::Uuid::new_v4().to_string();
+    fs::create_dir_all(base_dir).ok();
+    fs::write(&path, &id).ok();
+    id
 }
 
 /// Simple blocking HTTP GET with timeout.
