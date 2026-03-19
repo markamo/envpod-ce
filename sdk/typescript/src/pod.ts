@@ -8,6 +8,7 @@ export interface PodOptions {
   config?: string;
   preset?: string;
   mode?: 'standard' | 'full';
+  mountCwd?: boolean;
 }
 
 export interface RunOptions {
@@ -37,11 +38,14 @@ export class Pod {
   private mode: string;
   private binary: string;
 
+  private mountCwd: boolean;
+
   private constructor(name: string, opts: PodOptions = {}) {
     this.name = name;
     this.config = opts.config;
     this.preset = opts.preset;
     this.mode = opts.mode || getMode();
+    this.mountCwd = opts.mountCwd !== false; // default true
     this.binary = ensureInstalled();
   }
 
@@ -80,6 +84,7 @@ export class Pod {
   run(command: string, opts: RunOptions = {}): string | void {
     const args = ['run', this.name];
     if (opts.root) args.push('--root');
+    if (this.mountCwd) args.push('-w');
     if (opts.env) {
       for (const [k, v] of Object.entries(opts.env)) {
         args.push('--env', `${k}=${v}`);

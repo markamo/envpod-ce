@@ -44,8 +44,15 @@ class Pod:
         return False
 
     def init(self, config: Optional[str] = None, preset: Optional[str] = None,
-             verbose: bool = False) -> None:
-        """Create and set up the pod."""
+             verbose: bool = False, mount_cwd: bool = True) -> None:
+        """Create and set up the pod.
+
+        Args:
+            config: Path to pod.yaml config file.
+            preset: Built-in preset name.
+            verbose: Show live setup output.
+            mount_cwd: Mount current working directory into the pod (default True).
+        """
         args = ["init", self.name]
         cfg = config or self._config
         pre = preset or self._preset
@@ -57,6 +64,7 @@ class Pod:
             args.append("--verbose")
         self._run(args)
         self._initialized = True
+        self._mount_cwd = mount_cwd
 
     def run(self, command: str, root: bool = False,
             env: Optional[dict] = None, capture: bool = False) -> Optional[str]:
@@ -74,6 +82,8 @@ class Pod:
         args = ["run", self.name]
         if root:
             args.append("--root")
+        if getattr(self, '_mount_cwd', True):
+            args.append("-w")
         if env:
             for k, v in env.items():
                 args.extend(["--env", f"{k}={v}"])
