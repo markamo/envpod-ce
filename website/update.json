@@ -1,0 +1,10 @@
+{
+  "envpod": {
+    "latest": "0.1.1",
+    "url": "https://envpod.dev/install.sh"
+  },
+  "screening": {
+    "latest": "2026-03-19",
+    "url": "https://envpod.dev/screening-rules.json"
+  }
+}
