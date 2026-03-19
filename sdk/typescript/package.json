@@ -1,0 +1,36 @@
+{
+  "name": "envpod",
+  "version": "0.1.1",
+  "description": "The zero-trust governance layer for AI agents",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/test.js"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "governance",
+    "security",
+    "sandbox",
+    "isolation"
+  ],
+  "author": "Mark Amo-Boateng, PhD <mark@envpod.dev>",
+  "license": "BSL-1.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/markamo/envpod-ce"
+  },
+  "homepage": "https://envpod.dev",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^5.0.0"
+  }
+}
