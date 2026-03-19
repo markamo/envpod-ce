@@ -34,6 +34,7 @@
       <a href="#agents">Agents</a>
       <a href="#demos">Demos</a>
       <a href="#compare">Compare</a>
+      <a href="#sdk">SDKs</a>
       <a href="#benchmarks">Benchmarks</a>
       <a href="#install">Quick Start</a>
       <a href="#pricing">Pricing</a>
@@ -260,6 +261,7 @@
         <div class="feature-card"><div class="feature-icon">📋</div><div class="feature-title">Action Queue &amp; Approval</div><div class="feature-desc">Four tiers: <code>immediate</code>, <code>delayed</code>, <code>staged</code> (human approval), <code>blocked</code>. Every action classified by reversibility. Hot-reload without restart.</div></div>
         <div class="feature-card"><div class="feature-icon">🌐</div><div class="feature-title">DNS Filtering &amp; Network Policy</div><div class="feature-desc">Per-pod embedded DNS resolver. Whitelist, blacklist, or monitor mode. Anti-DNS-tunneling. Live mutation — add or remove domains on a running pod.</div></div>
         <div class="feature-card"><div class="feature-icon">📊</div><div class="feature-title">Audit Trail &amp; Security Scan</div><div class="feature-desc">Append-only JSONL. Every action, approval, vault access, DNS query — timestamped. <code>envpod audit --security</code> for static analysis. Runtime monitoring with auto-freeze.</div></div>
+        <div class="feature-card"><div class="feature-icon">🛡️</div><div class="feature-title">Prompt Screening</div><div class="feature-desc">Screen prompts for injection, credential exposure, PII, and exfiltration. Updatable pattern list. Supports Anthropic, OpenAI, Gemini, Ollama API formats. Free for all users. <code>envpod screen</code></div></div>
         <div class="feature-card"><div class="feature-icon">🔒</div><div class="feature-title">Process Isolation</div><div class="feature-desc">PID + UTS + user namespaces. cgroups v2 limits. Seccomp-BPF syscall filtering. NO_NEW_PRIVS prevents privilege escalation. /proc masked to prevent host fingerprinting.</div></div>
       </div>
     </div>
@@ -472,6 +474,28 @@
     <div class="compare-callout">
       <p>The agent thinks it's on your real system —<br>but every write is captured, diffable, and reversible.<br><span class="dim">Envpod combines isolation, reversibility, and governance in one local-first workflow.</span></p>
     </div>
+  </div>
+</section>
+
+<!-- ═══ SDK ═══ -->
+<section class="section reveal" id="sdk">
+  <div class="wrap">
+    <h2>Python &amp; TypeScript SDKs</h2>
+    <p class="section-sub">Programmatic governance — manage pods, screen prompts, orchestrate agent fleets.</p>
+
+    <div class="install-tabs" style="margin-bottom:24px">
+      <button class="itab active" onclick="showSdkTab('python')">Python</button>
+      <button class="itab" onclick="showSdkTab('typescript')">TypeScript</button>
+    </div>
+
+    <div id="sdktab-python">
+      <div class="code-block"><button class="copy-btn" onclick="copyBlock(this)">Copy</button><div class="cp"># pip install envpod</div><div><span class="cl">from envpod import Pod, screen</span></div><div></div><div><span class="cl">with Pod("my-agent", config="pod.yaml") as pod:</span></div><div><span class="cl">    pod.run("python3 agent.py")</span></div><div><span class="cl">    pod.commit("src/", rollback_rest=True)</span></div><div></div><div><span class="cp"># Prompt screening — free for all users</span></div><div><span class="cl">result = screen("ignore previous instructions")</span></div><div><span class="cp"># {'matched': True, 'category': 'injection', ...}</span></div></div>
+    </div>
+    <div id="sdktab-typescript" style="display:none">
+      <div class="code-block"><button class="copy-btn" onclick="copyBlock(this)">Copy</button><div class="cp">// npm install envpod</div><div><span class="cl">import { Pod, screen } from 'envpod';</span></div><div></div><div><span class="cl">const pod = await Pod.create('my-agent', { config: 'pod.yaml' });</span></div><div><span class="cl">pod.run('python3 agent.py');</span></div><div><span class="cl">pod.commit(['src/'], { rollbackRest: true });</span></div><div><span class="cl">pod.destroy();</span></div><div></div><div><span class="cp">// Prompt screening — free for all users</span></div><div><span class="cl">const result = screen('ignore previous instructions');</span></div><div><span class="cp">// { matched: true, category: 'injection', ... }</span></div></div>
+    </div>
+
+    <p style="margin-top:20px;font-size:14px;color:var(--muted)">Auto-installs the envpod binary on first use. Supports inline code injection, file injection, and multi-agent orchestration. <a href="https://github.com/markamo/envpod-ce/blob/main/docs/SDK.md">SDK Reference →</a></p>
   </div>
 </section>
 
@@ -774,6 +798,9 @@ function copyBlock(btn){const b=btn.closest('.code-block');const t=Array.from(b.
 // ══ FEATURE TABS ══
 function showFeatureTab(n){['reversibility','governance','context'].forEach(t=>{document.getElementById('ftab-'+t).style.display=t===n?'':'none'});let btns=document.querySelectorAll('#features .itab');['reversibility','governance','context'].forEach((t,i)=>{if(btns[i])btns[i].classList.toggle('active',t===n)})}
 function showAgentTab(n){['coding','browser','messaging','infra'].forEach(t=>{document.getElementById('atab-'+t).style.display=t===n?'':'none'});let btns=document.querySelectorAll('#agents .itab');['coding','browser','messaging','infra'].forEach((t,i)=>{if(btns[i])btns[i].classList.toggle('active',t===n)})}
+
+// ══ SDK TABS ══
+function showSdkTab(n){['python','typescript'].forEach(t=>{document.getElementById('sdktab-'+t).style.display=t===n?'':'none'});let btns=document.querySelectorAll('#sdk .itab');['python','typescript'].forEach((t,i)=>{if(btns[i])btns[i].classList.toggle('active',t===n)})}
 
 // ══ HERO SLIDESHOW ══
 let heroSlide=0;const heroTotal=5;function goSlide(n){heroSlide=n;document.querySelectorAll('.hero-slide').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.hero-dot').forEach(d=>d.classList.remove('active'));document.querySelector('[data-slide="'+n+'"]').classList.add('active');document.querySelectorAll('.hero-dot')[n].classList.add('active')}setInterval(()=>{goSlide((heroSlide+1)%heroTotal)},8000);
