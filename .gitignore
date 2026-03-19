@@ -12,3 +12,5 @@ website/website ideasl/
 pitch-deck.html
 docs/ROADMAP.md
 resume.txt
+__pycache__/
+*.pyc
