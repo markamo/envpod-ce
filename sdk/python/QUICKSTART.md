@@ -48,7 +48,22 @@ for i in range(100):
 Pod.gc()
 ```
 
-## 4. Desktop in Your Browser
+## 4. Secure API Keys (Vault)
+
+```python
+from envpod import Pod
+
+with Pod("my-agent", config="coding-agent.yaml") as pod:
+    # Store keys — encrypted, never visible to the agent
+    pod.vault_set("ANTHROPIC_API_KEY", "sk-ant-...")
+    pod.vault_set("OPENAI_API_KEY", "sk-...")
+
+    # Agent gets keys as env vars at runtime
+    # but can't read them from config, logs, or shell history
+    pod.run("python3 agent.py")
+```
+
+## 5. Desktop in Your Browser
 
 ```python
 from envpod import Pod

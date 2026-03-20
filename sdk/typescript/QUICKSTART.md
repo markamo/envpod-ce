@@ -51,7 +51,23 @@ for (let i = 0; i < 100; i++) {
 Pod.gc();
 ```
 
-## 4. Desktop in Your Browser
+## 4. Secure API Keys (Vault)
+
+```typescript
+import { Pod } from 'envpod';
+
+await Pod.with('my-agent', { config: 'coding-agent.yaml' }, async (pod) => {
+    // Store keys — encrypted, never visible to the agent
+    pod.vaultSet('ANTHROPIC_API_KEY', 'sk-ant-...');
+    pod.vaultSet('OPENAI_API_KEY', 'sk-...');
+
+    // Agent gets keys as env vars at runtime
+    // but can't read them from config, logs, or shell history
+    pod.run('python3 agent.py');
+});
+```
+
+## 5. Desktop in Your Browser
 
 ```typescript
 import { Pod } from 'envpod';
