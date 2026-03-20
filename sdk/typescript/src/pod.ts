@@ -246,6 +246,16 @@ export class Pod {
   }
 
   /**
+   * Clean up orphaned resources (iptables, cgroups, netns).
+   */
+  static gc(): void {
+    const binary = ensureInstalled();
+    try {
+      execFileSync('sudo', [binary, 'gc'], { stdio: 'pipe' });
+    } catch {}
+  }
+
+  /**
    * Check if pod exists.
    */
   exists(): boolean {

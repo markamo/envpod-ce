@@ -41,6 +41,7 @@ class Pod:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.destroy()
+        self.gc()
         return False
 
     def init(self, config: Optional[str] = None, preset: Optional[str] = None,
@@ -275,6 +276,17 @@ class Pod:
     def vault_set(self, key: str, value: str) -> None:
         """Store a secret in the pod's vault."""
         self._run(["vault", self.name, "set", key, value])
+
+    @staticmethod
+    def gc() -> None:
+        """Clean up orphaned resources (iptables, cgroups, netns)."""
+        binary = shutil.which("envpod")
+        if binary:
+            try:
+                cmd = ["sudo", binary, "gc"] if _get_mode() == "full" else [binary, "gc"]
+                subprocess.run(cmd, capture_output=True)
+            except subprocess.CalledProcessError:
+                pass
 
     def exists(self) -> bool:
         """Check if the pod already exists."""
