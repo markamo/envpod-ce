@@ -505,15 +505,53 @@ chmod 755 "$INSTALL_DIR/envpod"
 info "Installed to $INSTALL_DIR/envpod"
 
 # ═══════════════════════════════════════════════════════════════════════
-# 3. State directories
+# 3. Envpod group (run without sudo)
+# ═══════════════════════════════════════════════════════════════════════
+
+ENVPOD_GROUP_ADDED=0
+REAL_USER="${SUDO_USER:-$(whoami)}"
+
+if [[ "$REAL_USER" != "root" && "$IN_CONTAINER" -eq 0 ]]; then
+    step "Envpod group setup"
+    echo ""
+    echo "  Run envpod without sudo?"
+    echo "  This adds '$REAL_USER' to the 'envpod' group (like Docker)."
+    echo ""
+    read -p "  Add $REAL_USER to envpod group? [Y/n] " ENVPOD_GROUP_CHOICE </dev/tty 2>/dev/null || ENVPOD_GROUP_CHOICE="y"
+
+    if [[ "$ENVPOD_GROUP_CHOICE" != "n" && "$ENVPOD_GROUP_CHOICE" != "N" ]]; then
+        groupadd -f envpod
+        usermod -aG envpod "$REAL_USER"
+        chgrp envpod "$INSTALL_DIR/envpod"
+        chmod g+s "$INSTALL_DIR/envpod"
+        ENVPOD_GROUP_ADDED=1
+        info "Added $REAL_USER to envpod group"
+        info "Binary set to setgid envpod"
+    else
+        info "Skipped — use sudo to run envpod"
+    fi
+else
+    if [[ "$IN_CONTAINER" -eq 1 ]]; then
+        step "Envpod group"
+        info "Container — skipped (run as root)"
+    fi
+fi
+
+# ═══════════════════════════════════════════════════════════════════════
+# 4. State directories
 # ═══════════════════════════════════════════════════════════════════════
 
 step "Creating state directories"
 mkdir -p "$STATE_DIR/state" "$STATE_DIR/pods"
+# Make state dir writable by envpod group
+if [[ "$ENVPOD_GROUP_ADDED" -eq 1 ]]; then
+    chgrp -R envpod "$STATE_DIR"
+    chmod -R g+rwx "$STATE_DIR"
+fi
 info "$STATE_DIR/{state,pods}"
 
 # ═══════════════════════════════════════════════════════════════════════
-# 4. Shell completions
+# 5. Shell completions
 # ═══════════════════════════════════════════════════════════════════════
 
 step "Installing shell completions"
@@ -556,7 +594,7 @@ case "$REAL_SHELL" in
 esac
 
 # ═══════════════════════════════════════════════════════════════════════
-# 5. IP forwarding
+# 6. IP forwarding
 # ═══════════════════════════════════════════════════════════════════════
 
 if [[ "$IN_CONTAINER" -eq 0 ]]; then
@@ -582,7 +620,7 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
-# 6. Examples
+# 7. Examples
 # ═══════════════════════════════════════════════════════════════════════
 
 step "Installing examples"
@@ -600,7 +638,7 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
-# 7. Uninstall script
+# 8. Uninstall script
 # ═══════════════════════════════════════════════════════════════════════
 
 step "Installing uninstall script"
@@ -615,7 +653,7 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
-# 8. Verify
+# 9. Verify
 # ═══════════════════════════════════════════════════════════════════════
 
 step "Verifying installation"
@@ -640,14 +678,29 @@ fi
 echo ""
 echo -e "${GREEN}${BOLD}Installation complete!${NC}"
 echo ""
-echo "  Quick start:"
-if [[ -n "$EXAMPLES_DIR" ]]; then
-echo "    sudo envpod init my-agent -c ${EXAMPLES_DIR}/basic-internet.yaml"
+
+if [[ "$ENVPOD_GROUP_ADDED" -eq 1 ]]; then
+    echo -e "  ${YELLOW}⚠ Log out and back in for the envpod group to take effect.${NC}"
+    echo "  Then run envpod without sudo:"
+    echo ""
+    echo "  Quick start:"
+    if [[ -n "$EXAMPLES_DIR" ]]; then
+    echo "    envpod init my-agent -c ${EXAMPLES_DIR}/basic-internet.yaml"
+    else
+    echo "    envpod init my-agent -c pod.yaml"
+    fi
+    echo "    envpod run my-agent -- bash"
+    echo "    envpod diff my-agent"
 else
-echo "    sudo envpod init my-agent -c pod.yaml"
+    echo "  Quick start:"
+    if [[ -n "$EXAMPLES_DIR" ]]; then
+    echo "    sudo envpod init my-agent -c ${EXAMPLES_DIR}/basic-internet.yaml"
+    else
+    echo "    sudo envpod init my-agent -c pod.yaml"
+    fi
+    echo "    sudo envpod run my-agent -- bash"
+    echo "    sudo envpod diff my-agent"
 fi
-echo "    sudo envpod run my-agent -- bash"
-echo "    sudo envpod diff my-agent"
 echo ""
 if [[ -n "$EXAMPLES_DIR" ]]; then
 echo "  Examples:     ls $EXAMPLES_DIR/"

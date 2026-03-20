@@ -559,8 +559,22 @@ class Pod:
         if not binary:
             raise PodError("envpod binary not found. Install: curl -fsSL https://envpod.dev/install.sh | sudo bash")
         if self._mode == "full":
+            # Check if envpod has setgid (envpod group) — no sudo needed
+            import os
+            if os.access(binary, os.X_OK) and _has_setgid(binary):
+                return [binary] + args
             return ["sudo", binary] + args
         return [binary] + args
+
+
+def _has_setgid(path: str) -> bool:
+    """Check if a file has the setgid bit set (envpod group mode)."""
+    import os, stat
+    try:
+        st = os.stat(path)
+        return bool(st.st_mode & stat.S_ISGID)
+    except OSError:
+        return False
 
 
 def _get_mode() -> str:

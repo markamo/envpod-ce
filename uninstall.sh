@@ -110,6 +110,15 @@ done
 [[ "$removed_completions" == false ]] && warn "No shell completions found — already removed?"
 
 # ---------------------------------------------------------------------------
+step "Removing envpod group"
+# ---------------------------------------------------------------------------
+if getent group envpod >/dev/null 2>&1; then
+    groupdel envpod 2>/dev/null && info "Removed envpod group" || warn "Could not remove envpod group"
+else
+    info "No envpod group found"
+fi
+
+# ---------------------------------------------------------------------------
 step "Pod data"
 # ---------------------------------------------------------------------------
 if [[ "$PURGE" == true ]]; then
