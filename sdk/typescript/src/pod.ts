@@ -317,9 +317,65 @@ export class Pod {
     return url;
   }
 
-  /**
-   * Create a snapshot of the pod's current overlay state.
-   */
+  // ── DNS ──
+
+  dnsAllow(...domains: string[]): void {
+    const args = ['dns', this.name];
+    for (const d of domains) args.push('--allow', d);
+    this.exec(args);
+  }
+
+  dnsDeny(...domains: string[]): void {
+    const args = ['dns', this.name];
+    for (const d of domains) args.push('--deny', d);
+    this.exec(args);
+  }
+
+  dnsRemoveAllow(...domains: string[]): void {
+    const args = ['dns', this.name];
+    for (const d of domains) args.push('--remove-allow', d);
+    this.exec(args);
+  }
+
+  dnsRemoveDeny(...domains: string[]): void {
+    const args = ['dns', this.name];
+    for (const d of domains) args.push('--remove-deny', d);
+    this.exec(args);
+  }
+
+  // ── Remote Control ──
+
+  remote(command: string): void {
+    this.exec(['remote', this.name, command]);
+  }
+
+  freeze(): void { this.remote('freeze'); }
+  resume(): void { this.remote('resume'); }
+
+  restrict(level: string = 'readonly'): void {
+    this.exec(['remote', this.name, 'restrict', level]);
+  }
+
+  // ── Action Queue ──
+
+  queueList(): string {
+    return this.exec(['queue', this.name], true);
+  }
+
+  approve(actionId: string): void {
+    this.exec(['approve', this.name, actionId]);
+  }
+
+  cancel(actionId: string): void {
+    this.exec(['cancel', this.name, actionId]);
+  }
+
+  undo(): void {
+    this.exec(['undo', this.name]);
+  }
+
+  // ── Snapshots ──
+
   snapshotCreate(name?: string): void {
     const args = ['snapshot', this.name, 'create'];
     if (name) args.push('--name', name);

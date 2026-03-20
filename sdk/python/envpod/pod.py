@@ -373,6 +373,66 @@ class Pod:
             print(f"  Desktop → {url}")
         return url
 
+    def dns_allow(self, *domains: str) -> None:
+        """Add domains to DNS allow list (live, no restart)."""
+        args = ["dns", self.name]
+        for d in domains:
+            args.extend(["--allow", d])
+        self._run(args)
+
+    def dns_deny(self, *domains: str) -> None:
+        """Add domains to DNS deny list (live, no restart)."""
+        args = ["dns", self.name]
+        for d in domains:
+            args.extend(["--deny", d])
+        self._run(args)
+
+    def dns_remove_allow(self, *domains: str) -> None:
+        """Remove domains from allow list."""
+        args = ["dns", self.name]
+        for d in domains:
+            args.extend(["--remove-allow", d])
+        self._run(args)
+
+    def dns_remove_deny(self, *domains: str) -> None:
+        """Remove domains from deny list."""
+        args = ["dns", self.name]
+        for d in domains:
+            args.extend(["--remove-deny", d])
+        self._run(args)
+
+    def remote(self, command: str) -> None:
+        """Send a remote control command (freeze, resume, kill, restrict)."""
+        self._run(["remote", self.name, command])
+
+    def freeze(self) -> None:
+        """Freeze pod via remote control (alias for remote('freeze'))."""
+        self.remote("freeze")
+
+    def resume(self) -> None:
+        """Resume frozen pod via remote control."""
+        self.remote("resume")
+
+    def restrict(self, level: str = "readonly") -> None:
+        """Restrict pod permissions via remote control."""
+        self._run(["remote", self.name, "restrict", level])
+
+    def queue_list(self) -> str:
+        """List pending actions in the queue."""
+        return self._run(["queue", self.name], capture=True)
+
+    def approve(self, action_id: str) -> None:
+        """Approve a queued action."""
+        self._run(["approve", self.name, action_id])
+
+    def cancel(self, action_id: str) -> None:
+        """Cancel a queued action."""
+        self._run(["cancel", self.name, action_id])
+
+    def undo(self) -> None:
+        """Undo the last reversible action."""
+        self._run(["undo", self.name])
+
     def snapshot_create(self, name: Optional[str] = None) -> None:
         """Create a snapshot of the pod's current overlay state."""
         args = ["snapshot", self.name, "create"]
