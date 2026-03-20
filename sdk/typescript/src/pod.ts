@@ -250,6 +250,20 @@ export class Pod {
   }
 
   /**
+   * Restart the pod (stop + start).
+   */
+  restart(): void {
+    this.exec(['restart', this.name]);
+  }
+
+  /**
+   * Terminate pod processes and rollback changes.
+   */
+  kill(): void {
+    this.exec(['kill', this.name]);
+  }
+
+  /**
    * Remove pod entirely.
    */
   destroy(): void {

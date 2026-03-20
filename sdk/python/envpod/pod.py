@@ -272,6 +272,14 @@ class Pod:
         """Resume a frozen pod."""
         self._run(["unlock", self.name])
 
+    def restart(self) -> None:
+        """Restart the pod (stop + start)."""
+        self._run(["restart", self.name])
+
+    def kill(self) -> None:
+        """Terminate pod processes and rollback changes."""
+        self._run(["kill", self.name])
+
     def destroy(self) -> None:
         """Remove the pod entirely."""
         try:
