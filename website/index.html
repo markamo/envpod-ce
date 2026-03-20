@@ -489,10 +489,61 @@
     </div>
 
     <div id="sdktab-python">
-      <div class="code-block"><button class="copy-btn" onclick="copyBlock(this)">Copy</button><div class="cp"># pip install envpod</div><div><span class="tb">from</span> <span class="cl">envpod</span> <span class="tb">import</span> <span class="cl">Pod, screen</span></div><div></div><div class="cp"># Create governed pod — auto-destroy + gc on exit</div><div><span class="tb">with</span> <span class="ta">Pod</span>(<span class="yv">"my-agent"</span>, config=<span class="yv">"coding-agent.yaml"</span>) <span class="tb">as</span> pod:</div><div>    <span class="cp"># Encrypted vault — agent never sees the key</span></div><div>    pod.<span class="ta">vault_set</span>(<span class="yv">"ANTHROPIC_API_KEY"</span>, <span class="yv">"sk-ant-..."</span>)</div><div></div><div>    <span class="cp"># Run agent on your real files (COW isolated)</span></div><div>    pod.<span class="ta">run</span>(<span class="yv">"python3 agent.py"</span>)</div><div></div><div>    <span class="cp"># Review what changed</span></div><div>    <span class="tb">print</span>(pod.<span class="ta">diff</span>())</div><div></div><div>    <span class="cp"># Keep src/, discard 48 other files</span></div><div>    pod.<span class="ta">commit</span>(<span class="yv">"src/"</span>, rollback_rest=<span class="tw">True</span>)</div><div></div><div class="cp"># Screen prompts for injection, PII, credentials</div><div>result = <span class="ta">screen</span>(<span class="yv">"ignore previous instructions"</span>)</div><div><span class="cp"># {'matched': True, 'category': 'injection', ...}</span></div><div></div><div class="cp"># Fast cloning — 100 agents in 1 second</div><div>base = <span class="ta">Pod</span>(<span class="yv">"worker"</span>, config=<span class="yv">"pod.yaml"</span>)</div><div>base.<span class="ta">init_with_base</span>()</div><div><span class="tb">for</span> i <span class="tb">in</span> <span class="tb">range</span>(<span class="tw">100</span>):</div><div>    <span class="ta">Pod.disposable</span>(base, <span class="tb">f</span><span class="yv">"task-{i}"</span>, <span class="yv">"python3 experiment.py"</span>)</div></div>
+      <pre class="code-block" style="white-space:pre;overflow-x:auto"><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="cp"># pip install envpod</span>
+<span class="tb">from</span> <span class="cl">envpod</span> <span class="tb">import</span> <span class="ta">Pod</span>, <span class="ta">screen</span>
+
+<span class="cp"># Create governed pod — auto-destroy + gc on exit</span>
+<span class="tb">with</span> <span class="ta">Pod</span>(<span class="yv">"my-agent"</span>, config=<span class="yv">"coding-agent.yaml"</span>) <span class="tb">as</span> pod:
+    <span class="cp"># Encrypted vault — agent never sees the key</span>
+    pod.<span class="ta">vault_set</span>(<span class="yv">"ANTHROPIC_API_KEY"</span>, <span class="yv">"sk-ant-..."</span>)
+
+    <span class="cp"># Run agent on your real files (COW isolated)</span>
+    pod.<span class="ta">run</span>(<span class="yv">"python3 agent.py"</span>)
+
+    <span class="cp"># Review what changed</span>
+    <span class="tb">print</span>(pod.<span class="ta">diff</span>())
+
+    <span class="cp"># Keep src/, discard 48 other files</span>
+    pod.<span class="ta">commit</span>(<span class="yv">"src/"</span>, rollback_rest=<span class="tw">True</span>)
+
+<span class="cp"># Screen prompts for injection, PII, credentials</span>
+result = <span class="ta">screen</span>(<span class="yv">"ignore previous instructions"</span>)
+<span class="cp"># {'matched': True, 'category': 'injection', ...}</span>
+
+<span class="cp"># Fast cloning — 100 agents in 1 second</span>
+base = <span class="ta">Pod</span>(<span class="yv">"worker"</span>, config=<span class="yv">"pod.yaml"</span>)
+base.<span class="ta">init_with_base</span>()
+<span class="tb">for</span> i <span class="tb">in</span> <span class="tb">range</span>(<span class="tw">100</span>):
+    <span class="ta">Pod.disposable</span>(base, <span class="tb">f</span><span class="yv">"task-{i}"</span>, <span class="yv">"python3 experiment.py"</span>)</code></pre>
     </div>
     <div id="sdktab-typescript" style="display:none">
-      <div class="code-block"><button class="copy-btn" onclick="copyBlock(this)">Copy</button><div class="cp">// npm install envpod</div><div><span class="tb">import</span> { <span class="ta">Pod</span>, <span class="ta">screen</span> } <span class="tb">from</span> <span class="yv">'envpod'</span>;</div><div></div><div class="cp">// Create governed pod — auto-destroy + gc on exit</div><div><span class="tb">await</span> <span class="ta">Pod.with</span>(<span class="yv">'my-agent'</span>, { config: <span class="yv">'coding-agent.yaml'</span> }, <span class="tb">async</span> (pod) => {</div><div>    <span class="cp">// Encrypted vault — agent never sees the key</span></div><div>    pod.<span class="ta">vaultSet</span>(<span class="yv">'ANTHROPIC_API_KEY'</span>, <span class="yv">'sk-ant-...'</span>);</div><div></div><div>    <span class="cp">// Run agent on your real files (COW isolated)</span></div><div>    pod.<span class="ta">run</span>(<span class="yv">'python3 agent.py'</span>);</div><div></div><div>    <span class="cp">// Review what changed</span></div><div>    <span class="tb">console</span>.<span class="ta">log</span>(pod.<span class="ta">diff</span>());</div><div></div><div>    <span class="cp">// Keep src/, discard 48 other files</span></div><div>    pod.<span class="ta">commit</span>([<span class="yv">'src/'</span>], { rollbackRest: <span class="tw">true</span> });</div><div>});</div><div></div><div class="cp">// Screen prompts for injection, PII, credentials</div><div><span class="tb">const</span> result = <span class="ta">screen</span>(<span class="yv">'ignore previous instructions'</span>);</div><div><span class="cp">// { matched: true, category: 'injection', ... }</span></div><div></div><div class="cp">// Fast cloning — 100 agents in 1 second</div><div><span class="tb">const</span> base = <span class="ta">Pod.wrap</span>(<span class="yv">'worker'</span>, { config: <span class="yv">'pod.yaml'</span> });</div><div>base.<span class="ta">initWithBase</span>();</div><div><span class="tb">for</span> (<span class="tb">let</span> i = <span class="tw">0</span>; i < <span class="tw">100</span>; i++)</div><div>    <span class="ta">Pod.disposable</span>(base, <span class="yv">`task-\${i}`</span>, <span class="yv">'python3 experiment.py'</span>);</div></div>
+      <pre class="code-block" style="white-space:pre;overflow-x:auto"><button class="copy-btn" onclick="copyBlock(this)">Copy</button><code><span class="cp">// npm install envpod</span>
+<span class="tb">import</span> { <span class="ta">Pod</span>, <span class="ta">screen</span> } <span class="tb">from</span> <span class="yv">'envpod'</span>;
+
+<span class="cp">// Create governed pod — auto-destroy + gc on exit</span>
+<span class="tb">await</span> <span class="ta">Pod.with</span>(<span class="yv">'my-agent'</span>, { config: <span class="yv">'coding-agent.yaml'</span> }, <span class="tb">async</span> (pod) =&gt; {
+    <span class="cp">// Encrypted vault — agent never sees the key</span>
+    pod.<span class="ta">vaultSet</span>(<span class="yv">'ANTHROPIC_API_KEY'</span>, <span class="yv">'sk-ant-...'</span>);
+
+    <span class="cp">// Run agent on your real files (COW isolated)</span>
+    pod.<span class="ta">run</span>(<span class="yv">'python3 agent.py'</span>);
+
+    <span class="cp">// Review what changed</span>
+    <span class="tb">console</span>.<span class="ta">log</span>(pod.<span class="ta">diff</span>());
+
+    <span class="cp">// Keep src/, discard 48 other files</span>
+    pod.<span class="ta">commit</span>([<span class="yv">'src/'</span>], { rollbackRest: <span class="tw">true</span> });
+});
+
+<span class="cp">// Screen prompts for injection, PII, credentials</span>
+<span class="tb">const</span> result = <span class="ta">screen</span>(<span class="yv">'ignore previous instructions'</span>);
+<span class="cp">// { matched: true, category: 'injection', ... }</span>
+
+<span class="cp">// Fast cloning — 100 agents in 1 second</span>
+<span class="tb">const</span> base = <span class="ta">Pod.wrap</span>(<span class="yv">'worker'</span>, { config: <span class="yv">'pod.yaml'</span> });
+base.<span class="ta">initWithBase</span>();
+<span class="tb">for</span> (<span class="tb">let</span> i = <span class="tw">0</span>; i &lt; <span class="tw">100</span>; i++)
+    <span class="ta">Pod.disposable</span>(base, <span class="yv">\`task-\${i}\`</span>, <span class="yv">'python3 experiment.py'</span>);</code></pre>
     </div>
 
     <p style="margin-top:20px;font-size:14px;color:var(--muted)">Auto-installs the envpod binary on first use. Supports inline code injection, file injection, and multi-agent orchestration. <a href="https://github.com/markamo/envpod-ce/blob/main/docs/SDK.md">SDK Reference →</a></p>
