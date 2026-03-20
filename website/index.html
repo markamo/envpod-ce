@@ -851,7 +851,7 @@ function showFeatureTab(n){['reversibility','governance','context'].forEach(t=>{
 function showAgentTab(n){['coding','browser','messaging','infra'].forEach(t=>{document.getElementById('atab-'+t).style.display=t===n?'':'none'});let btns=document.querySelectorAll('#agents .itab');['coding','browser','messaging','infra'].forEach((t,i)=>{if(btns[i])btns[i].classList.toggle('active',t===n)})}
 
 // ══ SDK TABS ══
-function showSdkTab(n){['python','typescript'].forEach(t=>{document.getElementById('sdktab-'+t).style.display=t===n?'':'none'});let btns=document.querySelectorAll('#sdk .itab');['python','typescript'].forEach((t,i)=>{if(btns[i])btns[i].classList.toggle('active',t===n)})}
+#sdk .code-block{font-size:14.5px;line-height:1.9}function showSdkTab(n){['python','typescript'].forEach(t=>{document.getElementById('sdktab-'+t).style.display=t===n?'':'none'});let btns=document.querySelectorAll('#sdk .itab');['python','typescript'].forEach((t,i)=>{if(btns[i])btns[i].classList.toggle('active',t===n)})}
 
 // ══ HERO SLIDESHOW ══
 let heroSlide=0;const heroTotal=5;function goSlide(n){heroSlide=n;document.querySelectorAll('.hero-slide').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.hero-dot').forEach(d=>d.classList.remove('active'));document.querySelector('[data-slide="'+n+'"]').classList.add('active');document.querySelectorAll('.hero-dot')[n].classList.add('active')}setInterval(()=>{goSlide((heroSlide+1)%heroTotal)},8000);
