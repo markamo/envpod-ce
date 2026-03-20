@@ -8,6 +8,38 @@
 
 Programmatic governance for AI agents. 44 methods with full CLI parity. The SDKs are thin wrappers around the `envpod` CLI binary — every method calls the binary via subprocess.
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Isolation Modes](#isolation-modes)
+- [Pod Creation](#pod-creation)
+  - [Context Manager](#context-manager-auto-destroy)
+  - [Persistent](#persistent-survives-script-exit)
+  - [Wrap Existing](#wrap-existing-pod)
+  - [Base Pods + Cloning](#base-pods--fast-cloning)
+  - [Disposable Pods](#disposable-pods)
+- [Running Commands](#running-commands)
+  - [Shell Commands](#shell-commands)
+  - [Inline Code](#inline-code)
+  - [Local Files](#local-files)
+  - [Inject Files](#inject-files-and-executables)
+  - [Mount Directories](#mount-host-directories)
+- [Filesystem Operations](#filesystem-operations)
+- [Vault (Credentials)](#vault-credentials)
+- [DNS Mutation](#dns-mutation-live)
+- [Remote Control](#remote-control)
+- [Action Queue](#action-queue)
+- [Snapshots](#snapshots)
+- [Resource Management](#resource-management)
+- [Lifecycle](#lifecycle)
+- [Pod Info](#pod-info)
+- [Web Display](#web-display)
+- [Screening](#screening)
+- [Cleanup](#cleanup)
+- [Error Handling](#error-handling)
+- [API Reference (44 Methods)](#complete-api-reference--44-methods)
+
 ## Installation
 
 ```bash
@@ -107,6 +139,19 @@ with Pod("experiment", config="pod.yaml") as pod:
     pod.persist()  # don't destroy on exit
 ```
 
+```typescript
+// TypeScript — persistent pod
+const pod = await Pod.create('desktop', { config: 'workstation-full.yaml', persist: true });
+const url = pod.startDisplay();
+console.log(`Open: ${url}`);
+
+// Or persist mid-callback
+await Pod.with('experiment', { config: 'pod.yaml' }, async (pod) => {
+    pod.run('python3 agent.py');
+    pod.persist();  // won't destroy on exit
+});
+```
+
 ### Wrap Existing Pod
 
 ```python
@@ -117,6 +162,7 @@ pod.run("python3 agent.py")
 
 ```typescript
 const pod = Pod.wrap('my-agent');
+pod.run('python3 agent.py');
 ```
 
 ### Base Pods + Fast Cloning
@@ -131,6 +177,16 @@ base.destroy()
 agent = Pod.clone(base, "agent-1")
 agent.run("python3 task.py")
 agent.destroy()
+```
+
+```typescript
+const base = Pod.wrap('worker', { config: 'coding-agent.yaml' });
+base.initWithBase();
+base.destroy();
+
+const agent = Pod.clone(base, 'agent-1');
+agent.run('python3 task.py');
+agent.destroy();
 ```
 
 ### Disposable Pods
@@ -149,6 +205,17 @@ Pod.disposable(base, "task-2", "python3 experiment.py",
 Pod.gc()
 ```
 
+```typescript
+Pod.disposable(base, 'task-1', 'python3 test.py');
+
+Pod.disposable(base, 'task-2', 'python3 experiment.py', {
+    commitPaths: ['results/'],
+    output: '/tmp/output/',
+});
+
+Pod.gc();
+```
+
 ## Running Commands
 
 ### Shell Commands
@@ -160,6 +227,15 @@ output = pod.run("cat results.json", capture=True)   # capture stdout
 pod.run("agent.py", env={"API_URL": "https://..."})  # env vars
 pod.run("chrome", display=True, audio=True)          # display + audio
 pod.run("startxfce4", background=True)               # background
+```
+
+```typescript
+pod.run('python3 agent.py');
+pod.run('apt-get install -y curl', { root: true });
+const output = pod.run('cat results.json', { capture: true });
+pod.run('agent.py', { env: { API_URL: 'https://...' } });
+pod.run('chrome', { display: true, audio: true });
+pod.run('startxfce4', { background: true });
 ```
 
 ### Inline Code
@@ -176,12 +252,30 @@ pod.run_script("console.log('hello')", interpreter="node")
 output = pod.run_script("print(42 * 42)", capture=True)
 ```
 
+```typescript
+pod.runScript(`
+import json
+data = {"status": "ok"}
+with open("/workspace/output.json", "w") as f:
+    json.dump(data, f)
+`);
+
+pod.runScript('console.log("hello")', { interpreter: 'node' });
+const output = pod.runScript('print(42 * 42)', { capture: true });
+```
+
 ### Local Files
 
 ```python
 pod.run_file("agent.py")     # auto-detect: python3
 pod.run_file("agent.js")     # auto-detect: node
 pod.run_file("setup.sh")     # auto-detect: bash
+```
+
+```typescript
+pod.runFile('agent.py');      // auto-detect: python3
+pod.runFile('agent.js');      // auto-detect: node
+pod.runFile('setup.sh');      // auto-detect: bash
 ```
 
 ### Inject Files and Executables
@@ -191,11 +285,21 @@ pod.inject("data.csv", "/workspace/data.csv")
 pod.inject("/path/to/tool", "/usr/local/bin/tool", executable=True)
 ```
 
+```typescript
+pod.inject('data.csv', '/workspace/data.csv');
+pod.inject('/path/to/tool', '/usr/local/bin/tool', true);
+```
+
 ### Mount Host Directories
 
 ```python
 pod.mount("/home/mark/projects/webapp")              # COW isolated
 pod.mount("/data/datasets", readonly=True)           # read-only
+```
+
+```typescript
+pod.mount('/home/mark/projects/webapp');
+pod.mount('/data/datasets', true);  // readonly
 ```
 
 ## Filesystem Operations
@@ -217,12 +321,32 @@ pod.commit(output="/tmp/export/")        # export to directory
 pod.rollback()                           # discard all changes
 ```
 
+```typescript
+const diff = pod.diff();
+pod.diff({ all: true });
+pod.diff({ json: true });
+
+pod.commit();
+pod.commit(['src/', 'docs/']);
+pod.commit(['src/'], { rollbackRest: true });
+pod.commit([], { exclude: ['node_modules/'] });
+pod.commit([], { output: '/tmp/export/' });
+
+pod.rollback();
+```
+
 ## Vault (Credentials)
 
 ```python
 pod.vault_set("ANTHROPIC_API_KEY", "sk-ant-...")
 pod.vault_set("OPENAI_API_KEY", "sk-...")
 pod.vault_set("AWS_SECRET_ACCESS_KEY", "...")
+```
+
+```typescript
+pod.vaultSet('ANTHROPIC_API_KEY', 'sk-ant-...');
+pod.vaultSet('OPENAI_API_KEY', 'sk-...');
+pod.vaultSet('AWS_SECRET_ACCESS_KEY', '...');
 ```
 
 Secrets are encrypted (ChaCha20-Poly1305) and injected as environment variables at runtime. The agent never sees the actual key in config, CLI args, shell history, or logs.
@@ -256,6 +380,13 @@ pod.restrict("readonly")    # limit to read-only
 pod.kill()                  # terminate + rollback all changes
 ```
 
+```typescript
+pod.freeze();
+pod.resume();
+pod.restrict('readonly');
+pod.kill();
+```
+
 ## Action Queue
 
 Require human approval for dangerous operations.
@@ -265,6 +396,13 @@ pending = pod.queue_list()      # list pending actions
 pod.approve("abc12345")         # approve by ID
 pod.cancel("def67890")          # reject by ID
 pod.undo()                      # undo last reversible action
+```
+
+```typescript
+const pending = pod.queueList();
+pod.approve('abc12345');
+pod.cancel('def67890');
+pod.undo();
 ```
 
 ## Snapshots
@@ -283,6 +421,16 @@ print(pod.snapshot_list())
 pod.snapshot_destroy("before-refactor")
 ```
 
+```typescript
+pod.snapshotCreate('before-refactor');
+pod.run('python3 agent.py --task refactor');
+
+pod.snapshotRestore('before-refactor');
+
+console.log(pod.snapshotList());
+pod.snapshotDestroy('before-refactor');
+```
+
 ## Resource Management
 
 ```python
@@ -295,6 +443,14 @@ pod.resize(gpu=True)
 pod.start()
 ```
 
+```typescript
+pod.resize({ cpus: 4.0, memory: '8GB', tmpSize: '2GB', maxPids: 2048 });
+
+pod.stop();
+pod.resize({ gpu: true });
+pod.start();
+```
+
 ## Lifecycle
 
 ```python
@@ -305,6 +461,16 @@ pod.lock()        # freeze state
 pod.unlock()      # resume frozen pod
 pod.kill()        # terminate + rollback
 pod.destroy()     # remove entirely
+```
+
+```typescript
+pod.start();
+pod.stop();
+pod.restart();
+pod.lock();
+pod.unlock();
+pod.kill();
+pod.destroy();
 ```
 
 ## Pod Info
@@ -320,6 +486,17 @@ print(pod.audit(security=True))  # security analysis
 print(pod.exists())        # True/False
 ```
 
+```typescript
+console.log(pod.info());
+console.log(pod.ip);
+console.log(pod.displayUrl);
+console.log(pod.status());
+console.log(pod.logs());
+console.log(pod.audit());
+console.log(pod.audit({ security: true }));
+console.log(pod.exists());
+```
+
 ## Web Display
 
 Start a full desktop accessible via browser.
@@ -329,6 +506,12 @@ pod = Pod("desktop", config="workstation-full.yaml", persist=True)
 pod.init()
 url = pod.start_display()   # starts pod, returns noVNC URL
 print(f"Open: {url}")       # http://10.200.5.2:6080/vnc.html
+```
+
+```typescript
+const pod = await Pod.create('desktop', { config: 'workstation-full.yaml', persist: true });
+const url = pod.startDisplay();
+console.log(`Open: ${url}`);
 ```
 
 ## Screening
@@ -372,6 +555,19 @@ try:
         pod.commit("src/")
 except PodError as e:
     print(f"Pod operation failed: {e}")
+```
+
+```typescript
+import { Pod } from 'envpod';
+
+try {
+    const pod = await Pod.create('my-agent', { config: 'pod.yaml' });
+    pod.run('python3 agent.py');
+    pod.commit(['src/']);
+    pod.destroy();
+} catch (e) {
+    console.error(`Pod operation failed: ${e}`);
+}
 ```
 
 ## Requirements
