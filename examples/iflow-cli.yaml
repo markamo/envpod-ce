@@ -1,0 +1,76 @@
+# iFlow CLI — Alibaba's AI coding agent with governance
+#
+# iFlow CLI connects to OpenAI-compatible endpoints (DashScope/Qwen).
+# Runs inside an envpod with full governance — vault, DNS, audit.
+#
+# Prerequisites:
+#   - iFlow API key from https://cli.iflow.cn/
+#
+# Usage:
+#   sudo envpod init iflow -c examples/iflow-cli.yaml
+#   sudo envpod vault iflow set IFLOW_API_KEY your-key-here
+#   sudo envpod run iflow -- iflow "Write a fibonacci function"
+#
+# See: https://cli.iflow.cn/
+
+name: iflow-cli
+type: standard
+
+filesystem:
+  system_access: advanced
+  workspace: /workspace
+  mount_cwd: true
+  tracking:
+    watch:
+      - /home
+      - /workspace
+      - /opt
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+network:
+  mode: Monitored
+  dns:
+    mode: Allowlist
+    allow:
+      # iFlow / DashScope API
+      - "*.iflow.cn"
+      - apis.iflow.cn
+      - "*.dashscope.cn"
+      - "*.aliyuncs.com"
+      # npm (install iflow-cli)
+      - registry.npmjs.org
+      - "*.npmjs.org"
+      # nvm + Node.js
+      - "*.githubusercontent.com"
+      - nodejs.org
+      - "*.nodejs.org"
+      # GitHub
+      - github.com
+      - "*.github.com"
+
+processor:
+  cores: 2.0
+  memory: "2GB"
+  max_pids: 512
+  tmp_size: "500MB"
+
+security:
+  seccomp_profile: default
+
+vault:
+  env:
+    - IFLOW_API_KEY
+
+budget:
+  max_duration: "30m"
+
+audit:
+  action_log: true
+
+setup:
+  - "npm install -g @iflow-ai/iflow-cli@latest"

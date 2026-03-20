@@ -1,0 +1,77 @@
+# Code Interpreter — multi-language code execution in a governed pod
+#
+# Jupyter-style code execution with Python, Node.js, and more.
+# Every execution is governed — diff/commit, audit, DNS filtering.
+#
+# Unlike OpenSandbox's code-interpreter which needs a separate server,
+# envpod runs everything locally with zero infrastructure.
+#
+# Usage:
+#   sudo envpod init code-interp -c examples/code-interpreter.yaml
+#   sudo envpod run code-interp -- python3
+#   # Or run inline:
+#   sudo envpod run code-interp -- python3 -c "print(2+2)"
+#
+# With envpod SDK:
+#   from envpod import Pod
+#   with Pod("code-interp", config="examples/code-interpreter.yaml") as pod:
+#       output = pod.run_script("print(2+2)", capture=True)
+#       print(output)  # 4
+
+name: code-interpreter
+type: standard
+
+filesystem:
+  system_access: advanced
+  workspace: /workspace
+  mount_cwd: true
+  tracking:
+    watch:
+      - /workspace
+      - /home
+      - /opt
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+network:
+  mode: Monitored
+  dns:
+    mode: Allowlist
+    allow:
+      # PyPI (pip install)
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+      # npm (npm install)
+      - registry.npmjs.org
+      - "*.npmjs.org"
+      # GitHub
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+      # nvm + Node.js
+      - nodejs.org
+      - "*.nodejs.org"
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+  max_pids: 512
+  tmp_size: "1GB"
+
+security:
+  seccomp_profile: default
+
+budget:
+  max_duration: "4h"
+
+audit:
+  action_log: true
+
+setup:
+  - "apt-get install -y --no-install-recommends python3 python3-pip nodejs npm"
+  - "pip3 install jupyter ipython numpy pandas matplotlib"

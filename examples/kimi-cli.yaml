@@ -1,0 +1,74 @@
+# Kimi CLI — Moonshot AI's coding agent with governance
+#
+# Kimi Code CLI is Moonshot AI's AI coding assistant.
+# Runs inside an envpod with full governance — vault, DNS, audit.
+#
+# Prerequisites:
+#   - Kimi API key from https://platform.moonshot.ai/
+#
+# Usage:
+#   sudo envpod init kimi -c examples/kimi-cli.yaml
+#   sudo envpod vault kimi set KIMI_API_KEY your-key-here
+#   sudo envpod run kimi -- kimi -p "Write a fibonacci function"
+#
+# See: https://github.com/MoonshotAI/kimi-cli
+
+name: kimi-cli
+type: standard
+
+filesystem:
+  system_access: advanced
+  workspace: /workspace
+  mount_cwd: true
+  tracking:
+    watch:
+      - /home
+      - /workspace
+      - /opt
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+network:
+  mode: Monitored
+  dns:
+    mode: Allowlist
+    allow:
+      # Kimi / Moonshot AI API
+      - "*.moonshot.ai"
+      - "*.moonshot.cn"
+      - platform.moonshot.ai
+      - api.moonshot.cn
+      # PyPI (pip install)
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+      # GitHub
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+
+processor:
+  cores: 2.0
+  memory: "2GB"
+  max_pids: 512
+  tmp_size: "500MB"
+
+security:
+  seccomp_profile: default
+
+vault:
+  env:
+    - KIMI_API_KEY
+
+budget:
+  max_duration: "30m"
+
+audit:
+  action_log: true
+
+setup:
+  - "pip3 install kimi-cli"
