@@ -387,7 +387,7 @@ pod.restrict('readonly');
 pod.kill();
 ```
 
-> **Note:** `freeze()`/`resume()` use the remote control path (`envpod remote`), while `lock()`/`unlock()` use the direct path (`envpod lock`). Both freeze/resume the pod. Use `lock`/`unlock` for local management. Use `freeze`/`resume` for policy-driven or remote intervention. From the SDK, both work identically.
+> **Note:** `lock()`/`unlock()` are direct local commands (`envpod lock`). `freeze()`/`resume()` go through the remote control channel (`envpod remote`), which works across machines and integrates with the monitoring policy engine. Use `lock`/`unlock` for local management. Use `freeze`/`resume` for remote or policy-driven intervention.
 
 ## Action Queue
 
