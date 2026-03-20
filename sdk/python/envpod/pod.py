@@ -277,6 +277,47 @@ class Pod:
         """Store a secret in the pod's vault."""
         self._run(["vault", self.name, "set", key, value])
 
+    def init_with_base(self, config: Optional[str] = None, preset: Optional[str] = None,
+                        base_name: Optional[str] = None, verbose: bool = False) -> None:
+        """Create pod and save as base for fast cloning.
+
+        Args:
+            config: Path to pod.yaml config file.
+            preset: Built-in preset name.
+            base_name: Name for the base (defaults to pod name).
+            verbose: Show live setup output.
+        """
+        args = ["init", self.name, "--create-base"]
+        if base_name:
+            args[-1] = f"--create-base={base_name}"
+        cfg = config or self._config
+        pre = preset or self._preset
+        if cfg:
+            args.extend(["-c", cfg])
+        elif pre:
+            args.extend(["--preset", pre])
+        if verbose:
+            args.append("--verbose")
+        self._run(args)
+        self._initialized = True
+
+    @staticmethod
+    def clone(source: str, name: str, mode: Optional[str] = None) -> 'Pod':
+        """Clone a pod from a base (fast — ~8ms).
+
+        Args:
+            source: Source pod or base name to clone from.
+            name: Name for the new cloned pod.
+            mode: Isolation mode (standard/full).
+
+        Returns:
+            A new Pod instance for the clone.
+        """
+        pod = Pod(name, mode=mode)
+        pod._run(["clone", source, name])
+        pod._initialized = True
+        return pod
+
     @staticmethod
     def gc() -> None:
         """Clean up orphaned resources (iptables, cgroups, netns)."""

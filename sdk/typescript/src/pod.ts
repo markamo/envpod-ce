@@ -266,6 +266,31 @@ export class Pod {
   }
 
   /**
+   * Create pod and save as base for fast cloning.
+   */
+  initWithBase(opts?: { verbose?: boolean; baseName?: string }): void {
+    const args = ['init', this.name];
+    if (opts?.baseName) {
+      args.push(`--create-base=${opts.baseName}`);
+    } else {
+      args.push('--create-base');
+    }
+    if (this.config) args.push('-c', this.config);
+    else if (this.preset) args.push('--preset', this.preset);
+    if (opts?.verbose) args.push('--verbose');
+    this.exec(args);
+  }
+
+  /**
+   * Clone a pod from a base (fast — ~8ms).
+   */
+  static clone(source: string, name: string, opts: PodOptions = {}): Pod {
+    const pod = new Pod(name, opts);
+    pod.exec(['clone', source, name]);
+    return pod;
+  }
+
+  /**
    * Clean up orphaned resources (iptables, cgroups, netns).
    */
   static gc(): void {
