@@ -24,7 +24,7 @@ network:
     - "8080"                  # accept TCP from other pods on port 8080
     - "8443"                  # HTTPS variant (add/remove as needed)
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       - api.anthropic.com
       - api.openai.com

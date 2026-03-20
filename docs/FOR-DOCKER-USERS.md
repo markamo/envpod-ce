@@ -348,7 +348,7 @@ envpod is purpose-built for AI agent governance on a single Linux machine. It is
 - You need to review filesystem changes before they reach the host
 - You need human approval before the agent makes API calls, pushes to git, or writes files
 - You need an audit trail of what the agent did, not just what it printed
-- You need DNS-level network policy (block all domains except a whitelist)
+- You need DNS-level network policy (block all domains except a allowlist)
 - You need to run agents on ARM64 embedded hardware (Raspberry Pi, Jetson)
 
 ---

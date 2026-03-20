@@ -24,7 +24,7 @@ backend: native
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       # LLM providers (aider supports all via litellm)
       - api.anthropic.com

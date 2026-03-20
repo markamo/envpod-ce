@@ -106,14 +106,14 @@ can reach on the network.
 
 ```yaml
 dns:
-  mode: whitelist
+  mode: allowlist
   allow:
     - api.anthropic.com
     - pypi.org
     - github.com
 ```
 
-Modes: `whitelist` (allow-list only), `blacklist` (block specific domains),
+Modes: `allowlist` (allow-list only), `denylist` (block specific domains),
 `monitor` (log all queries), `remap` (redirect domains to different IPs).
 
 Anti-DNS-tunneling protection is built in — prevents data exfiltration via

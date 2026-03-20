@@ -1,6 +1,6 @@
 # Frequently Asked Questions
 
-> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -84,7 +84,7 @@ Envpod provides a **foundation**, **four isolation walls**, and a **governance c
 | Wall | Mechanism | What It Protects |
 |------|-----------|-----------------|
 | **Processor** | cgroups v2 + CPU affinity + seccomp-BPF | CPU/memory/PID limits, syscall filtering. The agent can't exhaust host resources or call dangerous syscalls. |
-| **Network** | Network namespace + veth pairs + embedded DNS resolver | Per-pod IP address, domain-level allow/deny, rate limiting. The agent can only reach domains you whitelist. |
+| **Network** | Network namespace + veth pairs + embedded DNS resolver | Per-pod IP address, domain-level allow/deny, rate limiting. The agent can only reach domains you allowlist. |
 | **Memory** | PID namespace + /proc masking + coredump prevention | The agent can't see host processes, can't read other pods' memory, and can't dump core. |
 | **Devices** | Selective GPU, display, audio passthrough + minimal `/dev` | The agent only sees essential pseudo-devices. GPU and hardware devices are hidden unless explicitly allowed. |
 
@@ -348,7 +348,7 @@ setup:
 
 Both `setup` commands and `setup_script` run automatically during `envpod init`. You can re-run them later with `envpod setup <name>`.
 
-**What if setup fails?** The pod is still created and usable — setup failure doesn't destroy the pod. You can fix the issue (e.g., add a missing domain to the DNS whitelist) and re-run `envpod setup <name>` to retry. Setup commands are idempotent by convention.
+**What if setup fails?** The pod is still created and usable — setup failure doesn't destroy the pod. You can fix the issue (e.g., add a missing domain to the DNS allowlist) and re-run `envpod setup <name>` to retry. Setup commands are idempotent by convention.
 
 ---
 
@@ -670,19 +670,19 @@ Each pod gets its own overlay, network namespace, IP address, DNS rules, cgroup,
 
 ## Can envpod completely block internet access (airgapped)?
 
-Yes. Set the network to isolated mode with an empty DNS whitelist:
+Yes. Set the network to isolated mode with an empty DNS allowlist:
 
 ```yaml
 network:
   mode: Isolated
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow: []          # nothing resolves
 ```
 
 This creates a triple lock:
 1. **Network namespace** — pod has its own network stack, isolated from host
-2. **DNS whitelist** — empty list means all DNS queries return NXDOMAIN
+2. **DNS allowlist** — empty list means all DNS queries return NXDOMAIN
 3. **iptables rules** — inside the pod, DNS is restricted to envpod's resolver only (prevents bypass)
 
 The agent cannot resolve any hostname and cannot reach any external IP. There's also a built-in `airgapped` pod type for this exact scenario.

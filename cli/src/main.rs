@@ -1556,7 +1556,7 @@ async fn run_setup_commands(
         "rm -f /usr/lib/python*/EXTERNALLY-MANAGED 2>/dev/null; true",
         // Stale apt lists in overlay cause "Unable to locate package"
         "rm -rf /var/lib/apt/lists/* 2>/dev/null; true",
-        // Disable 3rd-party apt sources that may not resolve through DNS whitelist
+        // Disable 3rd-party apt sources that may not resolve through DNS allowlist
         "cd /etc/apt/sources.list.d 2>/dev/null && for f in *.list *.sources; do [ -f \"$f\" ] && sed -i 's/^deb /# deb /' \"$f\"; done; true",
         // Remove broken dist-info dirs (no RECORD file) so pip doesn't choke on debian-installed packages
         "find /usr/lib/python3/dist-packages -maxdepth 1 -name '*.dist-info' -exec sh -c 'test ! -f \"$1/RECORD\" && rm -rf \"$1\"' _ {} \\; 2>/dev/null; true",
@@ -3184,9 +3184,9 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
 /// Build a DnsPolicy from persisted NetworkState.
 fn build_dns_policy(net: &envpod_core::backend::native::state::NetworkState) -> DnsPolicy {
     let mode = match net.dns_mode.as_str() {
-        "blacklist" => DnsPolicyMode::Blacklist,
+        "blacklist" | "denylist" => DnsPolicyMode::Denylist,
         "monitor" => DnsPolicyMode::Monitor,
-        _ => DnsPolicyMode::Whitelist,
+        "whitelist" | "allowlist" | _ => DnsPolicyMode::Allowlist,
     };
 
     DnsPolicy {
@@ -3949,13 +3949,13 @@ fn security_findings(config: &PodConfig) -> Vec<SecurityFinding> {
 
     // N-03: DNS bypass via blacklist/monitor mode
     match config.network.dns.mode {
-        envpod_core::types::DnsMode::Blacklist => {
+        envpod_core::types::DnsMode::Denylist => {
             findings.push(SecurityFinding {
                 id: "N-03",
                 severity: "HIGH",
                 title: "Direct DNS bypass possible",
-                explanation: "dns.mode is Blacklist — direct IP queries bypass domain filtering.".into(),
-                fix: "use dns.mode: Whitelist to block all non-allowed traffic.",
+                explanation: "dns.mode is Denylist (or Blacklist) — direct IP queries bypass domain filtering.".into(),
+                fix: "use dns.mode: Allowlist to block all non-allowed traffic.",
             });
         }
         envpod_core::types::DnsMode::Monitor => {
@@ -3964,7 +3964,7 @@ fn security_findings(config: &PodConfig) -> Vec<SecurityFinding> {
                 severity: "HIGH",
                 title: "Direct DNS bypass possible",
                 explanation: "dns.mode is Monitor — all queries are logged but not blocked.".into(),
-                fix: "use dns.mode: Whitelist to block all non-allowed traffic.",
+                fix: "use dns.mode: Allowlist to block all non-allowed traffic.",
             });
         }
         _ => {}
@@ -4391,7 +4391,7 @@ fn collect_passed_checks(config: &PodConfig) -> Vec<&'static str> {
     if config.user != "root" {
         passed.push("user");
     }
-    if matches!(config.network.dns.mode, envpod_core::types::DnsMode::Whitelist) {
+    if matches!(config.network.dns.mode, envpod_core::types::DnsMode::Allowlist) {
         passed.push("dns");
     }
     if config.security.seccomp_profile != "browser" {
@@ -6819,17 +6819,17 @@ mod tests {
     }
 
     #[test]
-    fn security_n03_fires_for_blacklist_mode() {
+    fn security_n03_fires_for_denylist_mode() {
         let mut config = PodConfig::default();
-        config.network.dns.mode = envpod_core::types::DnsMode::Blacklist;
+        config.network.dns.mode = envpod_core::types::DnsMode::Denylist;
         let ids = findings_ids(&config);
         assert!(ids.contains(&"N-03"));
     }
 
     #[test]
-    fn security_n03_clear_for_whitelist_mode() {
+    fn security_n03_clear_for_allowlist_mode() {
         let mut config = PodConfig::default();
-        config.network.dns.mode = envpod_core::types::DnsMode::Whitelist;
+        config.network.dns.mode = envpod_core::types::DnsMode::Allowlist;
         assert!(!findings_ids(&config).contains(&"N-03"));
     }
 

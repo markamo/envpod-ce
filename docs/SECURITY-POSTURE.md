@@ -1,6 +1,6 @@
 # Security Posture — All Example Configs
 
-> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -96,7 +96,7 @@ The only way to run as root is `envpod run --root` from the host.
 | Severity | Total across all configs |
 |----------|------------------------|
 | CRITICAL | 10 (all from `user: root` + N-05 iptables) |
-| HIGH | 39 (DNS blacklist bypass, raw sockets, relaxed seccomp) |
+| HIGH | 39 (DNS denylist bypass, raw sockets, relaxed seccomp) |
 | MEDIUM | 39 (no PID limit, nested namespaces, noVNC unencrypted) |
 | LOW | 8 (GPU info leak, kernel version visible) |
 
@@ -105,7 +105,7 @@ The only way to run as root is `envpod run --root` from the host.
 | Finding | Severity | Configs Affected | Root Cause | Fix |
 |---------|----------|-----------------|------------|-----|
 | N-05 | CRITICAL | 12 (desktop/root) | `user: root` grants CAP_NET_ADMIN | Use default non-root user |
-| N-03 | HIGH | 12 (blacklist DNS) | Blacklist mode allows direct IP queries | Use whitelist mode |
+| N-03 | HIGH | 12 (denylist DNS) | Denylist mode allows direct IP queries | Use allowlist mode |
 | N-06 | HIGH | 12 (desktop/root) | `user: root` allows raw sockets | Use default non-root user |
 | S-03 | HIGH | 8 (browser) | `seccomp_profile: browser` is relaxed | Use `default` if no browser needed |
 | C-03 | MEDIUM | 25 (no PID limit) | No `max_pids` set | Add `processor.max_pids` |

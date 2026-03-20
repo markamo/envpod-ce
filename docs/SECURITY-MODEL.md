@@ -18,7 +18,7 @@ The agent sees your real filesystem but writes go to a private overlay. The host
 
 **2. Network — Per-Pod DNS + Namespace**
 
-Each pod has its own network stack. A per-pod DNS resolver filters which domains the agent can reach — whitelist, blacklist, or monitor mode. Every DNS query is logged.
+Each pod has its own network stack. A per-pod DNS resolver filters which domains the agent can reach — allowlist, denylist, or monitor mode. Every DNS query is logged.
 
 **3. Process — Namespace + Syscall Filter**
 
@@ -398,8 +398,8 @@ Per-pod embedded DNS resolver with three modes:
 
 | Mode | Behavior | Use case |
 |------|----------|----------|
-| **Whitelist** | Only listed domains resolve; all others → NXDOMAIN | Locked-down agents |
-| **Blacklist** | All domains resolve except listed | Block known-bad domains |
+| **Allowlist** | Only listed domains resolve; all others → NXDOMAIN | Locked-down agents |
+| **Denylist** | All domains resolve except listed | Block known-bad domains |
 | **Monitor** | All domains resolve, all queries logged | Audit-only mode |
 
 **Domain matching:** Case-insensitive suffix matching. `anthropic.com` matches `api.anthropic.com` and `a.b.c.anthropic.com`.
@@ -562,12 +562,12 @@ Persisted to `{pod_dir}/queue.json`. Background executor polls every 1 second fo
 |--------|-----------|---------------|
 | Direct DNS to external resolver | iptables DROP on all port-53 traffic except to assigned resolver | None — enforced at kernel level |
 | DNS tunneling (encode data in queries) | All DNS queries logged; query type + domain visible in audit | Medium — data can be encoded in domain names (e.g., `base64data.evil.com`). Rate limiting and query length analysis would reduce this. Not yet implemented. |
-| HTTP/HTTPS exfiltration | Only possible to allowed domains (whitelist mode) or all domains (blacklist/monitor mode) | Depends on DNS policy. In whitelist mode: low. In monitor mode: high (data sent to any allowed domain). |
+| HTTP/HTTPS exfiltration | Only possible to allowed domains (allowlist mode) or all domains (denylist/monitor mode) | Depends on DNS policy. In allowlist mode: low. In monitor mode: high (data sent to any allowed domain). |
 | IPv6 escape | IPv6 disabled (`sysctl net.ipv6.conf.all.disable_ipv6=1`) + ip6tables rules | Low |
 | Raw socket / ICMP tunneling | `socket` syscall allowed but pod network namespace prevents raw socket abuse | Low — raw sockets require `CAP_NET_RAW` which non-root doesn't have. |
 | Pod-to-pod lateral movement | Discovery requires bilateral authorization; unauthorized pods get NXDOMAIN | Low — but pods on the same `10.200.0.0/16` subnet can technically attempt direct IP connections if they guess the IP. Mitigated: no way to enumerate other pod IPs from inside a pod. |
 
-**Recommended hardening:** Enable whitelist DNS mode for high-security pods. Consider adding DNS query length/entropy analysis for anti-tunneling.
+**Recommended hardening:** Enable allowlist DNS mode for high-security pods. Consider adding DNS query length/entropy analysis for anti-tunneling.
 
 #### D. Credential Theft
 
@@ -780,11 +780,11 @@ network:
   mode: isolated                  # isolated | monitored | unsafe
   subnet: "10.200"               # Pod IP base (10.200.{idx}.0/30)
   dns:
-    mode: whitelist               # whitelist | blacklist | monitor
-    allow:                        # Domains allowed (whitelist mode)
+    mode: allowlist               # allowlist | denylist | monitor
+    allow:                        # Domains allowed (allowlist mode)
       - api.anthropic.com
       - github.com
-    deny:                         # Domains blocked (blacklist mode)
+    deny:                         # Domains blocked (denylist mode)
       - evil.com
     remap:                        # DNS remapping (domain → IP)
       internal.api.com: "10.0.0.5"
@@ -800,9 +800,9 @@ network:
 | Field | Default | Security implication |
 |-------|---------|---------------------|
 | `mode` | `isolated` | **`isolated`: no network at all** (safest). `monitored`: network with DNS filtering and logging. `unsafe`: unrestricted host network — agent has full network access. Security audit flags `unsafe` (N-04, High severity). |
-| `dns.mode` | `monitor` | **`whitelist`: strongest** — only listed domains resolve, everything else NXDOMAIN. `blacklist`: all domains except listed. `monitor`: all domains resolve, queries logged only. For sensitive workloads, always use `whitelist`. |
-| `dns.allow` | `[]` | Whitelist entries. Suffix-matched: `anthropic.com` allows `api.anthropic.com`. Empty list in whitelist mode = nothing resolves (effective air gap). |
-| `dns.deny` | `[]` | Blacklist entries. Same suffix matching. |
+| `dns.mode` | `monitor` | **`allowlist`: strongest** — only listed domains resolve, everything else NXDOMAIN. `denylist`: all domains except listed. `monitor`: all domains resolve, queries logged only. For sensitive workloads, always use `allowlist`. |
+| `dns.allow` | `[]` | Allowlist entries. Suffix-matched: `anthropic.com` allows `api.anthropic.com`. Empty list in allowlist mode = nothing resolves (effective air gap). |
+| `dns.deny` | `[]` | Denylist entries. Same suffix matching. |
 | `dns.remap` | `{}` | Redirects domain resolution to a different IP. Used by vault proxy to intercept HTTPS traffic. Can also be used to redirect agents to internal services. |
 | `ports` | `[]` | **Localhost-only** (`127.0.0.1`). Only the host machine can access these ports. Format: `host_port:container_port[/proto]`. |
 | `public_ports` | `[]` | **All interfaces** — accessible from any machine on the network. Security audit flags this (N-03). Use only when external access is intended. |
@@ -907,7 +907,7 @@ budget:
   max_bandwidth: "5GB"           # Bandwidth cap
 
 tools:
-  allowed_commands: []           # Command whitelist (empty = all allowed)
+  allowed_commands: []           # Command allowlist (empty = all allowed)
 ```
 
 | Field | Default | Security implication |
@@ -963,9 +963,9 @@ host_user:
 | Finding | Severity | Trigger | Recommendation |
 |---------|----------|---------|----------------|
 | N-03 | Medium | `public_ports` is non-empty | Use `ports` (localhost-only) unless external access is required |
-| N-04 | High | `network.mode: unsafe` | Use `monitored` with DNS whitelist instead |
+| N-04 | High | `network.mode: unsafe` | Use `monitored` with DNS allowlist instead |
 | N-05 | Medium | `allow_pods: ["*"]` | List specific pod names |
-| N-06 | Medium | `dns.mode: blacklist` | Use `whitelist` for sensitive workloads |
+| N-06 | Medium | `dns.mode: denylist` | Use `allowlist` for sensitive workloads |
 | V-01 | Medium | No vault secrets configured | Add credentials to vault for governed injection |
 | V-02 | Medium | `vault.proxy: false` with secrets | Enable proxy to keep secrets out of pod memory |
 | V-03 | Medium | Vault bindings without proxy | Enable `vault.proxy: true` for binding enforcement |

@@ -14,7 +14,7 @@ backend: native
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       - "*.amazonaws.com"
       - "*.storage.googleapis.com"

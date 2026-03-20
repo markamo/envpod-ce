@@ -1,6 +1,6 @@
 # Platform Support
 
-> **EnvPod v0.1.1** — The zero-trust governance layer for AI agents
+> **EnvPod v0.1.3** — The zero-trust governance layer for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 

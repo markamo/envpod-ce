@@ -637,7 +637,7 @@ filesystem:
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       - api.anthropic.com
       - api.openai.com
@@ -688,7 +688,7 @@ network:
   mode: Isolated
   subnet: "10.201"
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow: [api.anthropic.com]
 "#;
         let config = PodConfig::from_yaml(yaml).unwrap();

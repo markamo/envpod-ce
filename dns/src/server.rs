@@ -1009,7 +1009,7 @@ search home.lan
     }
 
     /// Integration test: start a DnsServer on a high port, send real UDP queries,
-    /// verify that whitelisted domains pass and unlisted domains get NXDOMAIN.
+    /// verify that allowed domains pass and unlisted domains get NXDOMAIN.
     #[tokio::test]
     #[ignore = "requires network"]
     async fn dns_server_filters_queries() {
@@ -1021,7 +1021,7 @@ search home.lan
         use tokio::net::UdpSocket;
 
         let policy = DnsPolicy {
-            mode: DnsPolicyMode::Whitelist,
+            mode: DnsPolicyMode::Allowlist,
             allowed_domains: vec!["anthropic.com".into()],
             denied_domains: Vec::new(),
             remap: HashMap::new(),

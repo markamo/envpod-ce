@@ -43,7 +43,7 @@ filesystem:
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       # Ollama model registry
       - ollama.ai

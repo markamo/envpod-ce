@@ -56,7 +56,7 @@ filesystem:
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       # Ollama (installer + model registry)
       - ollama.ai

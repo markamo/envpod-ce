@@ -1,7 +1,7 @@
 <!-- type-delay 0.03 -->
 # envpod User Guide
 
-> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -955,11 +955,11 @@ filesystem:
 network:
   mode: Isolated                         # Isolated (default) | Monitored | Unsafe
   dns:
-    mode: Whitelist                      # Whitelist (default) | Blacklist | Monitor
-    allow:                               # Domains that resolve (Whitelist mode)
+    mode: Allowlist                      # Allowlist (default) | Denylist | Monitor
+    allow:                               # Domains that resolve (Allowlist mode)
       - api.anthropic.com
       - "*.github.com"                   # Wildcard subdomain matching
-    deny:                                # Domains that don't resolve (Blacklist mode)
+    deny:                                # Domains that don't resolve (Denylist mode)
       - "*.internal"
     remap:                               # DNS aliasing
       old-api.example.com: new-api.example.com
@@ -1001,7 +1001,7 @@ budget:
 
 # ─── Tools ────────────────────────────────────────────────
 tools:
-  allowed_commands:                      # Command whitelist (empty = allow all)
+  allowed_commands:                      # Command allowlist (empty = allow all)
     - /bin/bash
     - /usr/bin/git
 
@@ -1032,7 +1032,7 @@ When a section is omitted, the most restrictive option applies:
 |---------|---------|
 | User | `agent` (non-root, UID 60000) |
 | Network mode | `Isolated` (no network) |
-| DNS mode | `Whitelist` (nothing resolves) |
+| DNS mode | `Allowlist` (nothing resolves) |
 | DNS allow list | Empty (no domains) |
 | Mount permissions | `ReadOnly` |
 | GPU access | `false` (no GPU devices) |
@@ -1199,8 +1199,8 @@ Pods with the same subnet base share an IP range, enabling pod-to-pod communicat
 
 | Mode | Description |
 |------|-------------|
-| `Whitelist` | Only explicitly allowed domains resolve. Everything else returns NXDOMAIN. Default. |
-| `Blacklist` | All domains resolve except explicitly denied ones. |
+| `Allowlist` | Only explicitly allowed domains resolve. Everything else returns NXDOMAIN. Default. |
+| `Denylist` | All domains resolve except explicitly denied ones. |
 | `Monitor` | All domains resolve. All queries are logged for audit. |
 
 ### DNS Configuration
@@ -1210,13 +1210,13 @@ Pods with the same subnet base share an IP range, enabling pod-to-pod communicat
 network:
   mode: Isolated
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       - api.anthropic.com        # exact match
       - "*.github.com"           # wildcard subdomain
       - pypi.org
     deny:
-      - "*.internal"             # used in Blacklist mode
+      - "*.internal"             # used in Denylist mode
     remap:
       old-api.example.com: new-api.example.com  # redirect to different domain
       internal.dev: 10.0.0.5                     # redirect to specific IP
@@ -1304,7 +1304,7 @@ network:
   allow_pods: ["api-pod"]    # permitted to resolve api-pod.pods.local
   mode: Isolated
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow: []
 ```
 
@@ -1666,7 +1666,7 @@ sudo envpod run browser-agent -d -a --user browseruser -- google-chrome https://
 
 > For maximum security, use `browser-wayland.yaml` which enforces Wayland + PipeWire (I-04 LOW, I-05 MEDIUM) instead of auto-detection (I-04 CRITICAL for X11, I-05 HIGH for PulseAudio).
 
-### Tool Whitelist
+### Tool Allowlist
 
 Restrict which commands the agent can execute:
 
@@ -2004,7 +2004,7 @@ Every action inside a pod is logged to `{pod_dir}/audit.jsonl`. The audit log is
 | `commit` | Changes committed to host |
 | `rollback` | Changes discarded |
 | `dns_query` | DNS query resolved (domain, type, decision) |
-| `tool_blocked` | Command rejected by tool whitelist |
+| `tool_blocked` | Command rejected by tool allowlist |
 | `set_limits` | Resource limits changed |
 | `queue_submit` | Action submitted to queue |
 | `queue_approve` | Queued action approved |
@@ -2171,20 +2171,20 @@ sudo envpod init my-agent                          # interactive wizard
 
 | Preset | Description | Network | Setup |
 |--------|-------------|---------|-------|
-| `browser-use` | Browser-use web automation | Monitored, Blacklist | `pip install browser-use playwright` + Chromium |
-| `playwright` | Playwright browser automation | Monitored, Blacklist | `pip install playwright` + Chromium |
-| `browser` | Headless Chrome sandbox | Monitored, Blacklist | Chrome (check host, else install) |
+| `browser-use` | Browser-use web automation | Monitored, Denylist | `pip install browser-use playwright` + Chromium |
+| `playwright` | Playwright browser automation | Monitored, Denylist | `pip install playwright` + Chromium |
+| `browser` | Headless Chrome sandbox | Monitored, Denylist | Chrome (check host, else install) |
 
 **Environments**
 
 | Preset | Description | Network | Setup |
 |--------|-------------|---------|-------|
-| `devbox` | General dev sandbox | Monitored, Blacklist | None |
-| `python-env` | Python environment | Monitored, PyPI whitelist | numpy, pandas, matplotlib, scipy, scikit-learn |
+| `devbox` | General dev sandbox | Monitored, Denylist | None |
+| `python-env` | Python environment | Monitored, PyPI allowlist | numpy, pandas, matplotlib, scipy, scikit-learn |
 | `nodejs` | Node.js environment | Monitored, npm + Node.js | nvm + Node.js 22 |
 | `web-display` | noVNC desktop | Monitored | Supervisor-managed |
-| `desktop` | XFCE desktop via noVNC | Monitored, Blacklist | XFCE4 + Chrome (~550MB, 2-4 min) |
-| `vscode` | VS Code in the browser | Monitored, Blacklist | code-server |
+| `desktop` | XFCE desktop via noVNC | Monitored, Denylist | XFCE4 + Chrome (~550MB, 2-4 min) |
+| `vscode` | VS Code in the browser | Monitored, Denylist | code-server |
 
 ### Additional Example Configs
 
@@ -2256,7 +2256,7 @@ sudo envpod <command>
 
 ### Pod Cannot Reach the Internet
 
-1. Check DNS mode — `Whitelist` with an empty allow list blocks everything:
+1. Check DNS mode — `Allowlist` with an empty allow list blocks everything:
 <!-- no-exec -->
    ```bash
    sudo envpod dns my-agent --allow api.example.com

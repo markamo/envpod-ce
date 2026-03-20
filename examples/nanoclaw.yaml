@@ -41,7 +41,7 @@ filesystem:
 network:
   mode: Monitored
   dns:
-    mode: Blacklist
+    mode: Denylist
     deny:
       # Block internal/private networks
       - "*.internal"

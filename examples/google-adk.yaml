@@ -19,7 +19,7 @@ backend: native
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       # Google AI APIs
       - generativelanguage.googleapis.com

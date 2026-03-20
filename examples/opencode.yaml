@@ -23,7 +23,7 @@ backend: native
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       # LLM providers
       - api.anthropic.com

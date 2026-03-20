@@ -24,7 +24,7 @@ backend: native
 network:
   mode: Isolated
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       - pypi.org
       - "*.pypi.org"

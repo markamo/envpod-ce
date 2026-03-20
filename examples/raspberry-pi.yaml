@@ -27,7 +27,7 @@ backend: native
 network:
   mode: Isolated
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       # API endpoints your agent needs
       - api.anthropic.com

@@ -59,7 +59,7 @@ Envpod lets the agent work with real local context through a copy-on-write layer
 
 **Processor Wall** — cgroups v2 (CPU, memory, PID limits), seccomp-BPF syscall filtering, CPU affinity. A runaway agent cannot starve the host.
 
-**Network Wall** — Each pod gets its own network namespace with veth pairs. Embedded DNS resolver per pod with whitelist, blacklist, or monitor modes. Every DNS query is logged.
+**Network Wall** — Each pod gets its own network namespace with veth pairs. Embedded DNS resolver per pod with allowlist, denylist, or monitor modes. Every DNS query is logged.
 
 **Memory Wall** — PID, mount, UTS, and user namespace separation. Processes in the pod cannot see or signal host processes.
 
@@ -272,7 +272,7 @@ network:
   mode: Isolated         # Isolated, Monitored, Host
   subnet: "10.200"       # pod IP subnet (default: 10.200)
   dns:
-    mode: Whitelist      # Whitelist, Blacklist, Monitor
+    mode: Allowlist      # Allowlist, Denylist, Monitor
     allow:
       - api.anthropic.com
       - github.com
@@ -527,7 +527,7 @@ sudo ./tests/benchmark-scale.sh 50   # scale test (create + run + destroy N)
 | **Isolation** | Container (namespaces + cgroups) | Cloud microVM | Container (namespaces + cgroups + seccomp-BPF) |
 | **Reversibility** | None — changes permanent | None | COW overlay + diff/commit/rollback + undo registry + snapshots |
 | **Governance** | None | None | Vault, action queue, monitoring, remote control, audit |
-| **DNS Control** | None | None | Per-pod whitelist/blacklist/monitor with query logging |
+| **DNS Control** | None | None | Per-pod allowlist/denylist/monitor with query logging |
 | **Display/Audio** | Manual volume mounts | N/A | Auto-detect Wayland/X11, PipeWire/PulseAudio |
 | **Web Display** | None | Manual | noVNC with audio streaming, file upload, auto-branding |
 | **Security Audit** | None | None | Static config analysis + runtime jailbreak test |

@@ -17,7 +17,7 @@ backend: native
 network:
   mode: Isolated
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       # LLM APIs
       - api.anthropic.com

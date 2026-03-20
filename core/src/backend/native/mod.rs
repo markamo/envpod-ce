@@ -319,8 +319,8 @@ impl NativeBackend {
         }
 
         let dns_mode = match config.network.dns.mode {
-            crate::types::DnsMode::Whitelist => "whitelist",
-            crate::types::DnsMode::Blacklist => "blacklist",
+            crate::types::DnsMode::Allowlist => "allowlist",
+            crate::types::DnsMode::Denylist => "denylist",
             crate::types::DnsMode::Monitor => "monitor",
         };
 
@@ -359,8 +359,8 @@ impl NativeBackend {
         let veth_config = netns::VethConfig::from_index(pod_index, short_id, &format!("envpod-{short_id}"), subnet_base);
 
         let dns_mode = match config.network.dns.mode {
-            crate::types::DnsMode::Whitelist => "whitelist",
-            crate::types::DnsMode::Blacklist => "blacklist",
+            crate::types::DnsMode::Allowlist => "allowlist",
+            crate::types::DnsMode::Denylist => "denylist",
             crate::types::DnsMode::Monitor => "monitor",
         };
 
@@ -1271,12 +1271,12 @@ impl IsolationBackend for NativeBackend {
 
         // Extract allow/deny from the dns_rules
         let domains: Vec<String> = config.dns_rules.iter().map(|r| r.domain.clone()).collect();
-        let add_allow = if config.dns_mode == crate::types::DnsMode::Whitelist {
+        let add_allow = if config.dns_mode == crate::types::DnsMode::Allowlist {
             &domains
         } else {
             &Vec::new()
         };
-        let add_deny = if config.dns_mode == crate::types::DnsMode::Blacklist {
+        let add_deny = if config.dns_mode == crate::types::DnsMode::Denylist {
             &domains
         } else {
             &Vec::new()
@@ -1866,7 +1866,7 @@ mod tests {
         config.network = PodNetworkConfig {
             mode: NetworkMode::Isolated,
             dns: DnsConfig {
-                mode: crate::types::DnsMode::Whitelist,
+                mode: crate::types::DnsMode::Allowlist,
                 allow: vec!["anthropic.com".into()],
                 deny: Vec::new(),
                 remap: std::collections::HashMap::new(),
@@ -1930,7 +1930,7 @@ mod tests {
         config.network = PodNetworkConfig {
             mode: NetworkMode::Isolated,
             dns: DnsConfig {
-                mode: crate::types::DnsMode::Whitelist,
+                mode: crate::types::DnsMode::Allowlist,
                 allow: vec!["anthropic.com".into()],
                 deny: Vec::new(),
                 remap: std::collections::HashMap::new(),
@@ -2001,7 +2001,7 @@ mod tests {
         config.network = PodNetworkConfig {
             mode: NetworkMode::Isolated,
             dns: DnsConfig {
-                mode: crate::types::DnsMode::Whitelist,
+                mode: crate::types::DnsMode::Allowlist,
                 allow: vec!["anthropic.com".into()],
                 deny: Vec::new(),
                 remap: std::collections::HashMap::new(),
@@ -2030,7 +2030,7 @@ mod tests {
         config.network = PodNetworkConfig {
             mode: NetworkMode::Isolated,
             dns: DnsConfig {
-                mode: crate::types::DnsMode::Whitelist,
+                mode: crate::types::DnsMode::Allowlist,
                 allow: vec!["anthropic.com".into()],
                 deny: Vec::new(),
                 remap: std::collections::HashMap::new(),

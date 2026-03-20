@@ -16,7 +16,7 @@ backend: native
 network:
   mode: Isolated
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       - api.anthropic.com
       - github.com

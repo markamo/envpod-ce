@@ -1,6 +1,6 @@
 # Pod Configuration Reference
 
-> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -49,7 +49,7 @@ name: my-pod
 ```
 
 Everything else has secure defaults. This creates a pod with:
-- No network access (Isolated mode, empty DNS whitelist)
+- No network access (Isolated mode, empty DNS allowlist)
 - Read-only system directories (safe mode)
 - No GPU, display, or audio
 - Audit logging enabled
@@ -270,7 +270,7 @@ network:
   rate_limit: "100/s"       # Optional rate limiting
   bandwidth_cap: "10MB/s"   # Optional bandwidth cap
   dns:
-    mode: Whitelist         # DNS resolution policy
+    mode: Allowlist         # DNS resolution policy
     allow:                  # Domains that can resolve
       - api.anthropic.com
       - pypi.org
@@ -288,7 +288,7 @@ network:
 | `Monitored` | Own network namespace with veth pair. Same isolation as `Isolated`, but allows outbound traffic to resolved IPs. DNS queries logged. |
 | `Unsafe` | Shares host network namespace. No network isolation. Only use for debugging. |
 
-**Key difference:** `Isolated` + empty `allow` list = no internet. `Monitored` + DNS whitelist = internet access only to whitelisted domains. Both modes create a separate network namespace.
+**Key difference:** `Isolated` + empty `allow` list = no internet. `Monitored` + DNS allowlist = internet access only to whitelisted domains. Both modes create a separate network namespace.
 
 ### `dns`
 
@@ -298,17 +298,17 @@ The embedded per-pod DNS resolver. Each pod gets its own resolver, and `/etc/res
 
 | Mode | Description |
 |------|-------------|
-| `Whitelist` | Only domains in `allow` list resolve. Everything else returns NXDOMAIN. |
-| `Blacklist` | All domains resolve except those in `deny` list. |
+| `Allowlist` | Only domains in `allow` list resolve. Everything else returns NXDOMAIN. |
+| `Denylist` | All domains resolve except those in `deny` list. |
 | `Monitor` | All domains resolve. Every query is logged to the audit trail. |
 
 #### `dns.allow`
 
-List of domains that can resolve (only used with `Whitelist` mode). Supports wildcards:
+List of domains that can resolve (only used with `Allowlist` mode). Supports wildcards:
 
 ```yaml
 dns:
-  mode: Whitelist
+  mode: Allowlist
   allow:
     - api.anthropic.com        # Exact domain
     - "*.anthropic.com"        # All subdomains of anthropic.com
@@ -321,11 +321,11 @@ dns:
 
 #### `dns.deny`
 
-List of domains to block (only used with `Blacklist` mode):
+List of domains to block (only used with `Denylist` mode):
 
 ```yaml
 dns:
-  mode: Blacklist
+  mode: Denylist
   deny:
     - "*.internal"      # Block internal domains
     - "*.local"         # Block mDNS domains
@@ -1201,7 +1201,7 @@ Since each setup command (and each `envpod run` session) starts a fresh shell, t
 
 ### DNS requirements for setup
 
-Setup commands often need to download packages from the internet. Make sure your DNS whitelist includes the registries your setup commands need:
+Setup commands often need to download packages from the internet. Make sure your DNS allowlist includes the registries your setup commands need:
 
 | Setup action | Required domains |
 |--------------|-----------------|
@@ -1213,7 +1213,7 @@ Setup commands often need to download packages from the internet. Make sure your
 | `playwright install ...` | `playwright.azureedge.net`, `*.blob.core.windows.net` |
 | `git clone github.com/...` | `github.com`, `*.github.com`, `*.githubusercontent.com` |
 
-If setup hangs or fails with connection errors, the domain is probably not in your DNS whitelist. Check with `envpod audit <pod>` to see denied DNS queries.
+If setup hangs or fails with connection errors, the domain is probably not in your DNS allowlist. Check with `envpod audit <pod>` to see denied DNS queries.
 
 ### Base snapshots
 
@@ -1252,7 +1252,7 @@ backend: native
 network:
   mode: Isolated
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow: []
 
 processor:
@@ -1286,7 +1286,7 @@ backend: native
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       # Claude API
       - api.anthropic.com
@@ -1363,7 +1363,7 @@ backend: native
 network:
   mode: Monitored
   dns:
-    mode: Blacklist
+    mode: Denylist
     deny:
       - "*.internal"
       - "*.local"
@@ -1419,7 +1419,7 @@ sudo envpod run browser-secure -d -a -- google-chrome --no-sandbox --ozone-platf
 
 ### 4. GPU ML Training
 
-Large-memory pod with NVIDIA GPU passthrough for model training. Whitelisted to PyPI and HuggingFace only.
+Large-memory pod with NVIDIA GPU passthrough for model training. Allowlisted to PyPI and HuggingFace only.
 
 ```yaml
 name: ml-trainer
@@ -1429,7 +1429,7 @@ backend: native
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       - pypi.org
       - "*.pypi.org"
@@ -1554,7 +1554,7 @@ filesystem:
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       # nvm install script (hosted on GitHub)
       - raw.githubusercontent.com
@@ -1616,7 +1616,7 @@ backend: native
 network:
   mode: Isolated
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       - api.anthropic.com
       - api.openai.com
@@ -1686,7 +1686,7 @@ backend: native
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       - "*.amazonaws.com"
       - "*.storage.googleapis.com"
@@ -1726,7 +1726,7 @@ backend: native
 network:
   mode: Monitored
   dns:
-    mode: Blacklist
+    mode: Denylist
     deny:
       - "*.internal"
       - "*.local"
@@ -1807,8 +1807,8 @@ network:
   bandwidth_cap: null       # No bandwidth cap
   dns:
     mode: Monitor           # Log all queries
-    allow: []               # Empty whitelist (nothing resolves in Whitelist mode)
-    deny: []                # Empty blacklist
+    allow: []               # Empty allowlist (nothing resolves in Allowlist mode)
+    deny: []                # Empty denylist
     remap: {}               # No remapping
 
 processor:

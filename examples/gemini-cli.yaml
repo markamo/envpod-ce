@@ -20,7 +20,7 @@ backend: native
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       # Gemini API
       - generativelanguage.googleapis.com

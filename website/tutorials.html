@@ -117,7 +117,7 @@ footer{border-top:1px solid var(--border);padding:44px 0;margin-top:80px}
 
   <h3>Step 1: Create the Pod</h3>
 <pre><code>sudo envpod init browser-pod -c examples/browser.yaml</code></pre>
-  <p>This creates a pod with browser seccomp profile, 256 MB <code>/dev/shm</code>, GPU passthrough, display and audio access, and blacklist DNS.</p>
+  <p>This creates a pod with browser seccomp profile, 256 MB <code>/dev/shm</code>, GPU passthrough, display and audio access, and denylist DNS.</p>
 
   <h3>Step 2: Create a Browser User</h3>
   <p>Chrome refuses to run as root. Create a non-root user inside the pod:</p>
@@ -238,7 +238,7 @@ sudo envpod run youtube-x11 -d -a --user browseruser -- google-chrome https://yo
     <li><strong>Display:</strong> The host's Wayland socket is bind-mounted into the pod. Chrome renders directly to the host compositor.</li>
     <li><strong>Audio:</strong> The host's PipeWire socket is bind-mounted. Audio plays through the host's audio stack.</li>
     <li><strong>GPU:</strong> <code>/dev/nvidia*</code> and <code>/dev/dri/*</code> are bind-mounted. Hardware video decoding with zero virtualization overhead.</li>
-    <li><strong>Network:</strong> DNS blacklist mode logs all domain resolutions. YouTube CDN domains are allowed.</li>
+    <li><strong>Network:</strong> DNS denylist mode logs all domain resolutions. YouTube CDN domains are allowed.</li>
     <li><strong>Filesystem:</strong> Chrome's profile, cache, and downloads all go to the COW overlay.</li>
   </ol>
 
@@ -304,7 +304,7 @@ security:
 network:
   mode: Isolated
   dns:
-    mode: Blacklist
+    mode: Denylist
     deny:
       - "*.internal"
       - "*.local"
@@ -336,7 +336,7 @@ audit:
 
   <h3>Step 1: Create the Pod</h3>
 <pre><code>sudo envpod init ml -c examples/ml-training.yaml</code></pre>
-  <p>GPU passthrough (zero-copy), 4 CPU cores, 16 GB memory, 8-hour max duration, DNS whitelist for PyPI/Hugging Face/PyTorch/Anaconda, auto-installs PyTorch.</p>
+  <p>GPU passthrough (zero-copy), 4 CPU cores, 16 GB memory, 8-hour max duration, DNS allowlist for PyPI/Hugging Face/PyTorch/Anaconda, auto-installs PyTorch.</p>
 
   <h3>Step 2: Verify GPU Access</h3>
 <pre><code>sudo envpod run ml -- nvidia-smi</code></pre>
@@ -386,7 +386,7 @@ sudo envpod rollback ml</code></pre>
 
   <h3>Step 1: Create the Pod</h3>
 <pre><code>sudo envpod init claude -c examples/claude-code.yaml</code></pre>
-  <p>Installs Claude Code during setup. DNS whitelist for Anthropic APIs, GitHub, npm, PyPI, Cargo. Browser seccomp profile.</p>
+  <p>Installs Claude Code during setup. DNS allowlist for Anthropic APIs, GitHub, npm, PyPI, Cargo. Browser seccomp profile.</p>
 
   <h3>Step 2: Store API Key</h3>
 <pre><code>sudo envpod vault claude set ANTHROPIC_API_KEY</code></pre>
@@ -394,7 +394,7 @@ sudo envpod rollback ml</code></pre>
 
   <h3>Step 3: Run Claude Code</h3>
 <pre><code>sudo envpod run claude -- claude</code></pre>
-  <p>Full isolation: every file change goes to the COW overlay, only whitelisted domains reachable, every action logged.</p>
+  <p>Full isolation: every file change goes to the COW overlay, only allowlisted domains reachable, every action logged.</p>
 
   <h3>Step 4: Review and Accept Changes</h3>
 <pre><code># What did it change?
@@ -516,7 +516,7 @@ filesystem:
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       - raw.githubusercontent.com
       - "*.githubusercontent.com"
@@ -531,7 +531,7 @@ network:
 processor:
   cores: 2.0
   memory: "2GB"</code></pre>
-  <p><strong>Key decisions:</strong> <code>system_access: advanced</code> for writable system dirs, <code>/opt/nvm</code> in tracking ignore to keep <code>envpod diff</code> useful, DNS whitelist for nvm + npm.</p>
+  <p><strong>Key decisions:</strong> <code>system_access: advanced</code> for writable system dirs, <code>/opt/nvm</code> in tracking ignore to keep <code>envpod diff</code> useful, DNS allowlist for nvm + npm.</p>
 
   <h3>Step 2: Create the Pod</h3>
 <pre><code>sudo envpod init myapp -c examples/nodejs.yaml</code></pre>
@@ -574,7 +574,7 @@ sudo envpod run project-b -- bash -c 'cd /workspace && npm init -y && npm instal
   <ul>
     <li><strong>"Cannot change mode: Operation not permitted"</strong> &mdash; You need <code>system_access: advanced</code> in your config.</li>
     <li><strong>"node: command not found"</strong> &mdash; The <code>/usr/local/bin</code> symlinks are missing. Re-run the symlink step.</li>
-    <li><strong>npm install hangs</strong> &mdash; The npm registry isn't in your DNS whitelist. Add <code>registry.npmjs.org</code> and <code>*.npmjs.org</code>.</li>
+    <li><strong>npm install hangs</strong> &mdash; The npm registry isn't in your DNS allowlist. Add <code>registry.npmjs.org</code> and <code>*.npmjs.org</code>.</li>
     <li><strong>"EACCES: permission denied"</strong> &mdash; Run with <code>--root</code> for global installs.</li>
   </ul>
 
@@ -966,7 +966,7 @@ sudo envpod actions my-agent set-tier notify_complete blocked</code></pre>
   <ul>
     <li>Check <code>sudo envpod audit pod-name</code> for DNS deny/allow decisions.</li>
     <li>Use <code>sudo envpod dns pod-name --allow domain.com</code> to add a domain live.</li>
-    <li>Whitelist mode: only allowed domains resolve. Blacklist mode: everything except denied domains.</li>
+    <li>Allowlist mode: only allowed domains resolve. Denylist mode: everything except denied domains.</li>
   </ul>
 
   <h3>Pod Discovery Not Working</h3>

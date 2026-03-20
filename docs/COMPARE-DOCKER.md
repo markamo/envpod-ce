@@ -1,6 +1,6 @@
 # envpod vs Docker
 
-> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -426,7 +426,7 @@ envpod is purpose-built for AI agent governance on a single Linux machine. It is
 - You need human approval before the agent sends emails, makes API calls, or pushes to git
 - You need to be able to say: "the agent *cannot* exfiltrate your API keys" (vault proxy)
 - You need an audit trail of what the agent did, not just what it printed
-- You need DNS-level network policy (block all domains except a whitelist)
+- You need DNS-level network policy (block all domains except a allowlist)
 - You need to run agents on ARM64 embedded hardware (Raspberry Pi, Jetson)
 
 ### Use both:
@@ -451,7 +451,7 @@ A full workstation with Chrome, Firefox, VS Code, GIMP, and LibreOffice in a des
 | **Live resize** | `envpod resize --memory 16GB --cpus 8` | `docker update --memory 16g --cpus 8` (CPU/memory only) |
 | **Add GPU** | `envpod resize --gpu` (stopped) | `docker rm` + `docker run --gpus all` (recreate) |
 | **Audit trail** | `envpod audit` — every action logged | Manual logging setup required |
-| **DNS filtering** | Built-in per-pod DNS with blacklist/whitelist | Requires external DNS proxy |
+| **DNS filtering** | Built-in per-pod DNS with denylist/allowlist | Requires external DNS proxy |
 
 ---
 

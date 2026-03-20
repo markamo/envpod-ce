@@ -15,7 +15,7 @@ Each example is initialized as `test-<name>` (e.g., `test-claude-code`). The scr
 
 ## Example Config Status
 
-Tested on Ubuntu 24.04 (x86_64), envpod v0.1.1.
+Tested on Ubuntu 24.04 (x86_64), envpod v0.1.3.
 
 ### Passing (init + setup complete)
 
@@ -68,7 +68,7 @@ Tested on Ubuntu 24.04 (x86_64), envpod v0.1.1.
 | `raspberry-pi.yaml` | Requires ARM64 hardware |
 | `monitoring-policy.yaml` | Not a pod config (monitoring policy definition) |
 
-### Fixed Issues (v0.1.1)
+### Fixed Issues (v0.1.3)
 
 | Config | Issue | Fix |
 |--------|-------|-----|

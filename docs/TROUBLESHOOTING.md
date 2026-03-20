@@ -166,7 +166,7 @@ sudo envpod run my-pod -- bash
 
 ### Domain hangs during setup (never resolves)
 
-**Cause:** Domain not in the DNS whitelist.
+**Cause:** Domain not in the DNS allowlist.
 
 ```bash
 # Check which domains were denied
@@ -175,7 +175,7 @@ sudo envpod audit my-pod | grep -i dns
 # Add the domain to your pod.yaml
 network:
   dns:
-    mode: whitelist
+    mode: allowlist
     allow:
       - "missing-domain.com"
 ```

@@ -39,7 +39,7 @@ filesystem:
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       # nvm install script + Node.js downloads
       - raw.githubusercontent.com

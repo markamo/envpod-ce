@@ -1,7 +1,7 @@
 <!-- type-delay 0.03 -->
 # Quickstart Tutorial
 
-> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -146,7 +146,7 @@ This is the core safety loop: **run → diff → commit or rollback**. Every fil
   <img src="../assets/demos/04-network-isolation.gif" alt="envpod network isolation" width="720">
 </p>
 
-> **Note:** The `tutorial` pod from section 1 has no allowed domains (`allow: []`) — it cannot reach the internet by design. This section creates a separate pod with a PyPI-only whitelist.
+> **Note:** The `tutorial` pod from section 1 has no allowed domains (`allow: []`) — it cannot reach the internet by design. This section creates a separate pod with a PyPI-only allowlist.
 
 Create a network-enabled pod using the `python-env.yaml` config (this also runs setup commands — installing numpy, pandas, and other data science packages):
 
@@ -159,14 +159,14 @@ Test DNS resolution inside the **pynet** pod:
 
 <!-- no-exec -->
 ```bash
-# Allowed — pypi.org is on the whitelist
+# Allowed — pypi.org is on the allowlist
 sudo envpod run pynet -- nslookup pypi.org
 
-# Blocked — google.com is not on the whitelist
+# Blocked — google.com is not on the allowlist
 sudo envpod run pynet -- nslookup google.com
 ```
 
-The second lookup fails because envpod runs an embedded DNS server per pod. Each pod's `/etc/resolv.conf` is rewritten to point to envpod's resolver, which only resolves domains on the whitelist. In `Isolated` mode, iptables rules inside the pod's network namespace also block DNS to any other server, preventing bypass.
+The second lookup fails because envpod runs an embedded DNS server per pod. Each pod's `/etc/resolv.conf` is rewritten to point to envpod's resolver, which only resolves domains on the allowlist. In `Isolated` mode, iptables rules inside the pod's network namespace also block DNS to any other server, preventing bypass.
 
 You can mutate DNS policy on a running pod without restarting:
 
@@ -242,7 +242,7 @@ sudo envpod run claude-code -w -- claude
 
 The agent runs with full isolation:
 - **Filesystem:** All file writes go to the COW overlay. With `-w`, the agent sees your project directory but changes are staged for review via `envpod diff`/`commit`
-- **Network:** Only `api.anthropic.com`, `github.com`, and package registries are reachable (see `examples/claude-code.yaml` for the full whitelist)
+- **Network:** Only `api.anthropic.com`, `github.com`, and package registries are reachable (see `examples/claude-code.yaml` for the full allowlist)
 - **Process:** Capped at 2 CPU cores and 4 GB memory
 - **Audit:** Every action is logged
 
@@ -358,7 +358,7 @@ Pods run as the non-root `agent` user by default, giving full pod boundary prote
 
 <!-- output -->
 ```
-envpod jailbreak test v0.1.1
+envpod jailbreak test v0.1.3
 Probing isolation boundaries...
 
 === Filesystem Wall (F-01 to F-10) ===

@@ -14,7 +14,7 @@ filesystem:
 network:
   mode: Isolated
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       - "*.google.com"
       - "*.googleapis.com"

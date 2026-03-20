@@ -292,9 +292,9 @@ pub fn build_dns_policy_from_state(net: &crate::backend::native::state::NetworkS
     use envpod_dns::resolver::DnsPolicyMode;
 
     let mode = match net.dns_mode.as_str() {
-        "blacklist" => DnsPolicyMode::Blacklist,
+        "blacklist" | "denylist" => DnsPolicyMode::Denylist,
         "monitor" => DnsPolicyMode::Monitor,
-        _ => DnsPolicyMode::Whitelist,
+        "whitelist" | "allowlist" | _ => DnsPolicyMode::Allowlist,
     };
 
     DnsPolicy {
@@ -517,7 +517,7 @@ mod tests {
 
         // Create an initial policy
         let policy = Arc::new(RwLock::new(DnsPolicy {
-            mode: envpod_dns::resolver::DnsPolicyMode::Whitelist,
+            mode: envpod_dns::resolver::DnsPolicyMode::Allowlist,
             allowed_domains: vec!["old-domain.com".into()],
             denied_domains: Vec::new(),
             remap: std::collections::HashMap::new(),

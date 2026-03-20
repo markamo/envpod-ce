@@ -106,10 +106,13 @@ pub enum NetworkMode {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum DnsMode {
     /// Only explicitly allowed domains resolve.
-    Whitelist,
+    #[serde(alias = "Whitelist", alias = "whitelist", alias = "allowlist")]
+    Allowlist,
     /// All domains resolve except explicitly blocked.
-    Blacklist,
+    #[serde(alias = "Blacklist", alias = "blacklist", alias = "denylist")]
+    Denylist,
     /// All domains resolve, queries are logged.
+    #[serde(alias = "monitor")]
     Monitor,
 }
 
@@ -137,7 +140,7 @@ impl Default for NetworkConfig {
     fn default() -> Self {
         Self {
             mode: NetworkMode::Isolated,
-            dns_mode: DnsMode::Whitelist,
+            dns_mode: DnsMode::Allowlist,
             dns_rules: Vec::new(),
             rate_limit: None,
             bandwidth_cap: None,

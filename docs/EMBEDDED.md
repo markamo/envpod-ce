@@ -245,7 +245,7 @@ Edge deployments often operate with limited or restricted internet access. Recom
 network:
   mode: Isolated
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       - api.anthropic.com    # Or your model API
       # Add only what's needed
@@ -264,7 +264,7 @@ For **local network only** (talk to a local inference server):
 network:
   mode: Isolated
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow: []              # No internet
   # Use vault to inject local API endpoint URL
 ```

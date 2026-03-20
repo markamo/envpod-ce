@@ -1,7 +1,7 @@
 <!-- type-delay 0.03 -->
 # Tutorials
 
-> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Business Source License 1.1
 
@@ -60,7 +60,7 @@ This creates a pod with:
 - 256 MB `/dev/shm` (Chrome needs this for stability)
 - GPU passthrough for hardware acceleration
 - Display and audio device access
-- Blacklist DNS (blocks internal/corp domains, allows everything else)
+- Denylist DNS (blocks internal/corp domains, allows everything else)
 
 ### Step 2: Create a Browser User
 
@@ -265,7 +265,7 @@ TIME                 ACTION        DETAILS
 sudo envpod audit --security -c examples/browser-use.yaml
 ```
 
-No display or audio findings — headless avoids the I-04 and I-05 issues entirely. Remaining findings are browser seccomp (S-03) and DNS blacklist mode (N-03).
+No display or audio findings — headless avoids the I-04 and I-05 issues entirely. Remaining findings are browser seccomp (S-03) and DNS denylist mode (N-03).
 
 ### Cleanup
 
@@ -314,7 +314,7 @@ sudo envpod run youtube-x11 -d -a --user browseruser -- google-chrome https://yo
 
 3. **GPU:** `/dev/nvidia*` and `/dev/dri/*` are bind-mounted into the pod. Chrome uses hardware video decoding — no virtualization overhead.
 
-4. **Network:** DNS blacklist mode logs all domain resolutions. YouTube CDN domains (`googlevideo.com`, `youtube.com`, etc.) are allowed.
+4. **Network:** DNS denylist mode logs all domain resolutions. YouTube CDN domains (`googlevideo.com`, `youtube.com`, etc.) are allowed.
 
 5. **Filesystem:** Chrome's profile, cache, and downloads all go to the COW overlay. Nothing touches the host filesystem.
 
@@ -471,7 +471,7 @@ security:
 network:
   mode: Isolated
   dns:
-    mode: Blacklist
+    mode: Denylist
     deny:
       - "*.internal"
       - "*.local"
@@ -525,7 +525,7 @@ This creates a pod with:
 - GPU passthrough (zero-copy bind-mount of `/dev/nvidia*` and `/dev/dri/*`)
 - 4 CPU cores, 16 GB memory
 - 8-hour max duration for long training runs
-- DNS whitelist for PyPI, Hugging Face, PyTorch, and Anaconda
+- DNS allowlist for PyPI, Hugging Face, PyTorch, and Anaconda
 - Auto-installs PyTorch, torchvision, numpy, pandas, matplotlib
 
 ### Step 2: Verify GPU Access
@@ -618,7 +618,7 @@ sudo envpod init claude -c examples/claude-code.yaml
 ```
 
 This installs Claude Code during setup. The config includes:
-- DNS whitelist for Anthropic APIs, GitHub, npm, PyPI, Cargo
+- DNS allowlist for Anthropic APIs, GitHub, npm, PyPI, Cargo
 - Browser seccomp profile (Claude Code uses Node.js workers)
 - 2 CPU cores, 4 GB memory, 256 MB `/dev/shm`
 
@@ -843,7 +843,7 @@ filesystem:
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       - raw.githubusercontent.com
       - "*.githubusercontent.com"
@@ -870,7 +870,7 @@ audit:
 
 - **`system_access: advanced`** — Creating symlinks in `/usr/local/bin` (a system dir) requires a writable overlay. `advanced` gives each system dir its own COW overlay without touching the host.
 - **`/opt/nvm` in tracking ignore** — nvm's install directory is large and not project code. Keeping it out of diff makes `envpod diff` useful.
-- **DNS whitelist** — nvm needs `githubusercontent.com` + `nodejs.org` to download Node.js. npm needs `registry.npmjs.org`.
+- **DNS allowlist** — nvm needs `githubusercontent.com` + `nodejs.org` to download Node.js. npm needs `registry.npmjs.org`.
 
 ### Step 2: Create the Pod
 
@@ -1023,7 +1023,7 @@ sudo envpod run myapp --root -- bash -c '
 ```
 
 **npm install hangs or times out:**
-The npm registry domain isn't in your DNS whitelist. Add `registry.npmjs.org` and `*.npmjs.org`. Check denied queries with `sudo envpod audit myapp`.
+The npm registry domain isn't in your DNS allowlist. Add `registry.npmjs.org` and `*.npmjs.org`. Check denied queries with `sudo envpod audit myapp`.
 
 **"EACCES: permission denied" when npm installs globally:**
 Run with `--root`: `sudo envpod run myapp --root -- npm install -g package-name`. Setup commands run as root automatically, but `envpod run` defaults to the `agent` user.
@@ -1465,7 +1465,7 @@ No pod restarts needed — the daemon reads their live state from the pod store 
 
 - Check `sudo envpod audit pod-name` for DNS deny/allow decisions.
 - Use `sudo envpod dns pod-name --allow domain.com` to add a domain without restarting.
-- In Whitelist mode, only explicitly allowed domains resolve. In Blacklist mode, everything except denied domains resolves.
+- In Allowlist mode, only explicitly allowed domains resolve. In Denylist mode, everything except denied domains resolves.
 
 ### Pod Discovery Not Working (`*.pods.local` → NXDOMAIN)
 
@@ -1920,7 +1920,7 @@ filesystem:
 network:
   mode: Monitored
   dns:
-    mode: Blacklist
+    mode: Denylist
     deny:
       - "*.internal"
       - "*.local"

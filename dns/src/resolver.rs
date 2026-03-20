@@ -4,7 +4,7 @@
 //! DNS policy engine — pure logic, no I/O.
 //!
 //! Decides whether a DNS query should be allowed, denied, or remapped
-//! based on the pod's DNS configuration (whitelist/blacklist/remap).
+//! based on the pod's DNS configuration (allowlist/denylist/remap).
 
 use std::collections::HashMap;
 
@@ -15,9 +15,11 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "lowercase")]
 pub enum DnsPolicyMode {
     /// Only explicitly allowed domains resolve.
-    Whitelist,
+    #[serde(alias = "whitelist")]
+    Allowlist,
     /// All domains resolve except explicitly denied.
-    Blacklist,
+    #[serde(alias = "blacklist")]
+    Denylist,
     /// All domains resolve; queries are logged only.
     Monitor,
 }
@@ -26,9 +28,9 @@ pub enum DnsPolicyMode {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DnsPolicy {
     pub mode: DnsPolicyMode,
-    /// Domains allowed (used in whitelist mode).
+    /// Domains allowed (used in allowlist mode).
     pub allowed_domains: Vec<String>,
-    /// Domains denied (used in blacklist mode).
+    /// Domains denied (used in denylist mode).
     pub denied_domains: Vec<String>,
     /// Domain → address remapping (applied before allow/deny).
     pub remap: HashMap<String, String>,
@@ -59,14 +61,14 @@ impl DnsPolicy {
         }
 
         match self.mode {
-            DnsPolicyMode::Whitelist => {
+            DnsPolicyMode::Allowlist => {
                 if self.matches_list(&domain, &self.allowed_domains) {
                     PolicyDecision::Allow
                 } else {
                     PolicyDecision::Deny
                 }
             }
-            DnsPolicyMode::Blacklist => {
+            DnsPolicyMode::Denylist => {
                 if self.matches_list(&domain, &self.denied_domains) {
                     PolicyDecision::Deny
                 } else {
@@ -126,18 +128,18 @@ fn domain_matches(domain: &str, pattern: &str) -> bool {
 mod tests {
     use super::*;
 
-    fn whitelist_policy(domains: &[&str]) -> DnsPolicy {
+    fn allowlist_policy(domains: &[&str]) -> DnsPolicy {
         DnsPolicy {
-            mode: DnsPolicyMode::Whitelist,
+            mode: DnsPolicyMode::Allowlist,
             allowed_domains: domains.iter().map(|s| s.to_string()).collect(),
             denied_domains: Vec::new(),
             remap: HashMap::new(),
         }
     }
 
-    fn blacklist_policy(domains: &[&str]) -> DnsPolicy {
+    fn denylist_policy(domains: &[&str]) -> DnsPolicy {
         DnsPolicy {
-            mode: DnsPolicyMode::Blacklist,
+            mode: DnsPolicyMode::Denylist,
             allowed_domains: Vec::new(),
             denied_domains: domains.iter().map(|s| s.to_string()).collect(),
             remap: HashMap::new(),
@@ -153,62 +155,62 @@ mod tests {
         }
     }
 
-    // -- Whitelist mode --
+    // -- Allowlist mode --
 
     #[test]
-    fn whitelist_allows_exact_match() {
-        let policy = whitelist_policy(&["anthropic.com"]);
+    fn allowlist_allows_exact_match() {
+        let policy = allowlist_policy(&["anthropic.com"]);
         assert_eq!(policy.check("anthropic.com"), PolicyDecision::Allow);
     }
 
     #[test]
-    fn whitelist_allows_subdomain() {
-        let policy = whitelist_policy(&["anthropic.com"]);
+    fn allowlist_allows_subdomain() {
+        let policy = allowlist_policy(&["anthropic.com"]);
         assert_eq!(policy.check("api.anthropic.com"), PolicyDecision::Allow);
     }
 
     #[test]
-    fn whitelist_denies_unlisted() {
-        let policy = whitelist_policy(&["anthropic.com"]);
+    fn allowlist_denies_unlisted() {
+        let policy = allowlist_policy(&["anthropic.com"]);
         assert_eq!(policy.check("evil.com"), PolicyDecision::Deny);
     }
 
     #[test]
-    fn whitelist_denies_partial_suffix() {
-        let policy = whitelist_policy(&["anthropic.com"]);
+    fn allowlist_denies_partial_suffix() {
+        let policy = allowlist_policy(&["anthropic.com"]);
         // "notanthropic.com" should NOT match "anthropic.com"
         assert_eq!(policy.check("notanthropic.com"), PolicyDecision::Deny);
     }
 
     #[test]
-    fn whitelist_empty_denies_all() {
-        let policy = whitelist_policy(&[]);
+    fn allowlist_empty_denies_all() {
+        let policy = allowlist_policy(&[]);
         assert_eq!(policy.check("anything.com"), PolicyDecision::Deny);
     }
 
-    // -- Blacklist mode --
+    // -- Denylist mode --
 
     #[test]
-    fn blacklist_denies_exact_match() {
-        let policy = blacklist_policy(&["evil.com"]);
+    fn denylist_denies_exact_match() {
+        let policy = denylist_policy(&["evil.com"]);
         assert_eq!(policy.check("evil.com"), PolicyDecision::Deny);
     }
 
     #[test]
-    fn blacklist_denies_subdomain() {
-        let policy = blacklist_policy(&["evil.com"]);
+    fn denylist_denies_subdomain() {
+        let policy = denylist_policy(&["evil.com"]);
         assert_eq!(policy.check("www.evil.com"), PolicyDecision::Deny);
     }
 
     #[test]
-    fn blacklist_allows_unlisted() {
-        let policy = blacklist_policy(&["evil.com"]);
+    fn denylist_allows_unlisted() {
+        let policy = denylist_policy(&["evil.com"]);
         assert_eq!(policy.check("good.com"), PolicyDecision::Allow);
     }
 
     #[test]
-    fn blacklist_empty_allows_all() {
-        let policy = blacklist_policy(&[]);
+    fn denylist_empty_allows_all() {
+        let policy = denylist_policy(&[]);
         assert_eq!(policy.check("anything.com"), PolicyDecision::Allow);
     }
 
@@ -225,7 +227,7 @@ mod tests {
 
     #[test]
     fn remap_takes_priority() {
-        let mut policy = whitelist_policy(&["anthropic.com"]);
+        let mut policy = allowlist_policy(&["anthropic.com"]);
         policy
             .remap
             .insert("internal.dev".into(), "127.0.0.1".into());
@@ -237,7 +239,7 @@ mod tests {
 
     #[test]
     fn remap_matches_subdomain() {
-        let mut policy = whitelist_policy(&[]);
+        let mut policy = allowlist_policy(&[]);
         policy
             .remap
             .insert("example.com".into(), "10.0.0.1".into());
@@ -251,7 +253,7 @@ mod tests {
 
     #[test]
     fn case_insensitive_matching() {
-        let policy = whitelist_policy(&["Anthropic.COM"]);
+        let policy = allowlist_policy(&["Anthropic.COM"]);
         assert_eq!(policy.check("ANTHROPIC.com"), PolicyDecision::Allow);
         assert_eq!(policy.check("api.ANTHROPIC.COM"), PolicyDecision::Allow);
     }
@@ -260,7 +262,7 @@ mod tests {
 
     #[test]
     fn trailing_dot_normalized() {
-        let policy = whitelist_policy(&["anthropic.com."]);
+        let policy = allowlist_policy(&["anthropic.com."]);
         assert_eq!(policy.check("anthropic.com"), PolicyDecision::Allow);
         assert_eq!(policy.check("anthropic.com."), PolicyDecision::Allow);
     }
@@ -269,7 +271,7 @@ mod tests {
 
     #[test]
     fn deep_subdomain_match() {
-        let policy = whitelist_policy(&["anthropic.com"]);
+        let policy = allowlist_policy(&["anthropic.com"]);
         assert_eq!(
             policy.check("a.b.c.anthropic.com"),
             PolicyDecision::Allow
@@ -280,19 +282,19 @@ mod tests {
 
     #[test]
     fn wildcard_prefix_matches_subdomain() {
-        let policy = whitelist_policy(&["*.claude.com"]);
+        let policy = allowlist_policy(&["*.claude.com"]);
         assert_eq!(policy.check("platform.claude.com"), PolicyDecision::Allow);
     }
 
     #[test]
     fn wildcard_prefix_matches_bare_domain() {
-        let policy = whitelist_policy(&["*.claude.com"]);
+        let policy = allowlist_policy(&["*.claude.com"]);
         assert_eq!(policy.check("claude.com"), PolicyDecision::Allow);
     }
 
     #[test]
     fn wildcard_prefix_matches_deep_subdomain() {
-        let policy = whitelist_policy(&["*.anthropic.com"]);
+        let policy = allowlist_policy(&["*.anthropic.com"]);
         assert_eq!(
             policy.check("a.b.anthropic.com"),
             PolicyDecision::Allow
@@ -301,13 +303,13 @@ mod tests {
 
     #[test]
     fn wildcard_prefix_no_partial_match() {
-        let policy = whitelist_policy(&["*.claude.com"]);
+        let policy = allowlist_policy(&["*.claude.com"]);
         assert_eq!(policy.check("notclaude.com"), PolicyDecision::Deny);
     }
 
     #[test]
-    fn blacklist_wildcard_denies_subdomain() {
-        let policy = blacklist_policy(&["*.internal"]);
+    fn denylist_wildcard_denies_subdomain() {
+        let policy = denylist_policy(&["*.internal"]);
         assert_eq!(policy.check("foo.internal"), PolicyDecision::Deny);
         assert_eq!(policy.check("bar.baz.internal"), PolicyDecision::Deny);
     }

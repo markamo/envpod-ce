@@ -117,13 +117,13 @@ envpod audit test
 
 ## Testing DNS filtering
 
-Use a pod config with DNS whitelist:
+Use a pod config with DNS allowlist:
 
 ```bash
 envpod init restricted -c examples/claude-code.yaml
 envpod run restricted -- bash
 
-# Allowed domain (if in whitelist)
+# Allowed domain (if in allowlist)
 curl https://api.anthropic.com
 
 # Blocked domain

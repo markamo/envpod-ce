@@ -34,7 +34,7 @@ backend: native
 network:
   mode: Monitored
   dns:
-    mode: Blacklist
+    mode: Denylist
     deny:
       - "*.internal"
       - "*.local"

@@ -1,6 +1,6 @@
 # Setup Patterns & Troubleshooting
 
-> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -88,7 +88,7 @@ setup:
   - "DEBIAN_FRONTEND=noninteractive apt-get update -qq && apt-get install -y --no-install-recommends my-package"
 ```
 
-**Problem:** 3rd-party apt sources (ESM, PPA, Chrome) can't resolve through DNS whitelist.
+**Problem:** 3rd-party apt sources (ESM, PPA, Chrome) can't resolve through DNS allowlist.
 
 **Fix:** Disable non-essential sources before update:
 
@@ -153,16 +153,16 @@ Supported apps: `chrome`, `firefox`, `vscode`, `gimp`, `libreoffice`, `slack`, `
 | `EXTERNALLY-MANAGED` pip error | Ubuntu 24.04 PEP 668 | `rm -f /usr/lib/python*/EXTERNALLY-MANAGED` |
 | `Cannot uninstall urllib3` | Debian-installed package has no RECORD | `pip3 install --ignore-installed urllib3` |
 | `Unable to locate package` | Stale apt lists in overlay | `rm -rf /var/lib/apt/lists/*` before update |
-| `Could not resolve` apt source | 3rd-party source not in DNS whitelist | Disable source or add domain to whitelist |
+| `Could not resolve` apt source | 3rd-party source not in DNS allowlist | Disable source or add domain to allowlist |
 | `Cannot change mode` tar error | `fchmod` blocked in user namespace | `tar --no-same-permissions` or `\|\| true` |
 | `install: Operation not permitted` | AppArmor `install(1)` needs CAP_MAC_ADMIN | Patch postinst: `sed -i 's/install --mode 644/touch/'` |
-| `setup_script` exit 127 | Script injected to wrong overlay layer | Fixed in v0.1.1 — `inject_setup_script` uses `sys_upper` for advanced mode |
+| `setup_script` exit 127 | Script injected to wrong overlay layer | Fixed in v0.1.3 — `inject_setup_script` uses `sys_upper` for advanced mode |
 | `/etc/alternatives` read-only | ReadOnly mount blocks `update-alternatives` | Remove the mount from pod.yaml |
 | `No space left on device` (pip) | `/tmp` tmpfs too small for downloads | Increase `processor.tmp_size` (e.g., `4GB`) |
 | Setup fails on re-run | `git clone` fails if dir exists | Use `test -d \|\| git clone` pattern |
-| OAuth login fails in pod | Token written but agent can't read (root ownership) | Fixed in v0.1.1 — `fix_upper_ownership` chowns agent home after setup |
+| OAuth login fails in pod | Token written but agent can't read (root ownership) | Fixed in v0.1.3 — `fix_upper_ownership` chowns agent home after setup |
 
-## DNS Whitelist Domains
+## DNS Allowlist Domains
 
 Common domains needed by setup commands:
 
@@ -189,7 +189,7 @@ Common domains needed by setup commands:
 
 4. **Resume failed setup**: `sudo envpod setup my-pod` re-runs all steps. Steps that check for existing files (idempotent patterns) skip quickly.
 
-5. **Discover DNS domains**: Start with `dns.mode: Blacklist`, run setup, then check `envpod audit my-pod` for queried domains. Convert to whitelist.
+5. **Discover DNS domains**: Start with `dns.mode: Denylist`, run setup, then check `envpod audit my-pod` for queried domains. Convert to allowlist.
 
 ---
 

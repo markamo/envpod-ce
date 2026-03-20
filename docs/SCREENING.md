@@ -1,6 +1,6 @@
 # Prompt Screening
 
-> **EnvPod v0.1.1** — The zero-trust governance layer for AI agents
+> **EnvPod v0.1.3** — The zero-trust governance layer for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -219,7 +219,7 @@ Each layer runs only if the previous passed. Regex catches obvious attacks befor
 ### Screening Pipeline
 
 ```
-Agent request → DNS whitelist → Vault proxy → Screen → Inject credentials → Forward
+Agent request → DNS allowlist → Vault proxy → Screen → Inject credentials → Forward
                                                  ↓
                                           Block / Alert / Log
 ```

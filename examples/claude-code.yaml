@@ -27,7 +27,7 @@ backend: native
 network:
   mode: Monitored
   dns:
-    mode: Whitelist
+    mode: Allowlist
     allow:
       # Claude API
       - api.anthropic.com

@@ -47,7 +47,7 @@ filesystem:
 network:
   mode: Monitored
   dns:
-    mode: Blacklist
+    mode: Denylist
     deny:
       - "*.internal"
       - "*.local"

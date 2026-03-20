@@ -1,12 +1,12 @@
 # Capabilities
 
-> **EnvPod v0.1.1** — Zero-trust governance environments for AI agents
+> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
 ---
 
-What envpod can do today (v0.1.1). For how-to guides, see [Quickstart](QUICKSTART.md) and [Tutorials](TUTORIALS.md).
+What envpod can do today (v0.1.3). For how-to guides, see [Quickstart](QUICKSTART.md) and [Tutorials](TUTORIALS.md).
 
 ## At a Glance
 
@@ -97,9 +97,9 @@ Pre-built configs in `examples/`:
 | FUSE Agent | `fuse-agent.yaml` | Multi-provider APIs, npm | nvm + npm |
 | OpenClaw | `openclaw.yaml` | Multi-provider APIs, messaging, npm | nvm + npm |
 | OpenCode | `opencode.yaml` | Multi-provider APIs, GitHub | Go binary |
-| browser-use | `browser-use.yaml` | Open web (blacklist mode) | pip + Playwright |
-| Playwright | `playwright.yaml` | Open web (blacklist mode) | pip + Playwright |
-| Full Workstation | `workstation-full.yaml` | Blacklist mode | Chrome, Firefox, VS Code, GIMP, LibreOffice in XFCE via noVNC |
+| browser-use | `browser-use.yaml` | Open web (denylist mode) | pip + Playwright |
+| Playwright | `playwright.yaml` | Open web (denylist mode) | pip + Playwright |
+| Full Workstation | `workstation-full.yaml` | Denylist mode | Chrome, Firefox, VS Code, GIMP, LibreOffice in XFCE via noVNC |
 
 41 example configs ship with envpod. Any tool that runs on Linux works inside a pod — no agent-specific integration required.
 
@@ -122,8 +122,8 @@ Pre-built configs in `examples/`:
 
 | Mode | Behavior | Use case |
 |------|----------|----------|
-| **Whitelist** | Only listed domains resolve | API agents — lock to specific endpoints |
-| **Blacklist** | Everything resolves except listed domains | Browser agents — block internal/corp domains |
+| **Allowlist** | Only listed domains resolve | API agents — lock to specific endpoints |
+| **Denylist** | Everything resolves except listed domains | Browser agents — block internal/corp domains |
 | **Monitor** | Everything resolves, all queries logged | Dev environments — full access with audit trail |
 
 All modes log every DNS query to the audit trail. Live mutation (`envpod dns --allow/--deny`) works without pod restart.
