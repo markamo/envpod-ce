@@ -1,6 +1,6 @@
 {
   "envpod": {
-    "latest": "0.1.3",
+    "latest": "0.1.4",
     "url": "https://envpod.dev/install.sh"
   },
   "screening": {

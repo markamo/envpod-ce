@@ -22,5 +22,5 @@ from envpod.pod import Pod
 from envpod.screen import screen, screen_api, screen_file
 from envpod.installer import ensure_installed
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __all__ = ["Pod", "screen", "screen_api", "screen_file", "ensure_installed"]

@@ -1,6 +1,6 @@
 {
   "name": "envpod",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "The zero-trust governance layer for AI agents",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

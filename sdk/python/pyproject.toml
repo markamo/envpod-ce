@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "envpod"
-version = "0.1.3"
+version = "0.1.4"
 description = "The zero-trust governance layer for AI agents"
 readme = "README.md"
 license = {text = "BSL-1.1"}
