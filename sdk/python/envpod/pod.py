@@ -23,12 +23,14 @@ class Pod:
     """
 
     def __init__(self, name: str, config: Optional[str] = None,
-                 preset: Optional[str] = None, mode: Optional[str] = None):
+                 preset: Optional[str] = None, mode: Optional[str] = None,
+                 persist: bool = False):
         self.name = name
         self._config = config
         self._preset = preset
         self._mode = mode or _get_mode()
         self._initialized = False
+        self._persist = persist
 
         # Ensure envpod binary is available
         from envpod.installer import ensure_installed
@@ -40,8 +42,9 @@ class Pod:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.destroy()
-        self.gc()
+        if not self._persist:
+            self.destroy()
+            self.gc()
         return False
 
     def init(self, config: Optional[str] = None, preset: Optional[str] = None,
@@ -349,6 +352,26 @@ class Pod:
         pod._run(["clone", source_name, name])
         pod._initialized = True
         return pod
+
+    def detach(self) -> 'Pod':
+        """Mark pod as persistent — won't auto-destroy on context exit.
+
+        Returns self for chaining.
+        """
+        self._persist = True
+        return self
+
+    def start_display(self) -> Optional[str]:
+        """Start the pod with web display (noVNC) and return the URL.
+
+        Starts the pod in background with desktop environment.
+        Returns the noVNC URL for browser access.
+        """
+        self.start()
+        url = self.display_url
+        if url:
+            print(f"  Desktop → {url}")
+        return url
 
     def snapshot_create(self, name: Optional[str] = None) -> None:
         """Create a snapshot of the pod's current overlay state."""

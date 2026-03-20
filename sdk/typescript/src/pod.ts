@@ -9,6 +9,7 @@ export interface PodOptions {
   preset?: string;
   mode?: 'standard' | 'full';
   mountCwd?: boolean;
+  persist?: boolean;
 }
 
 export interface RunOptions {
@@ -42,13 +43,15 @@ export class Pod {
   private binary: string;
 
   private mountCwd: boolean;
+  private persist: boolean;
 
   private constructor(name: string, opts: PodOptions = {}) {
     this.name = name;
     this.config = opts.config;
     this.preset = opts.preset;
     this.mode = opts.mode || getMode();
-    this.mountCwd = opts.mountCwd !== false; // default true
+    this.mountCwd = opts.mountCwd !== false;
+    this.persist = opts.persist || false;
     this.binary = ensureInstalled();
   }
 
@@ -78,8 +81,10 @@ export class Pod {
     try {
       await fn(pod);
     } finally {
-      pod.destroy();
-      Pod.gc();
+      if (!pod.persist) {
+        pod.destroy();
+        Pod.gc();
+      }
     }
   }
 
@@ -292,6 +297,24 @@ export class Pod {
    */
   vaultSet(key: string, value: string): void {
     this.exec(['vault', this.name, 'set', key, value]);
+  }
+
+  /**
+   * Mark pod as persistent — won't auto-destroy in Pod.with().
+   */
+  detach(): Pod {
+    this.persist = true;
+    return this;
+  }
+
+  /**
+   * Start with web display (noVNC) and return the URL.
+   */
+  startDisplay(): string | null {
+    this.start();
+    const url = this.displayUrl;
+    if (url) console.log(`  Desktop → ${url}`);
+    return url;
   }
 
   /**
