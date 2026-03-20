@@ -356,6 +356,32 @@ export class Pod {
   }
 
   /**
+   * Clone from base, run command, optionally save results, destroy.
+   * The fastest governed execution — ~8ms clone, run, commit, destroy.
+   * Equivalent to `docker run --rm` but with governance.
+   */
+  static disposable(base: string, name: string, command: string, opts: {
+    commitPaths?: string[];
+    output?: string;
+    mode?: 'standard' | 'full';
+    root?: boolean;
+    env?: Record<string, string>;
+  } = {}): string | null {
+    const pod = Pod.clone(base, name, { mode: opts.mode });
+    try {
+      pod.run(command, { root: opts.root, env: opts.env });
+      if (opts.commitPaths) {
+        const diff = pod.diff();
+        pod.commit(opts.commitPaths, { output: opts.output, rollbackRest: true });
+        return diff;
+      }
+      return null;
+    } finally {
+      pod.destroy();
+    }
+  }
+
+  /**
    * Clean up orphaned resources (iptables, cgroups, netns).
    */
   static gc(): void {

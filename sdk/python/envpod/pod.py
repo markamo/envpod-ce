@@ -378,6 +378,42 @@ class Pod:
         return info.get("ip") or info.get("pod_ip")
 
     @staticmethod
+    def disposable(base: str, name: str, command: str,
+                   commit_paths: Optional[List[str]] = None,
+                   output: Optional[str] = None,
+                   mode: Optional[str] = None,
+                   root: bool = False,
+                   env: Optional[dict] = None) -> Optional[str]:
+        """Clone from base, run command, optionally save results, destroy.
+
+        The fastest governed execution — ~8ms clone, run, commit, destroy.
+        Equivalent to `docker run --rm` but with governance.
+
+        Args:
+            base: Base pod name to clone from.
+            name: Name for the disposable pod.
+            command: Shell command to run.
+            commit_paths: Paths to commit (None = discard everything).
+            output: Export committed files to this directory instead of host.
+            mode: Isolation mode (standard/full).
+            root: Run as root.
+            env: Environment variables.
+
+        Returns:
+            Diff output as string if commit_paths is set, else None.
+        """
+        pod = Pod.clone(base, name, mode=mode)
+        try:
+            pod.run(command, root=root, env=env)
+            if commit_paths:
+                diff = pod.diff()
+                pod.commit(*commit_paths, output=output, rollback_rest=True)
+                return diff
+            return None
+        finally:
+            pod.destroy()
+
+    @staticmethod
     def gc() -> None:
         """Clean up orphaned resources (iptables, cgroups, netns)."""
         binary = shutil.which("envpod")
