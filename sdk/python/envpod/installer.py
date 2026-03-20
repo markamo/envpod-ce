@@ -19,6 +19,23 @@ def ensure_installed() -> str:
     if binary:
         return binary
 
+    # Check platform before attempting install
+    if sys.platform == "darwin":
+        raise RuntimeError(
+            "envpod requires Linux. On macOS, use OrbStack:\n"
+            "  brew install orbstack\n"
+            "  orb create ubuntu envpod-vm\n"
+            "  orb shell envpod-vm\n"
+            "  curl -fsSL https://envpod.dev/install.sh | sudo bash"
+        )
+    if sys.platform == "win32":
+        raise RuntimeError(
+            "envpod requires Linux. On Windows, use WSL2:\n"
+            "  wsl --install Ubuntu-24.04\n"
+            "  wsl\n"
+            "  curl -fsSL https://envpod.dev/install.sh | sudo bash"
+        )
+
     print("envpod binary not found. Installing...")
     print()
 
