@@ -371,11 +371,11 @@ pod.dnsRemoveDeny('safe-domain.com');
 
 ## Remote Control
 
-Monitor and intervene in a running agent.
+Monitor and intervene in a running agent via the remote control channel.
 
 ```python
-pod.freeze()                # freeze instantly
-pod.resume()                # resume
+pod.freeze()                # freeze instantly (via remote control)
+pod.resume()                # resume (via remote control)
 pod.restrict("readonly")    # limit to read-only
 pod.kill()                  # terminate + rollback all changes
 ```
@@ -386,6 +386,8 @@ pod.resume();
 pod.restrict('readonly');
 pod.kill();
 ```
+
+> **Note:** `freeze()`/`resume()` use the remote control path (`envpod remote`), while `lock()`/`unlock()` use the direct path (`envpod lock`). Both freeze/resume the pod. Use `lock`/`unlock` for local management. Use `freeze`/`resume` for policy-driven or remote intervention. From the SDK, both work identically.
 
 ## Action Queue
 
