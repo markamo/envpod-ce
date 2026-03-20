@@ -16,6 +16,8 @@ curl -fsSL https://envpod.dev/install.sh | sudo bash
 
 Auto-detects your distro, installs prerequisites, downloads the correct binary (x86_64 or ARM64), and sets everything up. Works on Ubuntu, Debian, Fedora, Arch, Rocky, Alma, openSUSE, and Amazon Linux.
 
+The installer prompts to add your user to the `envpod` group (like Docker). After logging out and back in, you can run envpod without sudo.
+
 Add `--auto-deps` to skip the interactive prompt:
 
 <!-- no-exec -->
@@ -240,24 +242,69 @@ cd envpod-*-linux-arm64
 sudo bash install.sh
 ```
 
+## Running Without Sudo
+
+During install, the script prompts to add your user to the `envpod` group. This uses the same model as Docker — group members can run envpod without sudo.
+
+```bash
+# During install:
+#   Add mark to envpod group? [Y/n] y
+#   ✓ Added mark to envpod group
+#   ✓ To use envpod without sudo: log out and log back in
+
+# After logout/login:
+envpod init my-agent -c pod.yaml     # no sudo needed
+envpod run my-agent -- bash
+envpod diff my-agent
+```
+
+### Manual group setup
+
+If you skipped the prompt during install, or want to add another user:
+
+```bash
+sudo groupadd -f envpod
+sudo usermod -aG envpod $USER
+sudo chgrp envpod /usr/local/bin/envpod
+sudo chmod g+s /usr/local/bin/envpod
+# Log out and back in
+```
+
+### Remove group access
+
+```bash
+sudo gpasswd -d $USER envpod    # remove user from group
+# Or uninstall removes the group entirely:
+sudo bash /usr/local/share/envpod/uninstall.sh
+```
+
+### Still use sudo?
+
+If you didn't join the envpod group, all commands require sudo:
+
+```bash
+sudo envpod init my-agent -c pod.yaml
+sudo envpod run my-agent -- bash
+```
+
 ## What install.sh does
 
 The install script performs these steps:
 
 1. **Checks prerequisites** — kernel ≥ 5.11, cgroup v2 active, overlayfs available, iptables and iproute2 present
 2. **Copies binary** to `/usr/local/bin/envpod`
-3. **Creates state directories** at `/var/lib/envpod/{state,pods}`
-4. **Installs shell completions** — bash, zsh, or fish (auto-detected)
-5. **Enables IP forwarding** — runtime and persisted to `/etc/sysctl.d/99-envpod.conf`
-6. **Installs example configs** to `/usr/local/share/envpod/examples/`
-7. **Installs uninstall script** to `/usr/local/share/envpod/uninstall.sh`
+3. **Envpod group** — prompts to add user to `envpod` group with setgid binary (optional)
+4. **Creates state directories** at `/var/lib/envpod/{state,pods}` (group-writable if envpod group enabled)
+5. **Installs shell completions** — bash, zsh, or fish (auto-detected)
+6. **Enables IP forwarding** — runtime and persisted to `/etc/sysctl.d/99-envpod.conf`
+7. **Installs example configs** to `/usr/local/share/envpod/examples/`
+8. **Installs uninstall script** to `/usr/local/share/envpod/uninstall.sh`
 
 ## Verify installation
 
-<!-- no-exec -->
 ```bash
 envpod --version
-sudo envpod ls
+envpod ls              # works without sudo if envpod group is active
 ```
 
 ## Uninstall

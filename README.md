@@ -117,6 +117,8 @@ Envpod lets the agent work with real local context through a copy-on-write layer
 
 ```bash
 # Install (Linux x86_64 — single binary, no dependencies)
+# The installer prompts to add you to the envpod group (run without sudo)
+# After install, log out and back in — then drop sudo from all commands below
 curl -fsSL https://github.com/markamo/envpod-ce/releases/latest/download/envpod-linux-x86_64.tar.gz \
   | tar xz && sudo ./envpod-linux-x86_64/install.sh
 
