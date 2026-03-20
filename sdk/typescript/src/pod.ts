@@ -378,10 +378,12 @@ export class Pod {
 
   /**
    * Clone a pod from a base (fast — ~8ms).
+   * @param source - Source pod/base name (string) or Pod instance.
    */
-  static clone(source: string, name: string, opts: PodOptions = {}): Pod {
+  static clone(source: string | Pod, name: string, opts: PodOptions = {}): Pod {
+    const sourceName = typeof source === 'string' ? source : source.name;
     const pod = new Pod(name, opts);
-    pod.exec(['clone', source, name]);
+    pod.exec(['clone', sourceName, name]);
     return pod;
   }
 
@@ -390,14 +392,15 @@ export class Pod {
    * The fastest governed execution — ~8ms clone, run, commit, destroy.
    * Equivalent to `docker run --rm` but with governance.
    */
-  static disposable(base: string, name: string, command: string, opts: {
+  static disposable(base: string | Pod, name: string, command: string, opts: {
     commitPaths?: string[];
     output?: string;
     mode?: 'standard' | 'full';
     root?: boolean;
     env?: Record<string, string>;
   } = {}): string | null {
-    const pod = Pod.clone(base, name, { mode: opts.mode });
+    const baseName = typeof base === 'string' ? base : base.name;
+    const pod = Pod.clone(baseName, name, { mode: opts.mode });
     try {
       pod.run(command, { root: opts.root, env: opts.env });
       if (opts.commitPaths) {

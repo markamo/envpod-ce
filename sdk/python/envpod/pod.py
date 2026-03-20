@@ -333,19 +333,20 @@ class Pod:
         self._initialized = True
 
     @staticmethod
-    def clone(source: str, name: str, mode: Optional[str] = None) -> 'Pod':
+    def clone(source, name: str, mode: Optional[str] = None) -> 'Pod':
         """Clone a pod from a base (fast — ~8ms).
 
         Args:
-            source: Source pod or base name to clone from.
+            source: Source pod/base name (str) or Pod instance.
             name: Name for the new cloned pod.
             mode: Isolation mode (standard/full).
 
         Returns:
             A new Pod instance for the clone.
         """
+        source_name = source.name if isinstance(source, Pod) else source
         pod = Pod(name, mode=mode)
-        pod._run(["clone", source, name])
+        pod._run(["clone", source_name, name])
         pod._initialized = True
         return pod
 
@@ -397,7 +398,7 @@ class Pod:
         return info.get("ip") or info.get("pod_ip")
 
     @staticmethod
-    def disposable(base: str, name: str, command: str,
+    def disposable(base, name: str, command: str,
                    commit_paths: Optional[List[str]] = None,
                    output: Optional[str] = None,
                    mode: Optional[str] = None,
@@ -421,7 +422,8 @@ class Pod:
         Returns:
             Diff output as string if commit_paths is set, else None.
         """
-        pod = Pod.clone(base, name, mode=mode)
+        base_name = base.name if isinstance(base, Pod) else base
+        pod = Pod.clone(base_name, name, mode=mode)
         try:
             pod.run(command, root=root, env=env)
             if commit_paths:
