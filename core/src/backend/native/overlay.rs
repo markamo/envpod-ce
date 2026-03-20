@@ -979,6 +979,13 @@ pub fn snapshot_base(pod_dir: &Path, bases_dir: &Path, base_name: &str) -> Resul
         }
     }
 
+    // Copy pod.yaml so clones inherit the configuration
+    let pod_yaml = pod_dir.join("pod.yaml");
+    if pod_yaml.exists() {
+        fs::copy(&pod_yaml, base_pod_dir.join("pod.yaml"))
+            .context("copy pod.yaml to base")?;
+    }
+
     Ok(())
 }
 
