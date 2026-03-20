@@ -144,6 +144,15 @@ export class Pod {
   }
 
   /**
+   * Mount a host directory into the pod (COW isolated).
+   */
+  mount(path: string, readonly: boolean = true): void {
+    const args = ['mount', this.name, path];
+    if (readonly) args.push('--readonly');
+    this.exec(args);
+  }
+
+  /**
    * Copy a local file into the pod's overlay.
    */
   inject(localPath: string, podPath: string = '/tmp/', executable: boolean = false): void {

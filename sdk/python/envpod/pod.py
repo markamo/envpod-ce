@@ -148,6 +148,18 @@ class Pod:
         return self.run_script(code, interpreter=interpreter, root=root,
                                env=env, capture=capture)
 
+    def mount(self, path: str, readonly: bool = True) -> None:
+        """Mount a host directory into the pod (COW isolated).
+
+        Args:
+            path: Host path to mount (also the mount point inside the pod).
+            readonly: If True, mount as read-only.
+        """
+        args = ["mount", self.name, path]
+        if readonly:
+            args.append("--readonly")
+        self._run(args)
+
     def inject(self, local_path: str, pod_path: str = "/tmp/",
                executable: bool = False) -> None:
         """Copy a local file into the pod's overlay.
