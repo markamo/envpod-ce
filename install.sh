@@ -527,7 +527,7 @@ if [[ "$REAL_USER" != "root" && "$IN_CONTAINER" -eq 0 ]]; then
         ENVPOD_GROUP_ADDED=1
         info "Added $REAL_USER to envpod group"
         info "Binary set to setgid envpod"
-        info "Log out and back in for the group to take effect system-wide"
+        info "To use envpod without sudo: log out and log back in"
     else
         info "Skipped — use sudo to run envpod"
     fi
@@ -681,8 +681,9 @@ echo -e "${GREEN}${BOLD}Installation complete!${NC}"
 echo ""
 
 if [[ "$ENVPOD_GROUP_ADDED" -eq 1 ]]; then
-    echo -e "  ${YELLOW}⚠ Log out and back in for the envpod group to take effect.${NC}"
-    echo "  Then run envpod without sudo:"
+    echo -e "  ${YELLOW}⚠ To use envpod without sudo: log out and log back in.${NC}"
+    echo ""
+    echo "  After login, run without sudo:"
     echo ""
     echo "  Quick start:"
     if [[ -n "$EXAMPLES_DIR" ]]; then
