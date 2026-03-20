@@ -201,7 +201,12 @@ await Pod.with('my-agent', { config: 'pod.yaml' }, async (pod) => {
 // auto: destroy + gc
 ```
 
-Auto-installs the envpod binary on first use. Supports inline code injection, file injection, and multi-agent orchestration. See [SDK Reference](docs/SDK.md).
+Auto-installs the envpod binary on first use. 44 methods with full CLI parity.
+
+- [SDK Reference](docs/SDK.md) — complete API docs with Python + TypeScript side by side
+- [Python Quickstart](sdk/python/QUICKSTART.md) — get started in 60 seconds
+- [TypeScript Quickstart](sdk/typescript/QUICKSTART.md) — get started in 60 seconds
+- [18 Usage Examples](sdk/EXAMPLES.md) — CI/CD, fleet orchestration, Ollama, Jupyter, and more
 
 ## Documentation
 
