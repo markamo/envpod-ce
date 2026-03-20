@@ -16,8 +16,9 @@ const CLEAN: ScreeningResult = { matched: false, category: null, pattern: null, 
 export function screen(text: string): ScreeningResult {
   const binary = ensureInstalled();
   try {
-    const output = execFileSync(binary, ['screen', '--json', text], {
+    const output = execFileSync(binary, ['screen', '--json'], {
       encoding: 'utf-8',
+      input: text,
       stdio: ['pipe', 'pipe', 'pipe'],
     });
     return JSON.parse(output);
@@ -32,8 +33,9 @@ export function screen(text: string): ScreeningResult {
 export function screenApi(body: string): ScreeningResult {
   const binary = ensureInstalled();
   try {
-    const output = execFileSync(binary, ['screen', '--api', '--json', body], {
+    const output = execFileSync(binary, ['screen', '--api', '--json'], {
       encoding: 'utf-8',
+      input: body,
       stdio: ['pipe', 'pipe', 'pipe'],
     });
     return JSON.parse(output);

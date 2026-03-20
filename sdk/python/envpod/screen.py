@@ -21,8 +21,8 @@ def screen(text: str, json_output: bool = False) -> dict:
         raise RuntimeError("envpod binary not found")
 
     result = subprocess.run(
-        [binary, "screen", "--json", text],
-        capture_output=True, text=True
+        [binary, "screen", "--json"],
+        input=text, capture_output=True, text=True
     )
     try:
         return json.loads(result.stdout)
@@ -44,8 +44,8 @@ def screen_api(body: str) -> dict:
         raise RuntimeError("envpod binary not found")
 
     result = subprocess.run(
-        [binary, "screen", "--api", "--json", body],
-        capture_output=True, text=True
+        [binary, "screen", "--api", "--json"],
+        input=body, capture_output=True, text=True
     )
     try:
         return json.loads(result.stdout)
