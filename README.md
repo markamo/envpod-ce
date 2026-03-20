@@ -171,9 +171,12 @@ Free for all users. Updatable pattern list. Supports Anthropic, OpenAI, Gemini, 
 
 ## SDKs
 
+[![PyPI](https://img.shields.io/pypi/v/envpod)](https://pypi.org/project/envpod/)
+[![npm](https://img.shields.io/npm/v/envpod)](https://www.npmjs.com/package/envpod)
+
 Programmatic governance — manage pods, screen prompts, and orchestrate agents from Python or TypeScript.
 
-**Python:**
+**Python:** `pip install envpod`
 
 ```python
 from envpod import Pod, screen
@@ -181,19 +184,21 @@ from envpod import Pod, screen
 with Pod("my-agent", config="pod.yaml") as pod:
     pod.run("python3 agent.py")
     pod.commit("src/", rollback_rest=True)
+# auto: destroy + gc
 
 result = screen("check this prompt")
 ```
 
-**TypeScript:**
+**TypeScript:** `npm install envpod`
 
 ```typescript
 import { Pod, screen } from 'envpod';
 
-const pod = await Pod.create('my-agent', { config: 'pod.yaml' });
-pod.run('python3 agent.py');
-pod.commit(['src/'], { rollbackRest: true });
-pod.destroy();
+await Pod.with('my-agent', { config: 'pod.yaml' }, async (pod) => {
+    pod.run('python3 agent.py');
+    pod.commit(['src/'], { rollbackRest: true });
+});
+// auto: destroy + gc
 ```
 
 Auto-installs the envpod binary on first use. Supports inline code injection, file injection, and multi-agent orchestration. See [SDK Reference](docs/SDK.md).
