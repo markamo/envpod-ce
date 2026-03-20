@@ -412,63 +412,64 @@ except PodError as e:
 - Linux (x86_64 or ARM64), Windows WSL2, or macOS via OrbStack
 - envpod binary (auto-installed on first use)
 
-## API Reference
+## API Reference — Complete Method List
 
-### Python — `envpod.Pod`
+28 methods with full CLI parity. Both SDKs have identical functionality.
 
-| Method | Description |
-|--------|-------------|
-| `Pod(name, config, preset, mode)` | Constructor |
-| `pod.init(config, preset, verbose, mount_cwd)` | Create and set up pod |
-| `pod.run(command, root, env, capture)` | Run shell command |
-| `pod.run_script(code, interpreter, root, env, capture)` | Run inline code |
-| `pod.run_file(path, interpreter, root, env, capture)` | Run local file |
-| `pod.inject(local_path, pod_path, executable)` | Copy file into pod |
-| `pod.diff(all_changes, json_output)` | Show filesystem changes |
-| `pod.commit(*paths, exclude, output, rollback_rest)` | Commit changes |
-| `pod.rollback()` | Discard all changes |
-| `pod.audit(security, json_output)` | View audit log |
-| `pod.status()` | Pod status |
-| `pod.start() / stop() / lock() / unlock()` | Lifecycle |
-| `pod.resize(cpus, memory, tmp_size, max_pids, gpu)` | Resize resources |
-| `pod.vault_set(key, value)` | Store secret |
-| `pod.exists()` | Check if pod exists |
-| `pod.destroy()` | Remove pod |
+| Method | Python | TypeScript | Description |
+|--------|--------|-----------|-------------|
+| **Pod Creation** | | | |
+| Constructor | `Pod(name, config, preset, mode)` | `new Pod(name, opts)` | Create pod instance |
+| Create + init | `with Pod(...) as pod:` | `Pod.create(name, opts)` | Create, init, auto-destroy |
+| Auto-cleanup | `with Pod(...) as pod:` | `Pod.with(name, opts, fn)` | Auto-destroy + gc on exit |
+| Wrap existing | `Pod(name)` | `Pod.wrap(name, opts)` | Wrap existing pod (no init) |
+| Init | `pod.init(config, preset, verbose, mount_cwd)` | `pod.init(opts)` | Create and set up pod |
+| Init + base | `pod.init_with_base(config, base_name)` | `pod.initWithBase(opts)` | Create + save as base for cloning |
+| Clone | `Pod.clone(source, name)` | `Pod.clone(source, name, opts)` | Clone from base (~8ms) |
+| **Running Commands** | | | |
+| Shell command | `pod.run(cmd, root, env, capture, display, audio, background)` | `pod.run(cmd, opts)` | Run command (with display/audio/background flags) |
+| Inline code | `pod.run_script(code, interpreter)` | `pod.runScript(code, opts)` | Run code string (no file needed) |
+| Local file | `pod.run_file(path, interpreter)` | `pod.runFile(path, opts)` | Copy + run local file (auto-detect interpreter) |
+| **File Operations** | | | |
+| Inject file | `pod.inject(local_path, pod_path, executable)` | `pod.inject(localPath, podPath, executable)` | Copy file/binary into pod overlay |
+| Mount dir | `pod.mount(path, readonly)` | `pod.mount(path, readonly)` | Mount host directory (COW isolated) |
+| Diff | `pod.diff(all_changes, json_output)` | `pod.diff(opts)` | Show filesystem changes |
+| Commit | `pod.commit(*paths, exclude, output, rollback_rest)` | `pod.commit(paths, opts)` | Commit changes to host |
+| Rollback | `pod.rollback()` | `pod.rollback()` | Discard all changes |
+| **Governance** | | | |
+| Audit | `pod.audit(security, json_output)` | `pod.audit(opts)` | View audit log or security analysis |
+| Vault | `pod.vault_set(key, value)` | `pod.vaultSet(key, value)` | Store encrypted secret |
+| Resize | `pod.resize(cpus, memory, tmp_size, max_pids, gpu)` | `pod.resize(opts)` | Live resource mutation |
+| **Lifecycle** | | | |
+| Start | `pod.start()` | `pod.start()` | Start in background |
+| Stop | `pod.stop()` | `pod.stop()` | Stop gracefully |
+| Restart | `pod.restart()` | `pod.restart()` | Stop + start |
+| Lock | `pod.lock()` | `pod.lock()` | Freeze pod state |
+| Unlock | `pod.unlock()` | `pod.unlock()` | Resume frozen pod |
+| Kill | `pod.kill()` | `pod.kill()` | Terminate + rollback |
+| Destroy | `pod.destroy()` | `pod.destroy()` | Remove pod entirely |
+| **Info** | | | |
+| Status | `pod.status()` | `pod.status()` | Pod status and resources |
+| Logs | `pod.logs()` | `pod.logs()` | Pod output logs |
+| Info | `pod.info()` | `pod.info()` | Pod info as dict (name, IP, status, display URL) |
+| Display URL | `pod.display_url` | `pod.displayUrl` | noVNC URL (property) |
+| IP address | `pod.ip` | `pod.ip` | Pod IP (property) |
+| Exists | `pod.exists()` | `pod.exists()` | Check if pod exists |
+| **Cleanup** | | | |
+| GC | `Pod.gc()` | `Pod.gc()` | Clean orphaned resources |
 
-### Python — `envpod.screen`
+### Screening Functions
 
-| Function | Description |
-|----------|-------------|
-| `screen(text)` | Screen text, returns dict |
-| `screen_api(body)` | Screen API request body (JSON) |
-| `screen_file(path)` | Screen file contents |
+| Function | Python | TypeScript | Description |
+|----------|--------|-----------|-------------|
+| Screen text | `screen(text)` | `screen(text)` | Check for injection, credentials, PII, exfiltration |
+| Screen API body | `screen_api(body)` | `screenApi(body)` | Parse JSON and screen message content |
+| Screen file | `screen_file(path)` | `screenFile(path)` | Screen file contents |
 
-### TypeScript — `Pod`
-
-| Method | Description |
-|--------|-------------|
-| `Pod.create(name, opts)` | Create new pod (async) |
-| `Pod.wrap(name, opts)` | Wrap existing pod |
-| `pod.init(opts)` | Create and set up |
-| `pod.run(command, opts)` | Run shell command |
-| `pod.runScript(code, opts)` | Run inline code |
-| `pod.runFile(path, opts)` | Run local file |
-| `pod.inject(localPath, podPath, executable)` | Copy file into pod |
-| `pod.diff(opts) / commit(paths, opts) / rollback()` | Filesystem ops |
-| `pod.audit(opts)` | View audit log |
-| `pod.resize(opts)` | Resize resources |
-| `pod.vaultSet(key, value)` | Store secret |
-| `pod.start() / stop() / lock() / unlock() / destroy()` | Lifecycle |
-
-### TypeScript — Screening
-
-| Function | Description |
-|----------|-------------|
-| `screen(text)` | Screen text |
-| `screenApi(body)` | Screen API request body |
-| `screenFile(path)` | Screen file contents |
-
-All return `{ matched: boolean, category: string | null, pattern: string | null, fragment: string | null }`.
+All screening functions return:
+```
+{ matched: bool, category: str|null, pattern: str|null, fragment: str|null }
+```
 
 ---
 
