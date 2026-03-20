@@ -15,6 +15,9 @@ export interface RunOptions {
   root?: boolean;
   env?: Record<string, string>;
   capture?: boolean;
+  display?: boolean;
+  audio?: boolean;
+  background?: boolean;
 }
 
 export interface CommitOptions {
@@ -105,6 +108,9 @@ export class Pod {
     const args = ['run', this.name];
     if (opts.root) args.push('--root');
     if (this.mountCwd) args.push('-w');
+    if (opts.display) args.push('-d');
+    if (opts.audio) args.push('-a');
+    if (opts.background) args.push('-b');
     if (opts.env) {
       for (const [k, v] of Object.entries(opts.env)) {
         args.push('--env', `${k}=${v}`);
@@ -272,6 +278,42 @@ export class Pod {
    */
   vaultSet(key: string, value: string): void {
     this.exec(['vault', this.name, 'set', key, value]);
+  }
+
+  /**
+   * Show pod output logs.
+   */
+  logs(): string {
+    return this.exec(['logs', this.name], true);
+  }
+
+  /**
+   * Get pod info (name, status, IP, display URL, etc.).
+   */
+  info(): Record<string, any> {
+    try {
+      const output = this.exec(['ls', '--json'], true);
+      const pods = JSON.parse(output) as Array<Record<string, any>>;
+      return pods.find(p => p.name === this.name) || {};
+    } catch {
+      return {};
+    }
+  }
+
+  /**
+   * Get the noVNC display URL if web display is enabled.
+   */
+  get displayUrl(): string | null {
+    const info = this.info();
+    return info.display_url || info.novnc_url || null;
+  }
+
+  /**
+   * Get the pod's IP address.
+   */
+  get ip(): string | null {
+    const info = this.info();
+    return info.ip || info.pod_ip || null;
   }
 
   /**

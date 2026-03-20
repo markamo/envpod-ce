@@ -68,7 +68,9 @@ class Pod:
         self._mount_cwd = mount_cwd
 
     def run(self, command: str, root: bool = False,
-            env: Optional[dict] = None, capture: bool = False) -> Optional[str]:
+            env: Optional[dict] = None, capture: bool = False,
+            display: bool = False, audio: bool = False,
+            background: bool = False) -> Optional[str]:
         """Run a command inside the pod.
 
         Args:
@@ -76,6 +78,9 @@ class Pod:
             root: Run as root inside the pod.
             env: Additional environment variables.
             capture: If True, capture and return stdout instead of printing.
+            display: Enable display forwarding (Wayland/X11).
+            audio: Enable audio forwarding (PipeWire/PulseAudio).
+            background: Run in background (detached).
 
         Returns:
             stdout as string if capture=True, else None.
@@ -85,6 +90,12 @@ class Pod:
             args.append("--root")
         if getattr(self, '_mount_cwd', True):
             args.append("-w")
+        if display:
+            args.append("-d")
+        if audio:
+            args.append("-a")
+        if background:
+            args.append("-b")
         if env:
             for k, v in env.items():
                 args.extend(["--env", f"{k}={v}"])
@@ -329,6 +340,34 @@ class Pod:
         pod._run(["clone", source, name])
         pod._initialized = True
         return pod
+
+    def logs(self) -> str:
+        """Show pod output logs."""
+        return self._run(["logs", self.name], capture=True)
+
+    def info(self) -> dict:
+        """Get pod info as a dict (name, status, IP, display URL, etc.)."""
+        try:
+            result = self._run(["ls", "--json"], capture=True)
+            pods = json.loads(result)
+            for p in pods:
+                if p.get("name") == self.name:
+                    return p
+        except (PodError, json.JSONDecodeError):
+            pass
+        return {}
+
+    @property
+    def display_url(self) -> Optional[str]:
+        """Get the noVNC display URL if web display is enabled."""
+        info = self.info()
+        return info.get("display_url") or info.get("novnc_url")
+
+    @property
+    def ip(self) -> Optional[str]:
+        """Get the pod's IP address."""
+        info = self.info()
+        return info.get("ip") or info.get("pod_ip")
 
     @staticmethod
     def gc() -> None:
