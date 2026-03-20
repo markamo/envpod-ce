@@ -349,6 +349,25 @@ class Pod:
         pod._initialized = True
         return pod
 
+    def snapshot_create(self, name: Optional[str] = None) -> None:
+        """Create a snapshot of the pod's current overlay state."""
+        args = ["snapshot", self.name, "create"]
+        if name:
+            args.extend(["--name", name])
+        self._run(args)
+
+    def snapshot_restore(self, name: str) -> None:
+        """Restore a snapshot."""
+        self._run(["snapshot", self.name, "restore", name])
+
+    def snapshot_list(self) -> str:
+        """List all snapshots."""
+        return self._run(["snapshot", self.name, "ls"], capture=True)
+
+    def snapshot_destroy(self, name: str) -> None:
+        """Delete a snapshot."""
+        self._run(["snapshot", self.name, "destroy", name])
+
     def logs(self) -> str:
         """Show pod output logs."""
         return self._run(["logs", self.name], capture=True)

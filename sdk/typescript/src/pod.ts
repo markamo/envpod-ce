@@ -295,6 +295,36 @@ export class Pod {
   }
 
   /**
+   * Create a snapshot of the pod's current overlay state.
+   */
+  snapshotCreate(name?: string): void {
+    const args = ['snapshot', this.name, 'create'];
+    if (name) args.push('--name', name);
+    this.exec(args);
+  }
+
+  /**
+   * Restore a snapshot.
+   */
+  snapshotRestore(name: string): void {
+    this.exec(['snapshot', this.name, 'restore', name]);
+  }
+
+  /**
+   * List all snapshots.
+   */
+  snapshotList(): string {
+    return this.exec(['snapshot', this.name, 'ls'], true);
+  }
+
+  /**
+   * Delete a snapshot.
+   */
+  snapshotDestroy(name: string): void {
+    this.exec(['snapshot', this.name, 'destroy', name]);
+  }
+
+  /**
    * Show pod output logs.
    */
   logs(): string {
