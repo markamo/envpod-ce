@@ -353,7 +353,7 @@ class Pod:
         pod._initialized = True
         return pod
 
-    def detach(self) -> 'Pod':
+    def persist(self) -> 'Pod':
         """Mark pod as persistent — won't auto-destroy on context exit.
 
         Returns self for chaining.

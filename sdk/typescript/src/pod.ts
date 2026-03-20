@@ -43,7 +43,7 @@ export class Pod {
   private binary: string;
 
   private mountCwd: boolean;
-  private persist: boolean;
+  _persist: boolean;
 
   private constructor(name: string, opts: PodOptions = {}) {
     this.name = name;
@@ -51,7 +51,7 @@ export class Pod {
     this.preset = opts.preset;
     this.mode = opts.mode || getMode();
     this.mountCwd = opts.mountCwd !== false;
-    this.persist = opts.persist || false;
+    this._persist = opts.persist || false;
     this.binary = ensureInstalled();
   }
 
@@ -81,7 +81,7 @@ export class Pod {
     try {
       await fn(pod);
     } finally {
-      if (!pod.persist) {
+      if (!pod._persist) {
         pod.destroy();
         Pod.gc();
       }
@@ -302,8 +302,8 @@ export class Pod {
   /**
    * Mark pod as persistent — won't auto-destroy in Pod.with().
    */
-  detach(): Pod {
-    this.persist = true;
+  persist(): Pod {
+    this._persist = true;
     return this;
   }
 
