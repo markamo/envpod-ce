@@ -61,6 +61,26 @@ export class Pod {
   }
 
   /**
+   * Create a pod, run a callback, then destroy + gc.
+   * Node.js equivalent of Python's context manager.
+   *
+   * @example
+   * await Pod.with('my-agent', { config: 'pod.yaml' }, async (pod) => {
+   *   pod.run('python3 agent.py');
+   *   pod.commit(['src/'], { rollbackRest: true });
+   * });
+   */
+  static async with(name: string, opts: PodOptions, fn: (pod: Pod) => void | Promise<void>): Promise<void> {
+    const pod = await Pod.create(name, opts);
+    try {
+      await fn(pod);
+    } finally {
+      pod.destroy();
+      Pod.gc();
+    }
+  }
+
+  /**
    * Wrap an existing pod (no init).
    */
   static wrap(name: string, opts: PodOptions = {}): Pod {
