@@ -352,6 +352,329 @@ with Pod("ml-experiment", config="ml-training.yaml") as pod:
     pod.commit("models/", "results/", rollback_rest=True)
 ```
 
+## 11. Live DNS Mutation
+
+Adjust network policy on a running agent without restart.
+
+**Python:**
+```python
+from envpod import Pod
+
+pod = Pod("web-agent", config="browser-use.yaml")
+pod.init()
+
+# Start with tight allowlist
+pod.run("python3 agent.py", background=True)
+
+# Agent needs a new domain? Add it live
+pod.dns_allow("api.newservice.com", "cdn.newservice.com")
+
+# Block a domain the agent shouldn't reach
+pod.dns_deny("tracking.analytics.com")
+
+# Remove from allowlist
+pod.dns_remove_allow("api.oldservice.com")
+
+pod.destroy()
+```
+
+**TypeScript:**
+```typescript
+import { Pod } from 'envpod';
+
+const pod = await Pod.create('web-agent', { config: 'browser-use.yaml' });
+pod.run('python3 agent.py', { background: true });
+
+pod.dnsAllow('api.newservice.com');
+pod.dnsDeny('tracking.analytics.com');
+
+pod.destroy();
+```
+
+## 12. Remote Control: Freeze and Resume
+
+Monitor an agent and intervene when needed.
+
+**Python:**
+```python
+from envpod import Pod
+import time
+
+pod = Pod("autonomous-agent", config="coding-agent.yaml")
+pod.init()
+pod.run("python3 long_running_agent.py", background=True)
+
+# Check periodically
+time.sleep(60)
+log = pod.audit()
+if "suspicious" in log:
+    pod.freeze()                    # freeze instantly
+    print("Agent frozen — reviewing audit log")
+    print(pod.audit())
+
+    # Decision: resume or kill
+    pod.resume()                    # continue
+    # pod.kill()                    # terminate + rollback
+    # pod.restrict("readonly")     # limit to read-only
+
+pod.destroy()
+```
+
+**TypeScript:**
+```typescript
+import { Pod } from 'envpod';
+
+const pod = await Pod.create('autonomous-agent', { config: 'coding-agent.yaml' });
+pod.run('python3 agent.py', { background: true });
+
+// Intervene
+pod.freeze();
+console.log(pod.audit());
+pod.resume();   // or pod.kill()
+
+pod.destroy();
+```
+
+## 13. Action Queue: Human-in-the-Loop
+
+Require human approval for dangerous operations.
+
+**Python:**
+```python
+from envpod import Pod
+
+pod = Pod("supervised-agent", config="coding-agent.yaml")
+pod.init()
+
+# Agent runs and submits actions to the queue
+pod.run("python3 agent.py --mode supervised", background=True)
+
+# Check pending actions
+pending = pod.queue_list()
+print(pending)
+
+# Approve or cancel each action by ID
+pod.approve("abc12345")    # allow this action
+pod.cancel("def67890")     # reject this action
+
+# Undo the last action if it was wrong
+pod.undo()
+
+pod.destroy()
+```
+
+## 14. Snapshots: Checkpoint and Restore
+
+Save state before risky operations.
+
+**Python:**
+```python
+from envpod import Pod
+
+pod = Pod("experiment", config="coding-agent.yaml")
+pod.init()
+
+# Checkpoint before risky refactor
+pod.snapshot_create("before-refactor")
+
+# Let the agent refactor
+pod.run("python3 agent.py --task 'refactor auth module'")
+
+# Check the result
+print(pod.diff())
+
+# Bad result? Restore checkpoint
+pod.snapshot_restore("before-refactor")
+
+# Good result? Keep it, list snapshots
+print(pod.snapshot_list())
+
+# Clean up old snapshots
+pod.snapshot_destroy("before-refactor")
+
+pod.destroy()
+```
+
+**TypeScript:**
+```typescript
+import { Pod } from 'envpod';
+
+const pod = await Pod.create('experiment', { config: 'coding-agent.yaml' });
+
+pod.snapshotCreate('before-refactor');
+pod.run('python3 agent.py --task "refactor auth"');
+
+// Restore if needed
+pod.snapshotRestore('before-refactor');
+
+pod.destroy();
+```
+
+## 15. Persistent Desktop: Jupyter Workflow
+
+Start a desktop pod, explore interactively, persist for later.
+
+**Python:**
+```python
+from envpod import Pod
+
+# Cell 1: Create desktop pod
+pod = Pod("my-desktop", config="examples/workstation-full.yaml", persist=True)
+pod.init()
+
+# Cell 2: Start desktop and get URL
+url = pod.start_display()
+print(f"Open in browser: {url}")
+# → http://10.200.5.2:6080/vnc.html
+
+# Cell 3: Check what the agent did
+print(pod.diff())
+print(pod.audit())
+
+# Cell 4: Commit work, close notebook
+pod.commit("src/", "docs/", rollback_rest=True)
+# Pod survives notebook close — persist=True
+
+# Next day, new notebook:
+pod = Pod("my-desktop")  # reconnects to existing pod
+print(pod.display_url)
+print(pod.diff())
+
+# Done forever? Destroy it
+pod.destroy()
+```
+
+## 16. Disposable Pods: One-Shot Tasks
+
+Run a command and throw away the environment. Like `docker run --rm` but governed.
+
+**Python:**
+```python
+from envpod import Pod
+
+# Create base once
+base = Pod("tools", config="coding-agent.yaml")
+base.init_with_base()
+base.destroy()
+
+# One-shot: run and discard
+Pod.disposable(base, "lint", "python3 -m flake8 /workspace/src/")
+
+# One-shot: run and save results
+Pod.disposable(base, "test", "python3 -m pytest /workspace/tests/",
+               commit_paths=["test-results/"],
+               output="/tmp/test-output/")
+
+# One-shot: run with env vars
+Pod.disposable(base, "deploy", "python3 deploy.py",
+               env={"DEPLOY_TARGET": "staging"},
+               root=True)
+
+Pod.gc()
+```
+
+**TypeScript:**
+```typescript
+import { Pod } from 'envpod';
+
+const base = Pod.wrap('tools', { config: 'coding-agent.yaml' });
+base.initWithBase();
+base.destroy();
+
+Pod.disposable(base, 'lint', 'python3 -m flake8 /workspace/src/');
+
+Pod.disposable(base, 'test', 'python3 -m pytest', {
+    commitPaths: ['test-results/'],
+    output: '/tmp/test-output/',
+});
+
+Pod.gc();
+```
+
+## 17. Mount Multiple Directories
+
+Work with project files from different locations.
+
+**Python:**
+```python
+from envpod import Pod
+
+base = Pod("dev-base", config="coding-agent.yaml")
+base.init_with_base()
+base.destroy()
+
+agent = Pod.clone(base, "feature-work")
+
+# Mount project directories
+agent.mount("/home/mark/projects/webapp")
+agent.mount("/home/mark/projects/shared-libs", readonly=True)
+agent.mount("/data/test-fixtures", readonly=True)
+
+# Agent works across all mounted dirs via COW
+agent.run("python3 agent.py --project /home/mark/projects/webapp")
+
+# Review and commit
+print(agent.diff())
+agent.commit("/home/mark/projects/webapp/src/", rollback_rest=True)
+
+agent.destroy()
+Pod.gc()
+```
+
+## 18. Full Governed Pipeline
+
+Complete workflow: screen → run → audit → commit.
+
+**Python:**
+```python
+from envpod import Pod, screen
+
+def governed_task(base_name: str, task_name: str, command: str,
+                  commit_paths: list, api_key: str) -> bool:
+    """Run a governed task: screen input, run agent, audit output, commit."""
+
+    # Screen the command for injection
+    result = screen(command)
+    if result["matched"]:
+        print(f"BLOCKED: {result['category']} in command")
+        return False
+
+    # Clone from base
+    pod = Pod.clone(base_name, task_name)
+    pod.vault_set("ANTHROPIC_API_KEY", api_key)
+
+    try:
+        # Snapshot before
+        pod.snapshot_create("pre-run")
+
+        # Run the agent
+        pod.run(command)
+
+        # Screen the output
+        diff = pod.diff()
+        output_check = screen(diff)
+        if output_check["matched"]:
+            print(f"OUTPUT BLOCKED: {output_check['category']}")
+            pod.snapshot_restore("pre-run")
+            return False
+
+        # Audit looks clean — commit
+        pod.commit(*commit_paths, rollback_rest=True)
+        return True
+
+    finally:
+        pod.destroy()
+        Pod.gc()
+
+# Usage
+success = governed_task(
+    "coding-base", "fix-auth",
+    "python3 agent.py --task 'fix authentication bug'",
+    ["src/auth/", "tests/test_auth.py"],
+    api_key="sk-ant-..."
+)
+```
+
 ---
 
 All examples work with both `standard` mode (no sudo) and `full` mode (complete isolation).
