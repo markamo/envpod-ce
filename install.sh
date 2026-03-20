@@ -512,12 +512,17 @@ ENVPOD_GROUP_ADDED=0
 REAL_USER="${SUDO_USER:-$(whoami)}"
 
 if [[ "$REAL_USER" != "root" && "$IN_CONTAINER" -eq 0 ]]; then
-    step "Envpod group setup"
+    step "Envpod group setup (run without sudo)"
     echo ""
-    echo "  Run envpod without sudo?"
     echo "  This adds '$REAL_USER' to the 'envpod' group (like Docker)."
+    echo "  After logging out and back in, envpod runs without sudo."
     echo ""
-    read -p "  Add $REAL_USER to envpod group? [Y/n] " ENVPOD_GROUP_CHOICE </dev/tty 2>/dev/null || ENVPOD_GROUP_CHOICE="y"
+    if [[ -t 0 ]] || [[ -e /dev/tty ]]; then
+        read -p "  Add $REAL_USER to envpod group? [Y/n]: " ENVPOD_GROUP_CHOICE </dev/tty 2>/dev/null || ENVPOD_GROUP_CHOICE="y"
+    else
+        echo "  Non-interactive install — adding $REAL_USER to envpod group automatically."
+        ENVPOD_GROUP_CHOICE="y"
+    fi
 
     if [[ "$ENVPOD_GROUP_CHOICE" != "n" && "$ENVPOD_GROUP_CHOICE" != "N" ]]; then
         groupadd -f envpod
