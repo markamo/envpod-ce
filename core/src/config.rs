@@ -207,6 +207,11 @@ pub struct FilesystemConfig {
     /// The captured CWD path (set automatically during `envpod init` when mount_cwd is true).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cwd_path: Option<PathBuf>,
+    /// Sealed mode — no host bind mounts. System dirs come from the rootfs
+    /// copy only. The host filesystem is invisible to the agent.
+    /// Forces system_access to advanced (COW overlay, no live bind mounts).
+    #[serde(default)]
+    pub sealed: bool,
 }
 
 /// Controls which paths appear in `envpod diff` and `envpod commit` by default.

@@ -762,6 +762,11 @@ impl NativeBackend {
             .map(|c| c.filesystem.system_access)
             .unwrap_or_default();
 
+        // Sealed mode — no host bind mounts
+        let sealed = pod_config
+            .map(|c| c.filesystem.sealed)
+            .unwrap_or(false);
+
         // Resolve user name/uid to (uid, gid) from the pod's /etc/passwd
         let run_as = match user {
             Some(u) => Some(resolve_pod_user(&state.pod_dir, u)?),
@@ -786,6 +791,7 @@ impl NativeBackend {
             &mount_entries,
             devices,
             system_access,
+            sealed,
             quiet_log.map(|p| p.to_path_buf()),
             run_as,
         )
