@@ -561,18 +561,18 @@ class Pod:
         if self._mode == "full":
             # Check if envpod has setgid (envpod group) — no sudo needed
             import os
-            if os.access(binary, os.X_OK) and _has_setgid(binary):
+            if os.access(binary, os.X_OK) and _has_setuid(binary):
                 return [binary] + args
             return ["sudo", binary] + args
         return [binary] + args
 
 
-def _has_setgid(path: str) -> bool:
-    """Check if a file has the setgid bit set (envpod group mode)."""
+def _has_setuid(path: str) -> bool:
+    """Check if a file has the setuid bit set (envpod group — setuid root)."""
     import os, stat
     try:
         st = os.stat(path)
-        return bool(st.st_mode & stat.S_ISGID)
+        return bool(st.st_mode & stat.S_ISUID)
     except OSError:
         return False
 

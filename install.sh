@@ -529,11 +529,11 @@ if [[ "$REAL_USER" != "root" && "$IN_CONTAINER" -eq 0 ]]; then
     if [[ "$ENVPOD_GROUP_CHOICE" != "n" && "$ENVPOD_GROUP_CHOICE" != "N" ]]; then
         groupadd -f envpod
         usermod -aG envpod "$REAL_USER"
-        chgrp envpod "$INSTALL_DIR/envpod"
-        chmod g+s "$INSTALL_DIR/envpod"
+        chown root:envpod "$INSTALL_DIR/envpod"
+        chmod 4750 "$INSTALL_DIR/envpod"
         ENVPOD_GROUP_ADDED=1
         info "Added $REAL_USER to envpod group"
-        info "Binary set to setgid envpod"
+        info "Binary set to setuid root (group-gated)"
         info "To use envpod without sudo: log out and log back in"
     else
         info "Skipped — use sudo to run envpod"
