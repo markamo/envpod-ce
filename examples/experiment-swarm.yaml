@@ -1,0 +1,82 @@
+# Experiment Swarm — parallel experiments, results governed
+#
+# Run 100 experiments in parallel from a single base. Each experiment
+# gets its own sealed overlay. Results are screened and committed.
+# Failed experiments are discarded automatically.
+#
+# Use cases:
+#   - Hyperparameter sweeps
+#   - A/B testing agent strategies
+#   - Monte Carlo simulations
+#   - Benchmark comparisons across models
+#   - Fuzz testing with governed results
+#
+# Usage (SDK — the natural interface for swarms):
+#   from envpod import Pod, screen
+#
+#   base = Pod("exp-base", config="examples/experiment-swarm.yaml")
+#   base.init_with_base()
+#   base.destroy()
+#
+#   for i in range(100):
+#       diff = Pod.disposable(base, f"exp-{i}",
+#           f"python3 experiment.py --seed={i} --lr=0.001",
+#           commit_paths=["results/"],
+#           output=f"/data/experiments/run-{i}/")
+#       if diff:
+#           result = screen(diff)
+#           if result["matched"]:
+#               print(f"exp-{i}: BLOCKED — {result['category']}")
+#
+#   Pod.gc()
+
+name: experiment-base
+type: standard
+
+filesystem:
+  system_access: advanced
+  workspace: /workspace
+  mount_cwd: false
+  tracking:
+    watch:
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+network:
+  mode: Monitored
+  dns:
+    mode: Allowlist
+    allow:
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+      - download.pytorch.org
+      - "*.pytorch.org"
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+  max_pids: 256
+  tmp_size: "2GB"
+
+devices:
+  gpu: true
+
+security:
+  seccomp_profile: default
+
+budget:
+  max_duration: "1h"
+
+audit:
+  action_log: true
+
+setup:
+  - "apt-get install -y --no-install-recommends python3 python3-pip"
+  - "pip3 install torch numpy pandas scikit-learn"
+  - "mkdir -p /workspace/results"

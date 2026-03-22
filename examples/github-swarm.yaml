@@ -1,0 +1,113 @@
+# GitHub Swarm — autonomous coding agents, code never touches the host
+#
+# Multiple agents work on the same repo in parallel. Each agent gets
+# its own branch. Code lives only in the pod overlay — the host machine
+# never sees the source code. Ideal for high-IP environments.
+#
+# Flow:
+#   1. Agent clones repo into pod overlay (not host)
+#   2. Agent creates a branch and works
+#   3. Agent commits and pushes from inside the pod
+#   4. Pod is destroyed — zero code residue on host
+#
+# Usage (single agent):
+#   sudo envpod init swarm-1 -c examples/github-swarm.yaml
+#   sudo envpod vault swarm-1 set GITHUB_TOKEN ghp_...
+#   sudo envpod run swarm-1 --root -- bash -c '
+#     git clone https://$GITHUB_TOKEN@github.com/user/repo.git /workspace/repo
+#     cd /workspace/repo
+#     git checkout -b fix-auth
+#     # ... agent works ...
+#     git add -A && git commit -m "fix auth"
+#     git push origin fix-auth
+#   '
+#   sudo envpod destroy swarm-1
+#
+# Usage (SDK swarm — 10 agents):
+#   from envpod import Pod
+#
+#   base = Pod("swarm-base", config="examples/github-swarm.yaml")
+#   base.init_with_base()
+#   base.destroy()
+#
+#   tasks = [("fix-auth", "fix authentication"), ("add-tests", "add unit tests")]
+#   for branch, task in tasks:
+#       agent = Pod.clone(base, f"agent-{branch}")
+#       agent.vault_set("GITHUB_TOKEN", token)
+#       agent.run(f'''
+#           git clone https://$GITHUB_TOKEN@github.com/corp/repo.git /workspace/repo
+#           cd /workspace/repo && git checkout -b {branch}
+#           python3 agent.py --task "{task}"
+#           git add -A && git commit -m "{task}"
+#           git push origin {branch}
+#       ''', root=True)
+#       agent.destroy()
+#   Pod.gc()
+#   # 10 branches pushed, zero code on host
+
+name: github-swarm
+type: standard
+
+filesystem:
+  system_access: advanced
+  workspace: /workspace
+  mount_cwd: false      # CRITICAL: no host mount — code stays in overlay only
+  tracking:
+    watch:
+      - /workspace
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+      - /workspace/repo/.git
+
+network:
+  mode: Monitored
+  dns:
+    mode: Allowlist
+    allow:
+      # GitHub only — tight allowlist
+      - github.com
+      - "*.github.com"
+      - api.github.com
+      - "*.githubusercontent.com"
+      # LLM API (for coding agents)
+      - api.anthropic.com
+      - "*.anthropic.com"
+      - api.openai.com
+      - "*.openai.com"
+      # Package registries
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+      - registry.npmjs.org
+      - "*.npmjs.org"
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+  max_pids: 512
+  tmp_size: "2GB"
+
+security:
+  seccomp_profile: default
+
+vault:
+  env:
+    - GITHUB_TOKEN
+    - ANTHROPIC_API_KEY
+
+budget:
+  max_duration: "2h"
+
+audit:
+  action_log: true
+
+setup:
+  - "apt-get install -y --no-install-recommends git curl ca-certificates python3 python3-pip"
+  - |
+    git config --global user.name "envpod-agent"
+    git config --global user.email "agent@envpod.dev"
+  - "pip3 install anthropic requests"

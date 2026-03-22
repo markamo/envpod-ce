@@ -1,0 +1,70 @@
+# Sealed Workspace — zero host access, data in overlay only
+#
+# A completely sealed environment where nothing touches the host.
+# All data lives in the pod overlay. Ideal for:
+#   - High-IP code that must never touch the server
+#   - Simulations and experiments with sensitive data
+#   - Compliance environments (HIPAA, SOC2, GDPR)
+#   - Multi-tenant agent hosting (each tenant gets a sealed pod)
+#
+# Data flow:
+#   Input:  clone from Git, download from API, or inject via SDK
+#   Work:   agent processes in the sealed overlay
+#   Output: push to Git, upload to API, or export via envpod commit --output
+#   Cleanup: destroy pod — zero residue on host
+#
+# Usage:
+#   sudo envpod init sealed -c examples/sealed-workspace.yaml
+#   sudo envpod run sealed --root -- bash -c '
+#     # Bring data in
+#     curl -o /workspace/data.csv https://api.example.com/data
+#     # Process
+#     python3 process.py
+#     # Push results out
+#     curl -X POST https://api.example.com/results -d @/workspace/output.json
+#   '
+#   sudo envpod destroy sealed   # zero residue
+#
+# SDK usage:
+#   from envpod import Pod
+#   with Pod("sealed", config="examples/sealed-workspace.yaml") as pod:
+#       pod.inject("input.csv", "/workspace/input.csv")
+#       pod.run("python3 process.py")
+#       output = pod.run("cat /workspace/output.json", capture=True)
+#   # pod destroyed, overlay gone, host clean
+
+name: sealed-workspace
+type: standard
+
+filesystem:
+  system_access: safe    # read-only system dirs — maximum isolation
+  workspace: /workspace
+  mount_cwd: false        # NO host mount — sealed
+  tracking:
+    watch:
+      - /workspace
+    ignore:
+      - /tmp
+      - /run
+
+network:
+  mode: Monitored
+  dns:
+    mode: Allowlist
+    allow: []             # empty — fully airgapped by default
+                          # add domains as needed for your workflow
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+  max_pids: 256
+  tmp_size: "1GB"
+
+security:
+  seccomp_profile: default
+
+budget:
+  max_duration: "4h"
+
+audit:
+  action_log: true
