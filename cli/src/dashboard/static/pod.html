@@ -41,8 +41,19 @@
 </div>
 
 <script>
+const TOKEN = window.ENVPOD_TOKEN || '';
 const params = new URLSearchParams(window.location.search);
 const podName = params.get('name');
+
+function authHeaders(extra) {
+    return Object.assign({ 'Authorization': 'Bearer ' + TOKEN }, extra || {});
+}
+
+function authFetch(url, opts) {
+    opts = opts || {};
+    opts.headers = authHeaders(opts.headers);
+    return fetch(url, opts);
+}
 
 if (!podName) {
     document.getElementById('pod-name').textContent = 'No pod specified';
@@ -54,13 +65,12 @@ if (!podName) {
     loadResources();
     loadSnapshots();
     loadQueue();
-    // Auto-refresh resources and queue
     setInterval(loadResources, 2000);
     setInterval(loadQueue, 3000);
 }
 
 function loadPodDetail() {
-    fetch(`/api/v1/pods/${encodeURIComponent(podName)}`)
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}`)
         .then(r => r.json())
         .then(pod => {
             document.getElementById('pod-name').innerHTML =
@@ -89,15 +99,15 @@ function loadPodDetail() {
                 </div>
             `;
 
-            // Actions
             document.getElementById('pod-actions').innerHTML = `
                 <button class="btn success" onclick="podAction('commit')" title="Commit overlay changes">Commit</button>
                 <button class="btn danger" onclick="podAction('rollback')" title="Rollback overlay changes">Rollback</button>
                 <button class="btn" onclick="podAction('freeze')" title="Freeze pod">Freeze</button>
                 <button class="btn" onclick="podAction('resume')" title="Resume pod">Resume</button>
+                <button class="btn primary" onclick="clonePod()" title="Clone this pod">Clone</button>
+                <button class="btn danger" onclick="destroyPod()" title="Destroy this pod">Destroy</button>
             `;
 
-            // Overview section — config summary
             let configHtml = '<div class="empty"><p>No configuration loaded</p></div>';
             if (pod.config) {
                 const c = pod.config;
@@ -122,7 +132,7 @@ function loadPodDetail() {
 }
 
 function loadAudit() {
-    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/audit?offset=0&limit=100`)
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/audit?offset=0&limit=100`)
         .then(r => r.json())
         .then(data => {
             if (!data.entries || data.entries.length === 0) {
@@ -151,15 +161,12 @@ function loadAudit() {
 
 // ---- Diff tab ----
 
-let diffData = [];  // current diff file list
+let diffData = [];
 
 function loadDiff() {
-    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/diff`)
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/diff`)
         .then(r => r.json())
-        .then(diffs => {
-            diffData = diffs;
-            renderDiff();
-        });
+        .then(diffs => { diffData = diffs; renderDiff(); });
 }
 
 function renderDiff() {
@@ -191,7 +198,7 @@ function renderDiff() {
                 </span>
             </div>
             <div class="diff-inline" id="dfi-${i}">
-                <div class="diff-inline-loading">Loading diff…</div>
+                <div class="diff-inline-loading">Loading diff...</div>
             </div>
         </div>
     `).join('');
@@ -222,7 +229,7 @@ function toggleFileDiff(idx) {
     if (isOpen && inline.dataset.loaded !== '1') {
         inline.dataset.loaded = '1';
         const path = diffData[idx].path;
-        fetch(`/api/v1/pods/${encodeURIComponent(podName)}/file-diff?path=${encodeURIComponent(path)}`)
+        authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/file-diff?path=${encodeURIComponent(path)}`)
             .then(r => r.json())
             .then(fd => { inline.innerHTML = renderFileDiff(fd); })
             .catch(() => { inline.innerHTML = '<div class="diff-inline-loading">Error loading diff</div>'; });
@@ -231,7 +238,7 @@ function toggleFileDiff(idx) {
 
 function renderFileDiff(fd) {
     if (fd.binary) {
-        return `<div class="diff-inline-binary">Binary file — content diff not available</div>`;
+        return `<div class="diff-inline-binary">Binary file - content diff not available</div>`;
     }
     if (!fd.lines || fd.lines.length === 0) {
         return `<div class="diff-inline-binary">No diffable content</div>`;
@@ -286,7 +293,7 @@ function commitSelected() {
         .map(d => d.path);
     if (paths.length === 0) return;
     if (!confirm(`Commit ${paths.length} selected file(s) to host?`)) return;
-    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/commit-files`, {
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/commit-files`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paths }),
@@ -298,7 +305,7 @@ function commitSelected() {
 
 function commitFile(path) {
     if (!confirm(`Commit "${path}" to host?`)) return;
-    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/commit-files`, {
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/commit-files`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paths: [path] }),
@@ -313,7 +320,7 @@ function rollbackFile(path) {
 }
 
 function loadResources() {
-    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/resources`)
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/resources`)
         .then(r => r.json())
         .then(res => {
             if (!res) {
@@ -363,13 +370,52 @@ function podAction(action) {
     if (destructive.includes(action)) {
         if (!confirm(`Are you sure you want to ${action} pod "${podName}"?`)) return;
     }
-    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/${action}`, { method: 'POST' })
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/${action}`, { method: 'POST' })
         .then(r => r.json())
         .then(result => {
             alert(JSON.stringify(result.status || result.error));
             loadPodDetail();
             loadDiff();
             loadAudit();
+        })
+        .catch(err => alert('Error: ' + err.message));
+}
+
+// ---- Destroy Pod ----
+
+function destroyPod() {
+    if (!confirm(`DESTROY pod "${podName}"?\n\nThis will permanently delete the pod and all its data. This cannot be undone.`)) return;
+    if (!confirm(`Are you really sure? Type the pod name in the next prompt to confirm.`)) return;
+    const typed = prompt(`Type "${podName}" to confirm destruction:`);
+    if (typed !== podName) {
+        alert('Pod name did not match. Destroy cancelled.');
+        return;
+    }
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}`, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(res => {
+            if (res.error) { alert('Error: ' + res.error); return; }
+            alert('Pod destroyed.');
+            window.location.href = '/';
+        })
+        .catch(err => alert('Error: ' + err.message));
+}
+
+// ---- Clone Pod ----
+
+function clonePod() {
+    const newName = prompt(`Clone pod "${podName}".\n\nNew pod name:`);
+    if (!newName || !newName.trim()) return;
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/clone`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ new_name: newName.trim() }),
+    })
+        .then(r => r.json())
+        .then(res => {
+            if (res.error) { alert('Error: ' + res.error); return; }
+            alert(`Pod "${newName.trim()}" cloned successfully.`);
+            window.location.href = `/pod.html?name=${encodeURIComponent(newName.trim())}`;
         })
         .catch(err => alert('Error: ' + err.message));
 }
@@ -389,7 +435,7 @@ const TIER_CSS = { immediate_protected: 'green', delayed: 'yellow', staged: 'ora
 const STATUS_CSS = { queued: 'yellow', approved: 'green', executed: 'dim', cancelled: 'dim', blocked: 'red' };
 
 function loadQueue() {
-    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/queue`)
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/queue`)
         .then(r => r.json())
         .then(actions => { renderQueue(actions); })
         .catch(() => {
@@ -447,9 +493,8 @@ function renderQueue(actions) {
 }
 
 function queueAction(shortId, action) {
-    const label = action === 'approve' ? 'Approve' : 'Cancel';
     if (action === 'cancel' && !confirm(`Cancel action ${shortId}?`)) return;
-    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/queue/${encodeURIComponent(shortId)}/${action}`, {
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/queue/${encodeURIComponent(shortId)}/${action}`, {
         method: 'POST',
     })
         .then(r => r.json())
@@ -471,7 +516,7 @@ function escapeHtml(str) {
 // ---- Snapshots tab ----
 
 function loadSnapshots() {
-    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots`)
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots`)
         .then(r => r.json())
         .then(snaps => { renderSnapshots(snaps); })
         .catch(() => {
@@ -484,7 +529,7 @@ function renderSnapshots(snaps) {
     const sec = document.getElementById('section-snapshots');
     const createForm = `
         <div class="snap-create-bar">
-            <input id="snap-name-input" type="text" placeholder="Optional label…" class="snap-label-input">
+            <input id="snap-name-input" type="text" placeholder="Optional label..." class="snap-label-input">
             <button class="btn success" onclick="createSnapshot()">+ New Snapshot</button>
         </div>
     `;
@@ -523,7 +568,7 @@ function renderSnapshots(snaps) {
 function createSnapshot() {
     const input = document.getElementById('snap-name-input');
     const name = input ? input.value.trim() : '';
-    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots`, {
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name || null }),
@@ -539,7 +584,7 @@ function createSnapshot() {
 
 function restoreSnapshot(snapId) {
     if (!confirm(`Restore snapshot "${snapId}"?\n\nThe current overlay will be replaced. Any uncommitted changes will be lost.`)) return;
-    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots/${encodeURIComponent(snapId)}/restore`, {
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots/${encodeURIComponent(snapId)}/restore`, {
         method: 'POST',
     })
         .then(r => r.json())
@@ -556,7 +601,7 @@ function restoreSnapshot(snapId) {
 function promoteSnapshot(snapId) {
     const baseName = prompt(`Promote snapshot "${snapId}" to a new base.\n\nBase name (used with: envpod clone <base> <new-pod>):`);
     if (!baseName || !baseName.trim()) return;
-    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots/${encodeURIComponent(snapId)}/promote`, {
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots/${encodeURIComponent(snapId)}/promote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ base_name: baseName.trim() }),
@@ -572,7 +617,7 @@ function promoteSnapshot(snapId) {
 
 function deleteSnapshot(snapId) {
     if (!confirm(`Delete snapshot "${snapId}"? This cannot be undone.`)) return;
-    fetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots/${encodeURIComponent(snapId)}`, {
+    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/snapshots/${encodeURIComponent(snapId)}`, {
         method: 'DELETE',
     })
         .then(r => r.json())

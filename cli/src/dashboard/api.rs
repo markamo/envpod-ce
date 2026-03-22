@@ -25,6 +25,7 @@ use super::state as pod_state;
 pub struct AppState {
     pub store: PodStore,
     pub base_dir: PathBuf,
+    pub token: String,
 }
 
 #[derive(Deserialize)]
@@ -51,6 +52,20 @@ pub struct CreateSnapshotBody {
 #[derive(Deserialize)]
 pub struct PromoteSnapshotBody {
     pub base_name: String,
+}
+
+#[derive(Deserialize)]
+pub struct CreatePodBody {
+    pub name: String,
+    pub preset: Option<String>,
+    pub cores: Option<f64>,
+    pub memory: Option<String>,
+    pub gpu: Option<bool>,
+}
+
+#[derive(Deserialize)]
+pub struct ClonePodBody {
+    pub new_name: String,
 }
 
 #[derive(Serialize)]
@@ -465,4 +480,153 @@ pub async fn pod_queue_cancel(
         success: true,
     });
     Ok(Json(serde_json::json!({ "status": "cancelled", "id": cancelled.id, "pod": name })))
+}
+
+/// POST /api/v1/pods — create a new pod
+pub async fn create_pod(
+    State(state): State<Arc<AppState>>,
+    BodyJson(body): BodyJson<CreatePodBody>,
+) -> Result<Json<serde_json::Value>, (StatusCode, Json<ApiError>)> {
+    use envpod_core::config::PodConfig;
+
+    let name = body.name.trim();
+    if name.is_empty() {
+        return Err(err(StatusCode::BAD_REQUEST, "pod name is required"));
+    }
+
+    // Check if pod already exists
+    if state.store.load(name).is_ok() {
+        return Err(err(StatusCode::CONFLICT, format!("pod '{name}' already exists")));
+    }
+
+    // Build config from preset or defaults
+    let mut config: PodConfig = if let Some(ref preset_name) = body.preset {
+        let preset = crate::presets::get(preset_name).ok_or_else(|| {
+            err(StatusCode::BAD_REQUEST, format!("unknown preset '{preset_name}'"))
+        })?;
+        serde_yaml::from_str(preset.yaml)
+            .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("parse preset: {e:#}")))?
+    } else {
+        PodConfig::default()
+    };
+
+    config.name = name.to_string();
+
+    // Apply customizations
+    if let Some(cores) = body.cores {
+        config.processor.cores = Some(cores);
+    }
+    if let Some(ref memory) = body.memory {
+        config.processor.memory = Some(memory.clone());
+    }
+    if let Some(gpu) = body.gpu {
+        config.devices.gpu = gpu;
+    }
+
+    let backend = create_backend(&config.backend, &state.base_dir)
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
+    let handle = backend.create(&config)
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
+    state.store.save(&handle)
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
+
+    // Save pod.yaml
+    let native_state = NativeState::from_handle(&handle)
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
+    let yaml = serde_yaml::to_string(&config).unwrap_or_default();
+    let _ = std::fs::write(native_state.pod_dir.join("pod.yaml"), &yaml);
+
+    // Audit
+    let log = AuditLog::new(&native_state.pod_dir);
+    let _ = log.append(&AuditEntry {
+        timestamp: chrono::Utc::now(),
+        pod_name: name.to_string(),
+        action: AuditAction::Create,
+        detail: format!("via dashboard{}", body.preset.as_deref().map(|p| format!(", preset={p}")).unwrap_or_default()),
+        success: true,
+    });
+
+    Ok(Json(serde_json::json!({ "status": "created", "pod": name })))
+}
+
+/// DELETE /api/v1/pods/:id — destroy a pod
+pub async fn destroy_pod(
+    State(state): State<Arc<AppState>>,
+    Path(name): Path<String>,
+) -> Result<Json<serde_json::Value>, (StatusCode, Json<ApiError>)> {
+    let handle = state.store.load(&name)
+        .map_err(|e| err(StatusCode::NOT_FOUND, format!("{e:#}")))?;
+
+    let backend = create_backend(&handle.backend, &state.base_dir)
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
+
+    backend.destroy(&handle)
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
+
+    Ok(Json(serde_json::json!({ "status": "destroyed", "pod": name })))
+}
+
+/// POST /api/v1/pods/:id/clone — clone a pod
+pub async fn clone_pod(
+    State(state): State<Arc<AppState>>,
+    Path(name): Path<String>,
+    BodyJson(body): BodyJson<ClonePodBody>,
+) -> Result<Json<serde_json::Value>, (StatusCode, Json<ApiError>)> {
+    use envpod_core::backend::native::NativeBackend;
+
+    let new_name = body.new_name.trim();
+    if new_name.is_empty() {
+        return Err(err(StatusCode::BAD_REQUEST, "new pod name is required"));
+    }
+    if state.store.load(new_name).is_ok() {
+        return Err(err(StatusCode::CONFLICT, format!("pod '{new_name}' already exists")));
+    }
+
+    let handle = state.store.load(&name)
+        .map_err(|e| err(StatusCode::NOT_FOUND, format!("{e:#}")))?;
+
+    let backend = NativeBackend::new(&state.base_dir)
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
+
+    // Clone from current state
+    let new_handle = backend.clone_pod(&handle, new_name, true)
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
+    state.store.save(&new_handle)
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
+
+    // Audit on new pod
+    let native_state = NativeState::from_handle(&new_handle)
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
+    let log = AuditLog::new(&native_state.pod_dir);
+    let _ = log.append(&AuditEntry {
+        timestamp: chrono::Utc::now(),
+        pod_name: new_name.to_string(),
+        action: AuditAction::Clone,
+        detail: format!("cloned from '{}' via dashboard", name),
+        success: true,
+    });
+
+    Ok(Json(serde_json::json!({ "status": "cloned", "source": name, "pod": new_name })))
+}
+
+/// GET /api/v1/presets — list available presets
+pub async fn list_presets(
+    State(_state): State<Arc<AppState>>,
+) -> Json<serde_json::Value> {
+    let categories: Vec<serde_json::Value> = crate::presets::categories()
+        .into_iter()
+        .map(|(cat, presets)| {
+            let items: Vec<serde_json::Value> = presets.iter().map(|p| {
+                serde_json::json!({
+                    "name": p.name,
+                    "description": p.description,
+                })
+            }).collect();
+            serde_json::json!({
+                "category": cat,
+                "presets": items,
+            })
+        })
+        .collect();
+    Json(serde_json::json!(categories))
 }

@@ -13,38 +13,71 @@
         <h1>envpod <span class="version">dashboard</span></h1>
     </header>
 
-    <div id="pod-list"
-         hx-get="/api/v1/pods"
-         hx-trigger="load, every 2s"
-         hx-swap="innerHTML">
-        <div class="empty">
-            <h3>Loading pods...</h3>
+    <div class="actions">
+        <button class="btn success" onclick="openCreateModal()">+ Create Pod</button>
+    </div>
+
+    <div id="pod-list"></div>
+</div>
+
+<!-- Create Pod Modal -->
+<div class="modal-overlay" id="create-modal" style="display:none" onclick="if(event.target===this)closeCreateModal()">
+    <div class="modal">
+        <h3>Create Pod</h3>
+        <div class="form-group">
+            <label>Pod Name</label>
+            <input type="text" id="create-name" placeholder="my-agent" class="form-input">
         </div>
+        <div class="form-group">
+            <label>Preset</label>
+            <select id="create-preset" class="form-input" onchange="applyPresetDefaults()">
+                <option value="">Custom (blank config)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>CPU Cores</label>
+            <input type="text" id="create-cores" placeholder="2.0" class="form-input">
+        </div>
+        <div class="form-group">
+            <label>Memory</label>
+            <input type="text" id="create-memory" placeholder="4GB" class="form-input">
+        </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="create-gpu">
+            <label for="create-gpu" style="margin:0">GPU passthrough</label>
+        </div>
+        <div class="modal-actions">
+            <button class="btn" onclick="closeCreateModal()">Cancel</button>
+            <button class="btn success" onclick="createPod()">Create</button>
+        </div>
+        <div id="create-error" class="form-error" style="display:none"></div>
     </div>
 </div>
 
 <script>
-// Transform JSON API response into pod cards
-document.body.addEventListener('htmx:beforeSwap', function(evt) {
-    if (evt.detail.target.id === 'pod-list') {
-        try {
-            const pods = JSON.parse(evt.detail.xhr.responseText);
-            if (pods.length === 0) {
-                evt.detail.serverResponse = `
-                    <div class="empty">
-                        <h3>No pods found</h3>
-                        <p>Create a pod with: sudo envpod init my-agent</p>
-                    </div>`;
+const TOKEN = window.ENVPOD_TOKEN || '';
+
+function authHeaders(extra) {
+    return Object.assign({ 'Authorization': 'Bearer ' + TOKEN }, extra || {});
+}
+
+// Load pods on start + poll
+loadPods();
+setInterval(loadPods, 2000);
+
+function loadPods() {
+    fetch('/api/v1/pods', { headers: authHeaders() })
+        .then(r => r.json())
+        .then(pods => {
+            const el = document.getElementById('pod-list');
+            if (!pods || pods.length === 0) {
+                el.innerHTML = '<div class="empty"><h3>No pods found</h3><p>Click "+ Create Pod" above to get started</p></div>';
             } else {
-                evt.detail.serverResponse = '<div class="pod-grid">' +
-                    pods.map(pod => renderPodCard(pod)).join('') +
-                    '</div>';
+                el.innerHTML = '<div class="pod-grid">' + pods.map(renderPodCard).join('') + '</div>';
             }
-        } catch(e) {
-            // Let htmx handle non-JSON responses normally
-        }
-    }
-});
+        })
+        .catch(() => {});
+}
 
 function renderPodCard(pod) {
     const statusClass = pod.status || 'stopped';
@@ -53,7 +86,6 @@ function renderPodCard(pod) {
     const diffBadge = pod.diff_count > 0
         ? `<span class="badge yellow">${pod.diff_count} changes</span>`
         : '';
-    const vaultBadge = '';
 
     return `
         <a href="/pod.html?name=${encodeURIComponent(pod.name)}" class="pod-card">
@@ -68,9 +100,92 @@ function renderPodCard(pod) {
             </div>
             <div style="margin-top:8px; display:flex; gap:6px;">
                 ${diffBadge}
-                ${vaultBadge}
             </div>
         </a>`;
+}
+
+// ---- Create Pod Modal ----
+
+let presetsLoaded = false;
+
+function openCreateModal() {
+    document.getElementById('create-modal').style.display = 'flex';
+    document.getElementById('create-name').value = '';
+    document.getElementById('create-cores').value = '';
+    document.getElementById('create-memory').value = '';
+    document.getElementById('create-gpu').checked = false;
+    document.getElementById('create-error').style.display = 'none';
+    if (!presetsLoaded) loadPresets();
+    document.getElementById('create-name').focus();
+}
+
+function closeCreateModal() {
+    document.getElementById('create-modal').style.display = 'none';
+}
+
+function loadPresets() {
+    fetch('/api/v1/presets', { headers: authHeaders() })
+        .then(r => r.json())
+        .then(categories => {
+            presetsLoaded = true;
+            const select = document.getElementById('create-preset');
+            categories.forEach(cat => {
+                const group = document.createElement('optgroup');
+                group.label = cat.category;
+                cat.presets.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.name;
+                    opt.textContent = `${p.name} - ${p.description}`;
+                    group.appendChild(opt);
+                });
+                select.appendChild(group);
+            });
+        })
+        .catch(() => {});
+}
+
+function applyPresetDefaults() {
+    // Clear customization fields when preset changes
+    document.getElementById('create-cores').placeholder = '2.0';
+    document.getElementById('create-memory').placeholder = '4GB';
+}
+
+function createPod() {
+    const name = document.getElementById('create-name').value.trim();
+    if (!name) {
+        showCreateError('Pod name is required');
+        return;
+    }
+    const preset = document.getElementById('create-preset').value || undefined;
+    const coresStr = document.getElementById('create-cores').value.trim();
+    const cores = coresStr ? parseFloat(coresStr) : undefined;
+    const memory = document.getElementById('create-memory').value.trim() || undefined;
+    const gpu = document.getElementById('create-gpu').checked || undefined;
+
+    const body = { name };
+    if (preset) body.preset = preset;
+    if (cores) body.cores = cores;
+    if (memory) body.memory = memory;
+    if (gpu) body.gpu = gpu;
+
+    fetch('/api/v1/pods', {
+        method: 'POST',
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(body),
+    })
+        .then(r => r.json())
+        .then(res => {
+            if (res.error) { showCreateError(res.error); return; }
+            closeCreateModal();
+            loadPods();
+        })
+        .catch(err => showCreateError(err.message));
+}
+
+function showCreateError(msg) {
+    const el = document.getElementById('create-error');
+    el.textContent = msg;
+    el.style.display = 'block';
 }
 
 function formatBytes(bytes) {

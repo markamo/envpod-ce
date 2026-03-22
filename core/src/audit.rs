@@ -57,6 +57,7 @@ pub enum AuditAction {
     WebDisplayStop,
     FileUpload,
     Resize,
+    VaultProxy,
 }
 
 impl std::fmt::Display for AuditAction {

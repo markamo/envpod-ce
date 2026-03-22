@@ -13,8 +13,9 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use axum::extract::Request;
+use axum::extract::{Request, State};
 use axum::http::{header, StatusCode};
+use axum::middleware;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post};
 use axum::Router;
@@ -116,15 +117,57 @@ fn start_daemon(base_dir: &std::path::Path, port: u16) -> Result<()> {
     Ok(())
 }
 
+/// Generate a random 32-character hex token from /dev/urandom.
+fn generate_token() -> String {
+    let mut bytes = [0u8; 16];
+    if let Ok(random) = std::fs::read("/dev/urandom") {
+        for (i, b) in random.iter().take(16).enumerate() {
+            bytes[i] = *b;
+        }
+    }
+    bytes.iter().map(|b| format!("{b:02x}")).collect()
+}
+
+/// Auth middleware — checks Bearer token on /api/ routes.
+async fn auth_middleware(
+    State(state): State<Arc<AppState>>,
+    req: Request,
+    next: middleware::Next,
+) -> Response {
+    let path = req.uri().path();
+
+    // Static assets don't need auth
+    if !path.starts_with("/api/") {
+        return next.run(req).await;
+    }
+
+    // Check Authorization header
+    let authorized = req
+        .headers()
+        .get(header::AUTHORIZATION)
+        .and_then(|v| v.to_str().ok())
+        .map(|v| v.strip_prefix("Bearer ").unwrap_or(v))
+        .map(|t| t == state.token.as_str())
+        .unwrap_or(false);
+
+    if !authorized {
+        return (StatusCode::UNAUTHORIZED, "Unauthorized - missing or invalid token").into_response();
+    }
+
+    next.run(req).await
+}
+
 /// The actual server loop.
 async fn serve(base_dir: PathBuf, port: u16, no_open: bool) -> Result<()> {
     let store = PodStore::new(base_dir.join("state"))?;
-    let app_state = Arc::new(AppState { store, base_dir });
+    let token = generate_token();
+    let app_state = Arc::new(AppState { store, base_dir: base_dir.clone(), token: token.clone() });
 
     let app = Router::new()
         // API routes
-        .route("/api/v1/pods", get(api::list_pods))
-        .route("/api/v1/pods/{id}", get(api::pod_detail))
+        .route("/api/v1/pods", get(api::list_pods).post(api::create_pod))
+        .route("/api/v1/pods/{id}", get(api::pod_detail).delete(api::destroy_pod))
+        .route("/api/v1/pods/{id}/clone", post(api::clone_pod))
         .route("/api/v1/pods/{id}/audit", get(api::pod_audit))
         .route("/api/v1/pods/{id}/resources", get(api::pod_resources))
         .route("/api/v1/pods/{id}/diff", get(api::pod_diff))
@@ -141,7 +184,9 @@ async fn serve(base_dir: PathBuf, port: u16, no_open: bool) -> Result<()> {
         .route("/api/v1/pods/{id}/queue", get(api::pod_queue))
         .route("/api/v1/pods/{id}/queue/{action_id}/approve", post(api::pod_queue_approve))
         .route("/api/v1/pods/{id}/queue/{action_id}/cancel", post(api::pod_queue_cancel))
-        // Static assets
+        .route("/api/v1/presets", get(api::list_presets))
+        .layer(middleware::from_fn_with_state(app_state.clone(), auth_middleware))
+        // Static assets (no auth — token injected into HTML)
         .fallback(static_handler)
         .layer(CorsLayer::permissive())
         .with_state(app_state);
@@ -153,20 +198,31 @@ async fn serve(base_dir: PathBuf, port: u16, no_open: bool) -> Result<()> {
 
     let url = format!("http://{addr}");
     eprintln!("envpod dashboard running at {url}");
+    eprintln!("  session token: {token}");
 
     if !no_open {
         let _ = open::that(&url);
     }
 
+    // Write token file so HTML pages can read it
+    let token_path = base_dir.join("dashboard.token");
+    let _ = std::fs::write(&token_path, &token);
+
     axum::serve(listener, app)
         .await
         .context("dashboard server error")?;
 
+    // Clean up token file on shutdown
+    let _ = std::fs::remove_file(&token_path);
+
     Ok(())
 }
 
-/// Serve embedded static assets.
-async fn static_handler(req: Request) -> Response {
+/// Serve embedded static assets, injecting the session token into HTML pages.
+async fn static_handler(
+    State(state): State<Arc<AppState>>,
+    req: Request,
+) -> Response {
     let path = req.uri().path().trim_start_matches('/');
 
     // Default to index.html
@@ -179,6 +235,20 @@ async fn static_handler(req: Request) -> Response {
     match Assets::get(path) {
         Some(content) => {
             let mime = mime_guess::from_path(path).first_or_octet_stream();
+            // Inject token into HTML pages
+            if path.ends_with(".html") {
+                let html = String::from_utf8_lossy(&content.data);
+                let injected = html.replace(
+                    "</head>",
+                    &format!("<script>window.ENVPOD_TOKEN='{}';</script>\n</head>", state.token),
+                );
+                return (
+                    StatusCode::OK,
+                    [(header::CONTENT_TYPE, "text/html")],
+                    injected,
+                )
+                    .into_response();
+            }
             (
                 StatusCode::OK,
                 [(header::CONTENT_TYPE, mime.as_ref())],
@@ -190,10 +260,15 @@ async fn static_handler(req: Request) -> Response {
             // Try index.html for SPA routing
             match Assets::get("index.html") {
                 Some(content) => {
+                    let html = String::from_utf8_lossy(&content.data);
+                    let injected = html.replace(
+                        "</head>",
+                        &format!("<script>window.ENVPOD_TOKEN='{}';</script>\n</head>", state.token),
+                    );
                     (
                         StatusCode::OK,
                         [(header::CONTENT_TYPE, "text/html")],
-                        content.data.to_vec(),
+                        injected,
                     )
                         .into_response()
                 }
