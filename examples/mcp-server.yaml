@@ -1,0 +1,86 @@
+# MCP Server — run a Model Context Protocol server in a governed pod
+#
+# Run any MCP server inside an envpod with governance. The server is
+# accessible from the host via port forwarding. All tool calls governed
+# by the pod's DNS, vault, and audit policies.
+#
+# MCP servers provide tools (filesystem, GitHub, Slack, databases) to
+# LLM clients (Claude, Cursor, etc.). Running them in envpod adds
+# governance that MCP doesn't have natively.
+#
+# Usage:
+#   sudo envpod init mcp -c examples/mcp-server.yaml
+#   sudo envpod run mcp -p 3000:3000 -- npx @modelcontextprotocol/server-filesystem /workspace
+#
+# Or run the GitHub MCP server:
+#   sudo envpod vault mcp set GITHUB_TOKEN ghp_...
+#   sudo envpod run mcp -p 3000:3000 -- npx @modelcontextprotocol/server-github
+#
+# Connect from Claude Desktop:
+#   Add to claude_desktop_config.json:
+#   {
+#     "mcpServers": {
+#       "filesystem": {
+#         "command": "npx",
+#         "args": ["@modelcontextprotocol/server-filesystem", "/workspace"]
+#       }
+#     }
+#   }
+
+name: mcp-server
+type: standard
+
+filesystem:
+  system_access: advanced
+  workspace: /workspace
+  mount_cwd: true
+  tracking:
+    watch:
+      - /workspace
+      - /home
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+      - /workspace/node_modules
+
+network:
+  mode: Monitored
+  dns:
+    mode: Allowlist
+    allow:
+      # npm (MCP server packages)
+      - registry.npmjs.org
+      - "*.npmjs.org"
+      # GitHub (for GitHub MCP server)
+      - github.com
+      - "*.github.com"
+      - api.github.com
+      - "*.githubusercontent.com"
+      # nvm + Node.js
+      - nodejs.org
+      - "*.nodejs.org"
+
+processor:
+  cores: 2.0
+  memory: "2GB"
+  max_pids: 256
+  tmp_size: "500MB"
+
+security:
+  seccomp_profile: default
+
+vault:
+  env:
+    - GITHUB_TOKEN
+
+budget:
+  max_duration: "24h"
+
+audit:
+  action_log: true
+
+setup:
+  - "npm install -g @modelcontextprotocol/server-filesystem @modelcontextprotocol/server-github"

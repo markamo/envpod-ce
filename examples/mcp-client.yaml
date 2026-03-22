@@ -1,0 +1,110 @@
+# MCP Client — connect to MCP servers from a governed coding agent
+#
+# Run a coding agent (Claude Code, Codex, etc.) that connects to MCP
+# servers for additional tools. All tool calls governed — DNS filtered,
+# vault-protected, audit-logged.
+#
+# This pod connects to MCP servers running on the host or in other pods.
+# The agent gets tool access through MCP but can't bypass pod governance.
+#
+# Usage:
+#   # Start an MCP server (in another pod or on host):
+#   sudo envpod init mcp-fs -c examples/mcp-server.yaml
+#   sudo envpod run mcp-fs -p 3000:3000 -- npx @modelcontextprotocol/server-filesystem /workspace
+#
+#   # Start the agent with MCP access:
+#   sudo envpod init agent -c examples/mcp-client.yaml
+#   sudo envpod vault agent set ANTHROPIC_API_KEY sk-ant-...
+#   sudo envpod run agent -- claude
+#
+# The agent can use MCP tools but:
+#   - DNS limits which servers it can reach
+#   - Vault protects API keys
+#   - COW overlay captures all file changes
+#   - Audit logs every action
+
+name: mcp-client
+type: standard
+
+filesystem:
+  system_access: advanced
+  workspace: /workspace
+  mount_cwd: true
+  tracking:
+    watch:
+      - /workspace
+      - /home
+      - /opt
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+network:
+  mode: Monitored
+  dns:
+    mode: Allowlist
+    allow:
+      # Claude API
+      - api.anthropic.com
+      - "*.anthropic.com"
+      # Claude Code (installer, platform)
+      - claude.ai
+      - "*.claude.ai"
+      - storage.googleapis.com
+      # MCP server (if running on host gateway)
+      # The pod can reach the host via its gateway IP
+      # GitHub
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+      # npm
+      - registry.npmjs.org
+      - "*.npmjs.org"
+      # Telemetry
+      - "*.sentry.io"
+      - "*.statsig.com"
+      - statsigapi.net
+      - "*.statsigapi.net"
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+  max_pids: 1024
+  tmp_size: "1GB"
+
+security:
+  seccomp_profile: browser
+  shm_size: "256MB"
+
+vault:
+  env:
+    - ANTHROPIC_API_KEY
+
+budget:
+  max_duration: "4h"
+
+audit:
+  action_log: true
+
+setup:
+  - |
+    curl -fsSL https://claude.ai/install.sh | bash
+    ln -sf /root/.local/bin/claude /usr/local/bin/claude
+  - |
+    mkdir -p /home/agent/.claude /etc/claude-code
+    echo '{"theme":"dark","hasCompletedOnboarding":true}' > /home/agent/.claude.json
+    cat > /etc/claude-code/managed-settings.json << 'SETTINGS'
+    {
+      "permissions": {
+        "defaultMode": "bypassPermissions"
+      },
+      "sandbox": {
+        "enabled": false,
+        "enableWeakerNestedSandbox": true
+      }
+    }
+    SETTINGS
+    mkdir -p /workspace && git init -q /workspace

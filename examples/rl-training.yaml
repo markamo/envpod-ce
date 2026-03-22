@@ -1,0 +1,76 @@
+# Reinforcement Learning — DQN CartPole training in a governed pod
+#
+# Train RL models inside a governed environment. GPU passthrough for
+# fast training. All checkpoints and results governed via COW overlay.
+#
+# Usage:
+#   sudo envpod init rl -c examples/rl-training.yaml
+#   sudo envpod run rl -- python3 train_cartpole.py
+#   sudo envpod diff rl                    # see checkpoints + results
+#   sudo envpod commit rl models/ results/ --rollback-rest
+#
+# Example training script (run inside pod):
+#   import gymnasium as gym
+#   import torch
+#   env = gym.make("CartPole-v1")
+#   # ... DQN training loop ...
+#   torch.save(model.state_dict(), "/workspace/models/cartpole_dqn.pt")
+
+name: rl-training
+type: standard
+
+filesystem:
+  system_access: advanced
+  workspace: /workspace
+  mount_cwd: true
+  tracking:
+    watch:
+      - /workspace
+      - /home
+      - /opt
+    ignore:
+      - /var/cache
+      - /var/lib/apt
+      - /var/lib/dpkg
+      - /tmp
+      - /run
+
+network:
+  mode: Monitored
+  dns:
+    mode: Allowlist
+    allow:
+      # PyPI
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+      # PyTorch
+      - download.pytorch.org
+      - "*.pytorch.org"
+      # GitHub (for gymnasium, stable-baselines3)
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+
+processor:
+  cores: 4.0
+  memory: "8GB"
+  max_pids: 1024
+  tmp_size: "4GB"
+
+devices:
+  gpu: true
+
+security:
+  seccomp_profile: default
+
+budget:
+  max_duration: "8h"
+
+audit:
+  action_log: true
+
+setup:
+  - "apt-get install -y --no-install-recommends python3 python3-pip git"
+  - "pip3 install torch gymnasium stable-baselines3 tensorboard"
+  - "mkdir -p /workspace/models /workspace/results"
