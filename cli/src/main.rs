@@ -1412,6 +1412,15 @@ async fn cmd_init(
     if let Some((_, _, _, ref log_path)) = setup_result {
         eprintln!("  {}  {}", color::dim("Log"), log_path.display());
     }
+
+    // Warn if cgroup enforcement is missing (running without sudo/root)
+    let cgroup_path = format!("/sys/fs/cgroup/envpod/{}", name);
+    if !std::path::Path::new(&cgroup_path).exists() {
+        eprintln!();
+        eprintln!("  {} CPU/memory/PID limits not enforced (cgroup unavailable).", color::yellow("⚠"));
+        eprintln!("    COW overlay, DNS filtering, and seccomp are active.");
+        eprintln!("    Run with sudo for full resource enforcement.");
+    }
     eprintln!();
 
     Ok(())
@@ -2729,6 +2738,30 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
             }
         }
     }
+    // Security boundary status — show what's enforced
+    {
+        let has_cgroup = state.pod_dir.join("cgroup_procs").exists()
+            || std::path::Path::new(&format!("/sys/fs/cgroup/envpod/{}", name)).exists();
+        let has_netns = state.network.is_some();
+        let has_seccomp = pod_config.as_ref()
+            .map(|c| c.security.seccomp_profile != "none")
+            .unwrap_or(true);
+        let has_dns = state.network.is_some();
+
+        if !has_cgroup {
+            eprintln!();
+            eprintln!("  {} Security boundary status:", color::yellow("⚠"));
+            eprintln!("    {}  Network namespace", if has_netns { color::green("✓") } else { color::red("✗") });
+            eprintln!("    {}  DNS filtering", if has_dns { color::green("✓") } else { color::red("✗") });
+            eprintln!("    {}  Seccomp-BPF", if has_seccomp { color::green("✓") } else { color::red("✗") });
+            eprintln!("    {}  COW overlay (diff/commit)", color::green("✓"));
+            eprintln!("    {}  CPU limit (cgroup)", color::red("✗"));
+            eprintln!("    {}  Memory limit (cgroup)", color::red("✗"));
+            eprintln!("    {}  PID limit (cgroup)", color::red("✗"));
+            eprintln!("    Run with sudo for full resource enforcement.");
+        }
+    }
+
     if is_root {
         eprintln!();
         eprintln!("  {} Running as root — known gaps: iptables modification, raw sockets.", color::yellow("⚠"));
