@@ -442,6 +442,9 @@ enum Commands {
         /// Clone N pods in parallel from the source
         #[arg(long)]
         parallel: Option<usize>,
+        /// CPU affinity strategy for parallel clones: spread (default), isolate, shared, none
+        #[arg(long, default_value = "spread")]
+        affinity: AffinityMode,
         /// Command to run in each cloned pod (background, requires --parallel)
         #[arg(last = true)]
         command: Vec<String>,
@@ -678,6 +681,19 @@ enum MonitorAction {
         #[arg(long)]
         json: bool,
     },
+}
+
+/// CPU affinity strategy for parallel clones.
+#[derive(Debug, Clone, Copy, clap::ValueEnum)]
+enum AffinityMode {
+    /// Isolate when possible, round-robin when not enough cores (default)
+    Spread,
+    /// Strict isolation — error if not enough cores for 1:1 mapping
+    Isolate,
+    /// Keep source affinity on all clones (no redistribution)
+    Shared,
+    /// Strip affinity from all clones — kernel schedules freely
+    None,
 }
 
 #[derive(Subcommand)]
@@ -1007,9 +1023,9 @@ async fn run(cli: Cli) -> Result<()> {
             remove_deny,
         } => cmd_dns(&store, &name, &allow, &deny, &remove_allow, &remove_deny).await,
         Commands::Setup { name, create_base, verbose } => cmd_setup(&store, base_dir, &name, create_base.as_deref(), verbose).await,
-        Commands::Clone { source, name, current, parallel, command } => {
+        Commands::Clone { source, name, current, parallel, affinity, command } => {
             if let Some(n) = parallel {
-                cmd_clone_parallel(&store, base_dir, &source, &name, current, n, &command)
+                cmd_clone_parallel(&store, base_dir, &source, &name, current, n, affinity, &command)
             } else {
                 cmd_clone(&store, base_dir, &source, &name, current)
             }
@@ -2127,6 +2143,7 @@ fn cmd_clone_parallel(
     name_prefix: &str,
     use_current: bool,
     count: usize,
+    affinity_mode: AffinityMode,
     command: &[String],
 ) -> Result<()> {
     if count == 0 {
@@ -2149,6 +2166,22 @@ fn cmd_clone_parallel(
         anyhow::bail!("--current cannot be used with a base pod");
     }
 
+    // Load source config to check for cpu_affinity
+    let source_affinity = if let Some(ref sh) = source_handle {
+        NativeState::from_handle(sh).ok()
+            .and_then(|s| s.load_config().ok().flatten())
+            .and_then(|c| c.processor.cpu_affinity.clone())
+    } else {
+        // Try loading pod.yaml from base
+        let base_yaml = bases_dir.join(source).join("pod.yaml");
+        std::fs::read_to_string(&base_yaml).ok()
+            .and_then(|y| serde_yaml::from_str::<envpod_core::config::PodConfig>(&y).ok())
+            .and_then(|c| c.processor.cpu_affinity)
+    };
+
+    // Compute per-pod affinity assignments
+    let affinities = compute_affinities(count, &source_affinity, affinity_mode)?;
+
     // Check which names are available
     let names: Vec<String> = (1..=count)
         .map(|i| format!("{name_prefix}-{i}"))
@@ -2166,14 +2199,24 @@ fn cmd_clone_parallel(
         color::bold("Parallel clone"),
         source, count, name_prefix, name_prefix, count,
     );
+    if let Some(ref aff) = affinities {
+        let mode_str = match affinity_mode {
+            AffinityMode::Spread => "spread",
+            AffinityMode::Isolate => "isolate",
+            AffinityMode::Shared => "shared",
+            AffinityMode::None => "none",
+        };
+        eprintln!("  {}  affinity={mode_str}", color::dim("CPU"));
+    }
 
     // Clone in parallel using threads
     let results: Vec<_> = std::thread::scope(|s| {
-        let handles: Vec<_> = names.iter().map(|pod_name| {
+        let handles: Vec<_> = names.iter().enumerate().map(|(idx, pod_name)| {
             let backend = &backend;
             let store_path = base_dir.join("state");
             let source_handle = &source_handle;
             let bases_dir = &bases_dir;
+            let pod_affinity = affinities.as_ref().map(|a| a[idx].clone());
             s.spawn(move || -> Result<(String, std::time::Duration)> {
                 let clone_start = std::time::Instant::now();
                 let handle = if let Some(ref src) = source_handle {
@@ -2183,6 +2226,26 @@ fn cmd_clone_parallel(
                 };
                 let pod_store = PodStore::new(store_path.clone())?;
                 pod_store.save(&handle)?;
+
+                // Apply per-pod affinity by patching pod.yaml
+                if let Some(ref aff) = pod_affinity {
+                    if let Ok(state) = NativeState::from_handle(&handle) {
+                        let config_path = state.pod_dir.join("pod.yaml");
+                        if let Ok(yaml_str) = std::fs::read_to_string(&config_path) {
+                            if let Ok(mut config) = serde_yaml::from_str::<envpod_core::config::PodConfig>(&yaml_str) {
+                                config.processor.cpu_affinity = if aff.is_empty() {
+                                    None
+                                } else {
+                                    Some(aff.clone())
+                                };
+                                if let Ok(new_yaml) = serde_yaml::to_string(&config) {
+                                    let _ = std::fs::write(&config_path, new_yaml);
+                                }
+                            }
+                        }
+                    }
+                }
+
                 Ok((pod_name.clone(), clone_start.elapsed()))
             })
         }).collect();
@@ -2193,10 +2256,13 @@ fn cmd_clone_parallel(
     // Report results
     let mut succeeded = 0usize;
     let mut failed = 0usize;
-    for result in &results {
+    for (idx, result) in results.iter().enumerate() {
         match result {
             Ok((name, elapsed)) => {
-                eprintln!("  {}  {} ({})", color::green("✓"), name, fmt_duration(*elapsed));
+                let aff_str = affinities.as_ref()
+                    .map(|a| if a[idx].is_empty() { " (no affinity)".into() } else { format!(" (cpus: {})", a[idx]) })
+                    .unwrap_or_default();
+                eprintln!("  {}  {} ({}){}", color::green("✓"), name, fmt_duration(*elapsed), aff_str);
                 succeeded += 1;
             }
             Err(e) => {
@@ -2244,6 +2310,93 @@ fn cmd_clone_parallel(
         anyhow::bail!("{failed} clone(s) failed");
     }
     Ok(())
+}
+
+/// Compute per-pod CPU affinity assignments based on the strategy.
+/// Returns None if source has no affinity or mode is Shared with no changes.
+/// Returns Some(vec) with one affinity string per pod.
+fn compute_affinities(
+    count: usize,
+    source_affinity: &Option<String>,
+    mode: AffinityMode,
+) -> Result<Option<Vec<String>>> {
+    let source_aff = match source_affinity {
+        Some(a) if !a.is_empty() => a,
+        _ => return Ok(None), // no source affinity — nothing to distribute
+    };
+
+    match mode {
+        AffinityMode::Shared => Ok(None), // keep source affinity as-is on all clones
+        AffinityMode::None => {
+            // Strip affinity from all clones
+            Ok(Some(vec![String::new(); count]))
+        }
+        AffinityMode::Isolate | AffinityMode::Spread => {
+            // Parse available cores from source affinity (e.g., "0-7" → [0,1,2,...,7])
+            let available = parse_cpu_list(source_aff);
+            if available.is_empty() {
+                return Ok(None);
+            }
+
+            let num_cores = available.len();
+            let cores_per_pod = num_cores / count;
+
+            if cores_per_pod >= 1 {
+                // Enough cores to isolate: assign contiguous chunks
+                let mut assignments = Vec::with_capacity(count);
+                for i in 0..count {
+                    let start = i * cores_per_pod;
+                    let end = if i == count - 1 { num_cores } else { (i + 1) * cores_per_pod };
+                    let cores: Vec<String> = available[start..end].iter().map(|c| c.to_string()).collect();
+                    assignments.push(format_cpu_list(&cores));
+                }
+                Ok(Some(assignments))
+            } else if matches!(mode, AffinityMode::Isolate) {
+                anyhow::bail!(
+                    "not enough cores to isolate: {count} pods but only {num_cores} cores ({}). \
+                     Use --affinity spread to share cores, or reduce --parallel",
+                    source_aff,
+                );
+            } else {
+                // Spread mode: round-robin across available cores
+                eprintln!(
+                    "  {}  {count} pods on {num_cores} cores — round-robin (sharing)",
+                    color::yellow("!"),
+                );
+                let mut assignments = Vec::with_capacity(count);
+                for i in 0..count {
+                    let core = &available[i % num_cores];
+                    assignments.push(core.to_string());
+                }
+                Ok(Some(assignments))
+            }
+        }
+    }
+}
+
+/// Parse a CPU list string like "0-3,6,8-11" into a sorted vec of core numbers.
+fn parse_cpu_list(s: &str) -> Vec<usize> {
+    let mut cores = Vec::new();
+    for part in s.split(',') {
+        let part = part.trim();
+        if let Some((lo, hi)) = part.split_once('-') {
+            if let (Ok(lo), Ok(hi)) = (lo.trim().parse::<usize>(), hi.trim().parse::<usize>()) {
+                for c in lo..=hi {
+                    cores.push(c);
+                }
+            }
+        } else if let Ok(c) = part.parse::<usize>() {
+            cores.push(c);
+        }
+    }
+    cores.sort();
+    cores.dedup();
+    cores
+}
+
+/// Format core numbers back into a compact CPU list string.
+fn format_cpu_list(cores: &[String]) -> String {
+    cores.join(",")
 }
 
 // ---------------------------------------------------------------------------
