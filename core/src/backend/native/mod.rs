@@ -189,6 +189,7 @@ impl NativeBackend {
             action,
             detail,
             success,
+            agent: None,
         };
         if let Err(e) = log.append(&entry) {
             tracing::warn!(error = %e, ?action, "audit log write failed");
@@ -606,6 +607,17 @@ impl NativeBackend {
                 env_map.insert(key.to_string(), value.to_string());
             }
         }
+
+        // Agent-scoped vault: if ENVPOD_VAULT_FILTER is set, only inject
+        // the vault keys the agent is permitted to access.
+        if let Some(filter_csv) = env_map.remove("ENVPOD_VAULT_FILTER") {
+            let allowed: Vec<String> = filter_csv.split(',').map(String::from).collect();
+            env_map.retain(|key, _| {
+                // Keep non-vault keys (ENVPOD_*, TERM, etc.) and allowed vault keys
+                key.starts_with("ENVPOD_") || allowed.contains(key)
+            });
+        }
+
         let vault_env = if env_map.is_empty() { None } else { Some(&env_map) };
 
         // Read security config (seccomp profile + /dev/shm size)

@@ -124,7 +124,31 @@ function loadPodDetail() {
                     </table>
                 `;
             }
-            document.getElementById('section-overview').innerHTML = configHtml;
+
+            // Identity section
+            let identityHtml = '';
+            if (pod.pod_public_key) {
+                identityHtml += `<h3 style="margin:20px 0 12px;font-size:14px;color:var(--text-dim)">Pod Identity</h3>
+                    <table>
+                        <tr><td style="width:200px;color:var(--text-dim)">Public Key</td><td><code style="font-size:11px">${escapeHtml(pod.pod_public_key)}</code></td></tr>
+                    </table>`;
+            }
+            if (pod.agents && pod.agents.length > 0) {
+                identityHtml += `<h3 style="margin:20px 0 12px;font-size:14px;color:var(--text-dim)">Agents (${pod.agents.length})</h3>
+                    <table>
+                        <thead><tr><th>Name</th><th>ID</th><th>Capabilities</th><th>Vault Keys</th></tr></thead>
+                        <tbody>${pod.agents.map(a => `
+                            <tr>
+                                <td style="font-weight:600">${escapeHtml(a.name)}</td>
+                                <td><code style="font-size:11px">${escapeHtml(a.agent_id.slice(0,8))}</code></td>
+                                <td>${a.capabilities.length ? escapeHtml(a.capabilities.join(', ')) : '<span style="color:var(--text-dim)">all</span>'}</td>
+                                <td>${a.vault_keys.length ? escapeHtml(a.vault_keys.join(', ')) : '<span style="color:var(--text-dim)">all</span>'}</td>
+                            </tr>
+                        `).join('')}</tbody>
+                    </table>`;
+            }
+
+            document.getElementById('section-overview').innerHTML = configHtml + identityHtml;
         })
         .catch(err => {
             document.getElementById('pod-name').textContent = `Error: ${err.message}`;

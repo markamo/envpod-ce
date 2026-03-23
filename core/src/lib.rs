@@ -10,6 +10,7 @@ pub mod config;
 pub mod desktop;
 pub mod dns_daemon;
 pub mod error;
+pub mod identity;
 pub mod monitor;
 pub mod queue;
 pub mod queue_socket;

@@ -150,6 +150,9 @@ enum Commands {
         /// Do not mount the working directory even if pod.yaml has mount_cwd: true
         #[arg(long, conflicts_with = "mount_cwd")]
         no_mount_cwd: bool,
+        /// Run as a specific registered agent identity
+        #[arg(long)]
+        agent: Option<String>,
         /// Command and arguments to execute
         #[arg(last = true)]
         command: Vec<String>,
@@ -437,6 +440,14 @@ enum Commands {
         #[arg(long)]
         current: bool,
     },
+    /// Manage agent identities within a pod
+    #[command(name = "agent")]
+    Agent {
+        /// Pod name
+        name: String,
+        #[command(subcommand)]
+        action: AgentSubcmd,
+    },
     /// Manage base pods (reusable rootfs snapshots for fast cloning)
     Base {
         #[command(subcommand)]
@@ -664,6 +675,42 @@ enum MonitorAction {
 }
 
 #[derive(Subcommand)]
+enum AgentSubcmd {
+    /// Register a new agent
+    Register {
+        /// Agent name
+        agent_name: String,
+        /// Capabilities (comma-separated: read,write,execute,network)
+        #[arg(long, value_delimiter = ',')]
+        capabilities: Vec<String>,
+        /// Vault keys this agent can access (comma-separated)
+        #[arg(long, value_delimiter = ',')]
+        vault_keys: Vec<String>,
+    },
+    /// List registered agents
+    List {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Remove a registered agent
+    Remove {
+        /// Agent name
+        agent_name: String,
+    },
+    /// Print JWT token for an agent
+    Token {
+        /// Agent name
+        agent_name: String,
+        /// Token TTL in seconds (default: 86400 = 24 hours)
+        #[arg(long, default_value = "86400")]
+        ttl: u64,
+    },
+    /// Show pod identity info (public key, pod ID)
+    Identity,
+}
+
+#[derive(Subcommand)]
 enum BaseAction {
     /// Create a base pod (init + setup + snapshot, then remove the temporary pod)
     Create {
@@ -838,11 +885,11 @@ async fn run(cli: Cli) -> Result<()> {
             eprint!("{}", presets::format_table());
             Ok(())
         }
-        Commands::Run { name, root, user, env_vars, enable_display, enable_audio, background, ports, public_ports, internal_ports, mount_cwd, no_mount_cwd, command } => {
+        Commands::Run { name, root, user, env_vars, enable_display, enable_audio, background, ports, public_ports, internal_ports, mount_cwd, no_mount_cwd, agent, command } => {
             if background {
                 cmd_run_background(base_dir, &name, &command, root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports)
             } else {
-                cmd_run(&store, base_dir, &name, &command, root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports, mount_cwd, no_mount_cwd).await
+                cmd_run(&store, base_dir, &name, &command, root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports, mount_cwd, no_mount_cwd, agent.as_deref()).await
             }
         }
         Commands::Start { names, all, root, user, env_vars, enable_display, enable_audio, ports, public_ports, internal_ports, command } => {
@@ -955,6 +1002,7 @@ async fn run(cli: Cli) -> Result<()> {
         } => cmd_dns(&store, &name, &allow, &deny, &remove_allow, &remove_deny).await,
         Commands::Setup { name, create_base, verbose } => cmd_setup(&store, base_dir, &name, create_base.as_deref(), verbose).await,
         Commands::Clone { source, name, current } => cmd_clone(&store, base_dir, &source, &name, current),
+        Commands::Agent { name, action } => cmd_agent(&store, &name, action),
         Commands::Base { action } => cmd_base(&store, base_dir, action).await,
         Commands::Dashboard { port, no_open, daemon, stop } => dashboard::run(base_dir.clone(), port, no_open, daemon, stop).await,
         Commands::Ports { name, add_publish, add_publish_all, add_internal, remove, remove_internal } =>
@@ -1162,6 +1210,23 @@ async fn cmd_init(
     if let Ok(state) = NativeState::from_handle(&handle) {
         let yaml = serde_yaml::to_string(&config).context("serialize pod config")?;
         std::fs::write(state.config_path(), yaml).context("persist pod.yaml")?;
+    }
+
+    // Generate pod identity (Ed25519 keypair)
+    if let Ok(state) = NativeState::from_handle(&handle) {
+        match envpod_core::identity::generate_pod_identity(&state.pod_dir, handle.id, name) {
+            Ok(meta) => {
+                eprintln!("  {}  Pod identity ({}...)", color::dim("Identity"), &meta.public_key_hex[..16]);
+                // Sync agents from config
+                if !config.identity.agents.is_empty() {
+                    envpod_core::identity::sync_agents_from_config(
+                        &state.pod_dir, &config.identity.agents,
+                    )?;
+                    eprintln!("  {}  {} agent(s) registered", color::dim("Agents  "), config.identity.agents.len());
+                }
+            }
+            Err(e) => tracing::warn!("identity generation failed: {e:#}"),
+        }
     }
 
     // Write web display scripts to overlay (daemon + wrapper)
@@ -1876,6 +1941,97 @@ fn snapshot_base_quiet(handle: &envpod_core::types::PodHandle, base_dir: &std::p
 }
 
 // ---------------------------------------------------------------------------
+// agent identity
+// ---------------------------------------------------------------------------
+
+fn cmd_agent(store: &PodStore, name: &str, action: AgentSubcmd) -> Result<()> {
+    use envpod_core::identity;
+    use envpod_core::audit::{AuditAction, AuditEntry, AuditLog};
+
+    let handle = store.load(name)?;
+    let state = NativeState::from_handle(&handle)?;
+
+    match action {
+        AgentSubcmd::Register { agent_name, capabilities, vault_keys } => {
+            let agent = identity::register_agent(
+                &state.pod_dir, &agent_name, capabilities, vault_keys,
+            )?;
+            eprintln!("  {} Agent '{}' registered (id: {})", color::green("✓"), agent.name, agent.agent_id);
+
+            let log = AuditLog::new(&state.pod_dir);
+            let _ = log.append(&AuditEntry {
+                timestamp: chrono::Utc::now(),
+                pod_name: name.into(),
+                action: AuditAction::AgentRegister,
+                detail: format!("agent={}", agent_name),
+                success: true,
+                agent: None,
+            });
+        }
+        AgentSubcmd::List { json } => {
+            let agents = identity::list_agents(&state.pod_dir)?;
+            if json {
+                println!("{}", serde_json::to_string_pretty(&agents)?);
+            } else if agents.is_empty() {
+                eprintln!("  No agents registered. Use: envpod agent {name} register <name>");
+            } else {
+                eprintln!();
+                for a in &agents {
+                    let caps = if a.capabilities.is_empty() { "all".into() } else { a.capabilities.join(", ") };
+                    let keys = if a.vault_keys.is_empty() { "all".into() } else { a.vault_keys.join(", ") };
+                    eprintln!("  {} {} (id: {})", color::green("●"), color::bold(&a.name), &a.agent_id.to_string()[..8]);
+                    eprintln!("    capabilities: {caps}");
+                    eprintln!("    vault_keys:   {keys}");
+                    eprintln!("    created:      {}", a.created_at.format("%Y-%m-%d %H:%M:%S"));
+                    eprintln!();
+                }
+            }
+        }
+        AgentSubcmd::Remove { agent_name } => {
+            match identity::remove_agent(&state.pod_dir, &agent_name)? {
+                Some(_) => {
+                    eprintln!("  {} Agent '{}' removed", color::green("✓"), agent_name);
+                    let log = AuditLog::new(&state.pod_dir);
+                    let _ = log.append(&AuditEntry {
+                        timestamp: chrono::Utc::now(),
+                        pod_name: name.into(),
+                        action: AuditAction::AgentRemove,
+                        detail: format!("agent={}", agent_name),
+                        success: true,
+                        agent: None,
+                    });
+                }
+                None => eprintln!("  Agent '{}' not found", agent_name),
+            }
+        }
+        AgentSubcmd::Token { agent_name, ttl } => {
+            let agent = identity::get_agent(&state.pod_dir, &agent_name)?
+                .ok_or_else(|| anyhow::anyhow!("agent '{}' not registered", agent_name))?;
+            let token = identity::generate_agent_token(
+                &state.pod_dir, handle.id, name, &agent, ttl,
+            )?;
+            println!("{token}");
+        }
+        AgentSubcmd::Identity => {
+            match identity::load_pod_identity(&state.pod_dir)? {
+                Some(meta) => {
+                    eprintln!();
+                    eprintln!("  {} Pod Identity", color::bold(name));
+                    eprintln!("  pod_id:     {}", meta.pod_id);
+                    eprintln!("  public_key: {}", meta.public_key_hex);
+                    eprintln!("  created:    {}", meta.created_at.format("%Y-%m-%d %H:%M:%S"));
+                    eprintln!();
+                }
+                None => {
+                    eprintln!("  No identity generated for pod '{}'. Recreate with: envpod destroy {0} && envpod init {0}", name);
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
 // clone
 // ---------------------------------------------------------------------------
 
@@ -2461,7 +2617,7 @@ async fn cmd_stop(store: &PodStore, base_dir: &std::path::Path, name: &str) -> R
 // run
 // ---------------------------------------------------------------------------
 
-async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, command: &[String], root: bool, user: Option<&str>, env_vars: &[String], enable_display: bool, enable_audio: bool, cli_ports: &[String], cli_public_ports: &[String], cli_internal_ports: &[String], cli_mount_cwd: bool, cli_no_mount_cwd: bool) -> Result<()> {
+async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, command: &[String], root: bool, user: Option<&str>, env_vars: &[String], enable_display: bool, enable_audio: bool, cli_ports: &[String], cli_public_ports: &[String], cli_internal_ports: &[String], cli_mount_cwd: bool, cli_no_mount_cwd: bool, agent: Option<&str>) -> Result<()> {
     if command.is_empty() {
         anyhow::bail!("no command specified — usage: envpod run {name} -- <command>");
     }
@@ -2487,6 +2643,34 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
 
     let mut extra_env: Vec<String> = env_vars.to_vec();
     extra_env.push(format!("ENVPOD_POD_NAME={name}"));
+    extra_env.push(format!("ENVPOD_POD_ID={}", handle.id));
+
+    // Pod identity: inject public key if available
+    if let Ok(Some(identity)) = envpod_core::identity::load_pod_identity(&state.pod_dir) {
+        extra_env.push(format!("ENVPOD_POD_PUBLIC_KEY={}", identity.public_key_hex));
+    }
+
+    // Agent identity: if --agent specified, inject agent env vars + vault filter
+    if let Some(agent_name) = agent {
+        let agent_reg = envpod_core::identity::get_agent(&state.pod_dir, agent_name)?
+            .ok_or_else(|| anyhow::anyhow!(
+                "agent '{}' is not registered in pod '{}'. Use: envpod agent {} register {}",
+                agent_name, name, name, agent_name
+            ))?;
+
+        let token = envpod_core::identity::generate_agent_token(
+            &state.pod_dir, handle.id, name, &agent_reg, 86400,
+        ).context("generate agent JWT")?;
+
+        extra_env.push(format!("ENVPOD_AGENT_ID={}", agent_reg.agent_id));
+        extra_env.push(format!("ENVPOD_AGENT_NAME={}", agent_reg.name));
+        extra_env.push(format!("ENVPOD_AGENT_TOKEN={}", token));
+
+        // Vault scoping: only inject the keys this agent is permitted to access
+        if !agent_reg.vault_keys.is_empty() {
+            extra_env.push(format!("ENVPOD_VAULT_FILTER={}", agent_reg.vault_keys.join(",")));
+        }
+    }
 
     // Ensure TERM is set inside the pod (needed for TUI apps like vim, claude).
     // Inherit from host if available, otherwise default to xterm-256color.
@@ -2976,6 +3160,7 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
                         action: AuditAction::BudgetExceeded,
                         detail: format!("max_duration={dur_str_owned} ({secs}s)"),
                         success: true,
+                    agent: None,
                     };
                     log.append(&entry).ok();
                 }))
@@ -4581,6 +4766,7 @@ fn cmd_kill(store: &PodStore, base_dir: &std::path::Path, name: &str) -> Result<
         action: AuditAction::Kill,
         detail: "forced kill + rollback".into(),
         success: true,
+            agent: None,
     })?;
 
     backend.stop(&handle)?;
@@ -5234,6 +5420,7 @@ fn cmd_vault(store: &PodStore, name: &str, action: VaultAction) -> Result<()> {
                 action: AuditAction::VaultSet,
                 detail: format!("key={key}"),
                 success: true,
+            agent: None,
             })?;
 
             println!("Set vault key '{key}' in pod '{name}'");
@@ -5248,6 +5435,7 @@ fn cmd_vault(store: &PodStore, name: &str, action: VaultAction) -> Result<()> {
                         action: AuditAction::VaultGet,
                         detail: format!("key={key}"),
                         success: true,
+                    agent: None,
                     })?;
                     println!("{value}");
                 }
@@ -5278,6 +5466,7 @@ fn cmd_vault(store: &PodStore, name: &str, action: VaultAction) -> Result<()> {
                 action: AuditAction::VaultRemove,
                 detail: format!("key={key}"),
                 success: true,
+            agent: None,
             })?;
 
             println!("Removed vault key '{key}' from pod '{name}'");
@@ -5305,6 +5494,7 @@ fn cmd_vault(store: &PodStore, name: &str, action: VaultAction) -> Result<()> {
                 action: AuditAction::VaultSet,
                 detail: format!("import {} key(s) from {}", added, path.display()),
                 success: true,
+            agent: None,
             });
             println!("{} Imported {added} secret(s) into pod '{name}'", color::green("✓"));
             if skipped > 0 {
@@ -5523,6 +5713,7 @@ fn cmd_resize(
         action: AuditAction::Resize,
         detail: detail.clone(),
         success: true,
+            agent: None,
     })?;
 
     // --- 4. Print summary ---
@@ -5702,6 +5893,7 @@ fn cmd_mount(
             if readonly { "ro" } else { "rw" },
         ),
         success: true,
+    agent: None,
     })?;
 
     // Register undo entry
@@ -5746,6 +5938,7 @@ fn cmd_unmount(
         action: AuditAction::Unmount,
         detail: format!("{}", path.display()),
         success: true,
+    agent: None,
     })?;
 
     println!("Unmounted {} from pod '{name}'", path.display());
@@ -5846,6 +6039,7 @@ fn execute_undo(
         action: AuditAction::Undo,
         detail: format!("{} ({})", entry.description, &entry.id.to_string()[..8]),
         success: true,
+    agent: None,
     })?;
 
     println!(

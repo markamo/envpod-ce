@@ -87,6 +87,9 @@ pub struct QueuedAction {
     /// Example: `{"type": "commit"}` or `{"type": "rollback"}`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub payload: Option<serde_json::Value>,
+    /// Agent that submitted this action (if running as a specific agent).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub agent: Option<String>,
 }
 
 /// Persisted queue state (serialized as JSON).
@@ -195,6 +198,7 @@ impl ActionQueue {
             delay_seconds,
             execute_after,
             payload,
+            agent: None,
         };
 
         state.actions.push(action.clone());
@@ -310,6 +314,7 @@ impl ActionQueue {
                 queued_action.description,
             ),
             success: true,
+        agent: None,
         };
         if let Err(e) = log.append(&entry) {
             tracing::warn!(error = %e, "failed to write queue audit entry");

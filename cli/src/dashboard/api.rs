@@ -163,6 +163,7 @@ pub async fn pod_commit(
         action: AuditAction::Commit,
         detail: "via dashboard".into(),
         success: true,
+            agent: None,
     });
 
     Ok(Json(serde_json::json!({ "status": "committed", "pod": name })))
@@ -189,6 +190,7 @@ pub async fn pod_rollback(
         action: AuditAction::Rollback,
         detail: "via dashboard".into(),
         success: true,
+            agent: None,
     });
 
     Ok(Json(serde_json::json!({ "status": "rolled back", "pod": name })))
@@ -215,6 +217,7 @@ pub async fn pod_freeze(
         action: AuditAction::Freeze,
         detail: "via dashboard".into(),
         success: true,
+            agent: None,
     });
 
     Ok(Json(serde_json::json!({ "status": "frozen", "pod": name })))
@@ -257,6 +260,7 @@ pub async fn pod_commit_files(
         action: AuditAction::Commit,
         detail,
         success: true,
+            agent: None,
     });
 
     Ok(Json(serde_json::json!({ "status": "committed", "pod": name, "count": paths.len() })))
@@ -283,6 +287,7 @@ pub async fn pod_resume(
         action: AuditAction::Resume,
         detail: "via dashboard".into(),
         success: true,
+            agent: None,
     });
 
     Ok(Json(serde_json::json!({ "status": "resumed", "pod": name })))
@@ -450,6 +455,7 @@ pub async fn pod_queue_approve(
         action: AuditAction::QueueApprove,
         detail: format!("id={} via dashboard", &approved.id.to_string()[..8]),
         success: true,
+    agent: None,
     });
     Ok(Json(serde_json::json!({ "status": "approved", "id": approved.id, "pod": name })))
 }
@@ -478,6 +484,7 @@ pub async fn pod_queue_cancel(
         action: AuditAction::QueueCancel,
         detail: format!("id={} via dashboard", &cancelled.id.to_string()[..8]),
         success: true,
+    agent: None,
     });
     Ok(Json(serde_json::json!({ "status": "cancelled", "id": cancelled.id, "pod": name })))
 }
@@ -544,6 +551,7 @@ pub async fn create_pod(
         action: AuditAction::Create,
         detail: format!("via dashboard{}", body.preset.as_deref().map(|p| format!(", preset={p}")).unwrap_or_default()),
         success: true,
+    agent: None,
     });
 
     Ok(Json(serde_json::json!({ "status": "created", "pod": name })))
@@ -604,6 +612,7 @@ pub async fn clone_pod(
         action: AuditAction::Clone,
         detail: format!("cloned from '{}' via dashboard", name),
         success: true,
+    agent: None,
     });
 
     Ok(Json(serde_json::json!({ "status": "cloned", "source": name, "pod": new_name })))

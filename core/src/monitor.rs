@@ -226,6 +226,7 @@ impl MonitorAgent {
                     action: AuditAction::MonitorAlert,
                     detail: format!("rule={}", rule.name),
                     success: true,
+                agent: None,
                 };
                 audit_log.append(&alert_entry).ok();
 
@@ -353,6 +354,7 @@ impl MonitorAgent {
                     action: AuditAction::MonitorFreeze,
                     detail: format!("rule={rule_name}"),
                     success: true,
+                agent: None,
                 })?;
             }
             MonitorResponse::Restrict {
@@ -378,6 +380,7 @@ impl MonitorAgent {
                         cpu_cores, memory_bytes, max_pids
                     ),
                     success: true,
+                agent: None,
                 })?;
             }
         }
@@ -515,6 +518,7 @@ rules:
                 action: AuditAction::DnsQuery,
                 detail: format!("query {i}"),
                 success: true,
+            agent: None,
             })
             .collect();
 
@@ -545,6 +549,7 @@ rules:
             action: AuditAction::BudgetExceeded,
             detail: "test".into(),
             success: true,
+            agent: None,
         }];
 
         let cond = MonitorCondition::ForbiddenAction {
@@ -578,6 +583,7 @@ rules:
                 action: AuditAction::VaultGet,
                 detail: "key=api_key".into(),
                 success: true,
+            agent: None,
             },
             AuditEntry {
                 timestamp: now - chrono::Duration::seconds(2),
@@ -585,6 +591,7 @@ rules:
                 action: AuditAction::DnsQuery,
                 detail: "evil.com".into(),
                 success: true,
+            agent: None,
             },
         ];
 

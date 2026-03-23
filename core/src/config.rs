@@ -31,6 +31,7 @@ pub struct PodConfig {
     pub queue: QueueConfig,
     pub web_display: WebDisplayConfig,
     pub host_user: HostUserConfig,
+    pub identity: IdentityConfig,
 
     /// Default user to run commands as inside the pod.
     /// Defaults to "agent" (non-root, UID 60000) for full pod boundary protection.
@@ -75,6 +76,7 @@ impl Default for PodConfig {
             queue: QueueConfig::default(),
             web_display: WebDisplayConfig::default(),
             host_user: HostUserConfig::default(),
+            identity: IdentityConfig::default(),
             user: default_user(),
             setup: Vec::new(),
             setup_script: None,
@@ -610,6 +612,26 @@ pub struct HostUserConfig {
     pub dirs: Vec<String>,
     pub exclude: Vec<String>,
     pub include_dotfiles: Vec<String>,
+}
+
+// -- Identity -----------------------------------------------------------------
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct IdentityConfig {
+    /// Pre-declared agents for this pod.
+    /// Agents listed here are auto-registered at init time.
+    #[serde(default)]
+    pub agents: Vec<AgentConfig>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgentConfig {
+    pub name: String,
+    #[serde(default)]
+    pub capabilities: Vec<String>,
+    #[serde(default)]
+    pub vault_keys: Vec<String>,
 }
 
 #[cfg(test)]
