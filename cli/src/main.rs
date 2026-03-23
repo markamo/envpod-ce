@@ -434,11 +434,17 @@ enum Commands {
     Clone {
         /// Source pod name to clone from
         source: String,
-        /// Name for the new cloned pod
+        /// Name for the new cloned pod (with --parallel N, pods are named <name>-1 through <name>-N)
         name: String,
         /// Clone from current state (includes agent modifications) instead of base snapshot
         #[arg(long)]
         current: bool,
+        /// Clone N pods in parallel from the source
+        #[arg(long)]
+        parallel: Option<usize>,
+        /// Command to run in each cloned pod (background, requires --parallel)
+        #[arg(last = true)]
+        command: Vec<String>,
     },
     /// Manage agent identities within a pod
     #[command(name = "agent")]
@@ -1001,7 +1007,13 @@ async fn run(cli: Cli) -> Result<()> {
             remove_deny,
         } => cmd_dns(&store, &name, &allow, &deny, &remove_allow, &remove_deny).await,
         Commands::Setup { name, create_base, verbose } => cmd_setup(&store, base_dir, &name, create_base.as_deref(), verbose).await,
-        Commands::Clone { source, name, current } => cmd_clone(&store, base_dir, &source, &name, current),
+        Commands::Clone { source, name, current, parallel, command } => {
+            if let Some(n) = parallel {
+                cmd_clone_parallel(&store, base_dir, &source, &name, current, n, &command)
+            } else {
+                cmd_clone(&store, base_dir, &source, &name, current)
+            }
+        }
         Commands::Agent { name, action } => cmd_agent(&store, &name, action),
         Commands::Base { action } => cmd_base(&store, base_dir, action).await,
         Commands::Dashboard { port, no_open, daemon, stop } => dashboard::run(base_dir.clone(), port, no_open, daemon, stop).await,
@@ -2101,6 +2113,136 @@ fn cmd_clone(
     eprintln!("  {}  sudo envpod run {new_name} -- bash", color::dim("Run"));
     eprintln!();
 
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// parallel clone
+// ---------------------------------------------------------------------------
+
+fn cmd_clone_parallel(
+    store: &PodStore,
+    base_dir: &std::path::Path,
+    source: &str,
+    name_prefix: &str,
+    use_current: bool,
+    count: usize,
+    command: &[String],
+) -> Result<()> {
+    if count == 0 {
+        anyhow::bail!("--parallel count must be at least 1");
+    }
+    if count > 256 {
+        anyhow::bail!("--parallel count exceeds maximum (256)");
+    }
+
+    let backend = NativeBackend::new(base_dir)?;
+    let bases_dir = base_dir.join("bases");
+
+    // Determine clone source: pod or base
+    let source_handle = store.load(source).ok();
+    let is_base = source_handle.is_none() && has_base(&bases_dir, source);
+    if source_handle.is_none() && !is_base {
+        anyhow::bail!("no pod or base pod named '{source}'");
+    }
+    if is_base && use_current {
+        anyhow::bail!("--current cannot be used with a base pod");
+    }
+
+    // Check which names are available
+    let names: Vec<String> = (1..=count)
+        .map(|i| format!("{name_prefix}-{i}"))
+        .collect();
+    for n in &names {
+        if store.exists(n) {
+            anyhow::bail!("pod '{n}' already exists");
+        }
+    }
+
+    let total_start = std::time::Instant::now();
+    eprintln!();
+    eprintln!(
+        "  {} '{}' → {} pods ({}-1 .. {}-{})",
+        color::bold("Parallel clone"),
+        source, count, name_prefix, name_prefix, count,
+    );
+
+    // Clone in parallel using threads
+    let results: Vec<_> = std::thread::scope(|s| {
+        let handles: Vec<_> = names.iter().map(|pod_name| {
+            let backend = &backend;
+            let store_path = base_dir.join("state");
+            let source_handle = &source_handle;
+            let bases_dir = &bases_dir;
+            s.spawn(move || -> Result<(String, std::time::Duration)> {
+                let clone_start = std::time::Instant::now();
+                let handle = if let Some(ref src) = source_handle {
+                    backend.clone_pod(src, pod_name, use_current)?
+                } else {
+                    backend.clone_from_base(bases_dir, source, pod_name)?
+                };
+                let pod_store = PodStore::new(store_path.clone())?;
+                pod_store.save(&handle)?;
+                Ok((pod_name.clone(), clone_start.elapsed()))
+            })
+        }).collect();
+
+        handles.into_iter().map(|h| h.join().unwrap()).collect()
+    });
+
+    // Report results
+    let mut succeeded = 0usize;
+    let mut failed = 0usize;
+    for result in &results {
+        match result {
+            Ok((name, elapsed)) => {
+                eprintln!("  {}  {} ({})", color::green("✓"), name, fmt_duration(*elapsed));
+                succeeded += 1;
+            }
+            Err(e) => {
+                eprintln!("  {}  {e:#}", color::red("✗"));
+                failed += 1;
+            }
+        }
+    }
+
+    let total_elapsed = total_start.elapsed();
+    eprintln!();
+    eprintln!(
+        "  {} {succeeded}/{count} pods cloned in {}{}",
+        if failed == 0 { color::green("✓") } else { color::yellow("!") },
+        fmt_duration(total_elapsed),
+        if failed > 0 { format!(" ({failed} failed)") } else { String::new() },
+    );
+
+    // If command provided, start each pod in background
+    if !command.is_empty() && succeeded > 0 {
+        eprintln!();
+        eprintln!("  {} Starting {} pods...", color::bold("Launch"), succeeded);
+
+        for result in &results {
+            if let Ok((pod_name, _)) = result {
+                match cmd_run_background(
+                    base_dir, pod_name, command,
+                    false, None, &[], false, false, &[], &[], &[],
+                ) {
+                    Ok(()) => {}
+                    Err(e) => eprintln!("  {}  start {pod_name}: {e:#}", color::red("✗")),
+                }
+            }
+        }
+        eprintln!();
+        eprintln!("  {}  envpod ls", color::dim("Status"));
+    } else if command.is_empty() && succeeded > 0 {
+        eprintln!();
+        eprintln!("  {}  envpod run {name_prefix}-1 -- bash", color::dim("Run"));
+        eprintln!("  {}  envpod start --all -- <command>", color::dim("Start all"));
+    }
+
+    eprintln!();
+    if failed > 0 {
+        anyhow::bail!("{failed} clone(s) failed");
+    }
     Ok(())
 }
 
