@@ -70,8 +70,8 @@ const DEFAULT_BASE_DIR: &str = "/var/lib/envpod";
 
 #[derive(Parser)]
 #[command(name = "envpod")]
-#[command(about = "Zero-trust governance environments for AI agents (CE)")]
-#[command(version = concat!(env!("CARGO_PKG_VERSION"), " (CE) ", env!("ENVPOD_BUILD_HASH"), " ", env!("ENVPOD_BUILD_TIME")))]
+#[command(about = concat!("Zero-trust governance environments for AI agents (", env!("ENVPOD_EDITION"), ")"))]
+#[command(version = concat!(env!("CARGO_PKG_VERSION"), " (", env!("ENVPOD_EDITION"), ") ", env!("ENVPOD_BUILD_HASH"), " ", env!("ENVPOD_BUILD_TIME")))]
 struct Cli {
     /// Base directory for envpod state and pod data
     #[arg(long, env = "ENVPOD_DIR", default_value = DEFAULT_BASE_DIR, global = true)]
@@ -150,9 +150,6 @@ enum Commands {
         /// Do not mount the working directory even if pod.yaml has mount_cwd: true
         #[arg(long, conflicts_with = "mount_cwd")]
         no_mount_cwd: bool,
-        /// Run as a specific registered agent identity
-        #[arg(long)]
-        agent: Option<String>,
         /// Command and arguments to execute
         #[arg(last = true)]
         command: Vec<String>,
@@ -439,23 +436,6 @@ enum Commands {
         /// Clone from current state (includes agent modifications) instead of base snapshot
         #[arg(long)]
         current: bool,
-        /// Clone N pods in parallel from the source
-        #[arg(long)]
-        parallel: Option<usize>,
-        /// CPU affinity strategy for parallel clones: spread (default), isolate, shared, none
-        #[arg(long, default_value = "spread")]
-        affinity: AffinityMode,
-        /// Command to run in each cloned pod (background, requires --parallel)
-        #[arg(last = true)]
-        command: Vec<String>,
-    },
-    /// Manage agent identities within a pod
-    #[command(name = "agent")]
-    Agent {
-        /// Pod name
-        name: String,
-        #[command(subcommand)]
-        action: AgentSubcmd,
     },
     /// Manage base pods (reusable rootfs snapshots for fast cloning)
     Base {
@@ -503,6 +483,20 @@ enum Commands {
         /// Remove an internal port by container port: port[/proto] (e.g. 3000)
         #[arg(long = "remove-internal")]
         remove_internal: Vec<String>,
+    },
+    /// Manage exposed ports on a running pod's firewall (no restart required)
+    Expose {
+        /// Pod name
+        name: String,
+        /// Add an exposed port (can be repeated)
+        #[arg(long)]
+        add: Vec<u16>,
+        /// Remove an exposed port (can be repeated)
+        #[arg(long)]
+        remove: Vec<u16>,
+        /// List currently exposed ports
+        #[arg(long)]
+        list: bool,
     },
     /// View or mutate discovery settings on a running pod (no restart required)
     Discover {
@@ -601,8 +595,42 @@ enum Commands {
         #[arg(long)]
         json: bool,
     },
+    /// Manage systemd services for pods (auto-start on boot)
+    Service {
+        #[command(subcommand)]
+        action: ServiceAction,
+    },
     /// Show envpod version, license, and project info
     About,
+}
+
+#[derive(Subcommand)]
+enum ServiceAction {
+    /// Register a pod as a systemd service (auto-start on boot)
+    Register {
+        /// Pod name
+        name: String,
+        /// Working directory for the pod (default: current directory)
+        #[arg(long)]
+        workdir: Option<String>,
+    },
+    /// Unregister a pod service (stop + disable + remove unit)
+    Unregister {
+        /// Pod name
+        name: String,
+    },
+    /// Show status of a registered pod service
+    Status {
+        /// Pod name
+        name: String,
+    },
+    /// List all registered pod services
+    List,
+    /// Restart a registered pod service (picks up new binary)
+    Restart {
+        /// Pod name
+        name: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -681,55 +709,6 @@ enum MonitorAction {
         #[arg(long)]
         json: bool,
     },
-}
-
-/// CPU affinity strategy for parallel clones.
-#[derive(Debug, Clone, Copy, clap::ValueEnum)]
-enum AffinityMode {
-    /// Isolate when possible, round-robin when not enough cores (default)
-    Spread,
-    /// Strict isolation — error if not enough cores for 1:1 mapping
-    Isolate,
-    /// Keep source affinity on all clones (no redistribution)
-    Shared,
-    /// Strip affinity from all clones — kernel schedules freely
-    None,
-}
-
-#[derive(Subcommand)]
-enum AgentSubcmd {
-    /// Register a new agent
-    Register {
-        /// Agent name
-        agent_name: String,
-        /// Capabilities (comma-separated: read,write,execute,network)
-        #[arg(long, value_delimiter = ',')]
-        capabilities: Vec<String>,
-        /// Vault keys this agent can access (comma-separated)
-        #[arg(long, value_delimiter = ',')]
-        vault_keys: Vec<String>,
-    },
-    /// List registered agents
-    List {
-        /// Output as JSON
-        #[arg(long)]
-        json: bool,
-    },
-    /// Remove a registered agent
-    Remove {
-        /// Agent name
-        agent_name: String,
-    },
-    /// Print JWT token for an agent
-    Token {
-        /// Agent name
-        agent_name: String,
-        /// Token TTL in seconds (default: 86400 = 24 hours)
-        #[arg(long, default_value = "86400")]
-        ttl: u64,
-    },
-    /// Show pod identity info (public key, pod ID)
-    Identity,
 }
 
 #[derive(Subcommand)]
@@ -907,11 +886,11 @@ async fn run(cli: Cli) -> Result<()> {
             eprint!("{}", presets::format_table());
             Ok(())
         }
-        Commands::Run { name, root, user, env_vars, enable_display, enable_audio, background, ports, public_ports, internal_ports, mount_cwd, no_mount_cwd, agent, command } => {
+        Commands::Run { name, root, user, env_vars, enable_display, enable_audio, background, ports, public_ports, internal_ports, mount_cwd, no_mount_cwd, command } => {
             if background {
                 cmd_run_background(base_dir, &name, &command, root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports)
             } else {
-                cmd_run(&store, base_dir, &name, &command, root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports, mount_cwd, no_mount_cwd, agent.as_deref()).await
+                cmd_run(&store, base_dir, &name, &command, root, user.as_deref(), &env_vars, enable_display, enable_audio, &ports, &public_ports, &internal_ports, mount_cwd, no_mount_cwd).await
             }
         }
         Commands::Start { names, all, root, user, env_vars, enable_display, enable_audio, ports, public_ports, internal_ports, command } => {
@@ -1023,18 +1002,13 @@ async fn run(cli: Cli) -> Result<()> {
             remove_deny,
         } => cmd_dns(&store, &name, &allow, &deny, &remove_allow, &remove_deny).await,
         Commands::Setup { name, create_base, verbose } => cmd_setup(&store, base_dir, &name, create_base.as_deref(), verbose).await,
-        Commands::Clone { source, name, current, parallel, affinity, command } => {
-            if let Some(n) = parallel {
-                cmd_clone_parallel(&store, base_dir, &source, &name, current, n, affinity, &command)
-            } else {
-                cmd_clone(&store, base_dir, &source, &name, current)
-            }
-        }
-        Commands::Agent { name, action } => cmd_agent(&store, &name, action),
+        Commands::Clone { source, name, current } => cmd_clone(&store, base_dir, &source, &name, current),
         Commands::Base { action } => cmd_base(&store, base_dir, action).await,
         Commands::Dashboard { port, no_open, daemon, stop } => dashboard::run(base_dir.clone(), port, no_open, daemon, stop).await,
         Commands::Ports { name, add_publish, add_publish_all, add_internal, remove, remove_internal } =>
             cmd_ports(&store, &name, &add_publish, &add_publish_all, &add_internal, &remove, &remove_internal),
+        Commands::Expose { name, add, remove, list } =>
+            cmd_expose(&store, &name, &add, &remove, list),
         Commands::Discover { name, on, off, add_pods, remove_pods } =>
             cmd_discover(&store, base_dir, &name, on, off, &add_pods, &remove_pods).await,
         Commands::DnsDaemon { socket } => cmd_dns_daemon(base_dir, socket).await,
@@ -1131,25 +1105,35 @@ async fn run(cli: Cli) -> Result<()> {
             }
             Ok(())
         }
+        Commands::Service { action } => cmd_service(action),
         Commands::Completions { shell } => {
             print_completions(shell, base_dir);
             Ok(())
         }
         Commands::About => {
-            let version = concat!(env!("CARGO_PKG_VERSION"), " (CE)");
+            let version = concat!(env!("CARGO_PKG_VERSION"), " (", env!("ENVPOD_EDITION"), ")");
             let build = concat!(env!("ENVPOD_BUILD_HASH"), " ", env!("ENVPOD_BUILD_TIME"));
-            println!("{}", color::bold("envpod"));
-            println!("Zero-trust governance environments for AI agents");
+            println!("{}", color::bold(env!("ENVPOD_PRODUCT")));
+            println!("{}", env!("ENVPOD_TAGLINE"));
             println!();
+            println!("  Edition:  {}", env!("ENVPOD_EDITION"));
             println!("  Version:  {version}");
             println!("  Build:    {build}");
-            println!("  License:  BSL 1.1 (converts to AGPL-3.0 on 2030-03-07)");
-            println!("  Source:   https://github.com/markamo/envpod-ce");
-            println!("  Docs:     https://envpod.dev");
+            let lic = env!("ENVPOD_LICENSE_TYPE");
+            if lic == "BSL-1.1" {
+                println!("  License:  {lic} (converts to AGPL-3.0 on 2030-03-07)");
+            } else {
+                println!("  License:  {lic}");
+            }
+            println!("  Website:  {}", env!("ENVPOD_WEBSITE"));
             println!();
-            println!("  {}  Mark Amo-Boateng, PhD / Xtellix Inc.", color::dim("Author:"));
+            println!("  {}  {} / {}", color::dim("Author:"), env!("ENVPOD_AUTHOR"), env!("ENVPOD_COMPANY"));
+            println!("  {}  {}", color::dim("Contact:"), env!("ENVPOD_EMAIL"));
+            if !env!("ENVPOD_PATENT").is_empty() {
+                println!("  {}  {}", color::dim("Patent:"), env!("ENVPOD_PATENT"));
+            }
             println!();
-            println!("{}", color::dim("Docker isolates. Envpod governs."));
+            println!("{}", color::dim(env!("ENVPOD_MOTTO")));
             Ok(())
         }
     }
@@ -1240,22 +1224,6 @@ async fn cmd_init(
         std::fs::write(state.config_path(), yaml).context("persist pod.yaml")?;
     }
 
-    // Generate pod identity (Ed25519 keypair)
-    if let Ok(state) = NativeState::from_handle(&handle) {
-        match envpod_core::identity::generate_pod_identity(&state.pod_dir, handle.id, name) {
-            Ok(meta) => {
-                eprintln!("  {}  Pod identity ({}...)", color::dim("Identity"), &meta.public_key_hex[..16]);
-                // Sync agents from config
-                if !config.identity.agents.is_empty() {
-                    envpod_core::identity::sync_agents_from_config(
-                        &state.pod_dir, &config.identity.agents,
-                    )?;
-                    eprintln!("  {}  {} agent(s) registered", color::dim("Agents  "), config.identity.agents.len());
-                }
-            }
-            Err(e) => tracing::warn!("identity generation failed: {e:#}"),
-        }
-    }
 
     // Write web display scripts to overlay (daemon + wrapper)
     if config.web_display.display_type != envpod_core::config::WebDisplayType::None {
@@ -1337,7 +1305,7 @@ async fn cmd_init(
 
             // Inject info plugin (info-plugin.js — about/branding button)
             {
-                let version = concat!(env!("CARGO_PKG_VERSION"), " (CE)");
+                let version = concat!(env!("CARGO_PKG_VERSION"), " (", env!("ENVPOD_EDITION"), ")");
                 for (pod_path, content, executable) in envpod_core::web_display::info_overlay_files(&config.web_display, &name, version) {
                     let rel = pod_path.trim_start_matches('/');
                     let dest = if rel.starts_with("usr/") && matches!(config.filesystem.system_access, envpod_core::config::SystemAccess::Advanced | envpod_core::config::SystemAccess::Dangerous) {
@@ -1506,9 +1474,20 @@ async fn cmd_init(
         eprintln!("  {}  {}", color::dim("Log"), log_path.display());
     }
 
-    // Warn if cgroup enforcement is missing (running without sudo/root)
-    let cgroup_path = format!("/sys/fs/cgroup/envpod/{}", name);
-    if !std::path::Path::new(&cgroup_path).exists() {
+    // Warn if cgroup enforcement will be unavailable at run time.
+    // Cgroups are created during `envpod run`, not `init`, so we check
+    // whether we have write access to the cgroup root instead of looking
+    // for a pod-specific cgroup directory (which doesn't exist yet).
+    let cgroup_base = std::path::Path::new("/sys/fs/cgroup");
+    let can_cgroup = nix::unistd::geteuid().is_root()
+        || cgroup_base.join("envpod").exists()
+        || std::fs::metadata(cgroup_base)
+            .map(|m| {
+                use std::os::unix::fs::MetadataExt;
+                m.uid() == nix::unistd::geteuid().as_raw()
+            })
+            .unwrap_or(false);
+    if !can_cgroup {
         eprintln!();
         eprintln!("  {} CPU/memory/PID limits not enforced (cgroup unavailable).", color::yellow("⚠"));
         eprintln!("    COW overlay, DNS filtering, and seccomp are active.");
@@ -1969,97 +1948,6 @@ fn snapshot_base_quiet(handle: &envpod_core::types::PodHandle, base_dir: &std::p
 }
 
 // ---------------------------------------------------------------------------
-// agent identity
-// ---------------------------------------------------------------------------
-
-fn cmd_agent(store: &PodStore, name: &str, action: AgentSubcmd) -> Result<()> {
-    use envpod_core::identity;
-    use envpod_core::audit::{AuditAction, AuditEntry, AuditLog};
-
-    let handle = store.load(name)?;
-    let state = NativeState::from_handle(&handle)?;
-
-    match action {
-        AgentSubcmd::Register { agent_name, capabilities, vault_keys } => {
-            let agent = identity::register_agent(
-                &state.pod_dir, &agent_name, capabilities, vault_keys,
-            )?;
-            eprintln!("  {} Agent '{}' registered (id: {})", color::green("✓"), agent.name, agent.agent_id);
-
-            let log = AuditLog::new(&state.pod_dir);
-            let _ = log.append(&AuditEntry {
-                timestamp: chrono::Utc::now(),
-                pod_name: name.into(),
-                action: AuditAction::AgentRegister,
-                detail: format!("agent={}", agent_name),
-                success: true,
-                agent: None,
-            });
-        }
-        AgentSubcmd::List { json } => {
-            let agents = identity::list_agents(&state.pod_dir)?;
-            if json {
-                println!("{}", serde_json::to_string_pretty(&agents)?);
-            } else if agents.is_empty() {
-                eprintln!("  No agents registered. Use: envpod agent {name} register <name>");
-            } else {
-                eprintln!();
-                for a in &agents {
-                    let caps = if a.capabilities.is_empty() { "all".into() } else { a.capabilities.join(", ") };
-                    let keys = if a.vault_keys.is_empty() { "all".into() } else { a.vault_keys.join(", ") };
-                    eprintln!("  {} {} (id: {})", color::green("●"), color::bold(&a.name), &a.agent_id.to_string()[..8]);
-                    eprintln!("    capabilities: {caps}");
-                    eprintln!("    vault_keys:   {keys}");
-                    eprintln!("    created:      {}", a.created_at.format("%Y-%m-%d %H:%M:%S"));
-                    eprintln!();
-                }
-            }
-        }
-        AgentSubcmd::Remove { agent_name } => {
-            match identity::remove_agent(&state.pod_dir, &agent_name)? {
-                Some(_) => {
-                    eprintln!("  {} Agent '{}' removed", color::green("✓"), agent_name);
-                    let log = AuditLog::new(&state.pod_dir);
-                    let _ = log.append(&AuditEntry {
-                        timestamp: chrono::Utc::now(),
-                        pod_name: name.into(),
-                        action: AuditAction::AgentRemove,
-                        detail: format!("agent={}", agent_name),
-                        success: true,
-                        agent: None,
-                    });
-                }
-                None => eprintln!("  Agent '{}' not found", agent_name),
-            }
-        }
-        AgentSubcmd::Token { agent_name, ttl } => {
-            let agent = identity::get_agent(&state.pod_dir, &agent_name)?
-                .ok_or_else(|| anyhow::anyhow!("agent '{}' not registered", agent_name))?;
-            let token = identity::generate_agent_token(
-                &state.pod_dir, handle.id, name, &agent, ttl,
-            )?;
-            println!("{token}");
-        }
-        AgentSubcmd::Identity => {
-            match identity::load_pod_identity(&state.pod_dir)? {
-                Some(meta) => {
-                    eprintln!();
-                    eprintln!("  {} Pod Identity", color::bold(name));
-                    eprintln!("  pod_id:     {}", meta.pod_id);
-                    eprintln!("  public_key: {}", meta.public_key_hex);
-                    eprintln!("  created:    {}", meta.created_at.format("%Y-%m-%d %H:%M:%S"));
-                    eprintln!();
-                }
-                None => {
-                    eprintln!("  No identity generated for pod '{}'. Recreate with: envpod destroy {0} && envpod init {0}", name);
-                }
-            }
-        }
-    }
-    Ok(())
-}
-
-// ---------------------------------------------------------------------------
 // clone
 // ---------------------------------------------------------------------------
 
@@ -2130,273 +2018,6 @@ fn cmd_clone(
     eprintln!();
 
     Ok(())
-}
-
-// ---------------------------------------------------------------------------
-// parallel clone
-// ---------------------------------------------------------------------------
-
-fn cmd_clone_parallel(
-    store: &PodStore,
-    base_dir: &std::path::Path,
-    source: &str,
-    name_prefix: &str,
-    use_current: bool,
-    count: usize,
-    affinity_mode: AffinityMode,
-    command: &[String],
-) -> Result<()> {
-    if count == 0 {
-        anyhow::bail!("--parallel count must be at least 1");
-    }
-    if count > 256 {
-        anyhow::bail!("--parallel count exceeds maximum (256)");
-    }
-
-    let backend = NativeBackend::new(base_dir)?;
-    let bases_dir = base_dir.join("bases");
-
-    // Determine clone source: pod or base
-    let source_handle = store.load(source).ok();
-    let is_base = source_handle.is_none() && has_base(&bases_dir, source);
-    if source_handle.is_none() && !is_base {
-        anyhow::bail!("no pod or base pod named '{source}'");
-    }
-    if is_base && use_current {
-        anyhow::bail!("--current cannot be used with a base pod");
-    }
-
-    // Load source config to check for cpu_affinity
-    let source_affinity = if let Some(ref sh) = source_handle {
-        NativeState::from_handle(sh).ok()
-            .and_then(|s| s.load_config().ok().flatten())
-            .and_then(|c| c.processor.cpu_affinity.clone())
-    } else {
-        // Try loading pod.yaml from base
-        let base_yaml = bases_dir.join(source).join("pod.yaml");
-        std::fs::read_to_string(&base_yaml).ok()
-            .and_then(|y| serde_yaml::from_str::<envpod_core::config::PodConfig>(&y).ok())
-            .and_then(|c| c.processor.cpu_affinity)
-    };
-
-    // Compute per-pod affinity assignments
-    let affinities = compute_affinities(count, &source_affinity, affinity_mode)?;
-
-    // Check which names are available
-    let names: Vec<String> = (1..=count)
-        .map(|i| format!("{name_prefix}-{i}"))
-        .collect();
-    for n in &names {
-        if store.exists(n) {
-            anyhow::bail!("pod '{n}' already exists");
-        }
-    }
-
-    let total_start = std::time::Instant::now();
-    eprintln!();
-    eprintln!(
-        "  {} '{}' → {} pods ({}-1 .. {}-{})",
-        color::bold("Parallel clone"),
-        source, count, name_prefix, name_prefix, count,
-    );
-    if let Some(ref aff) = affinities {
-        let mode_str = match affinity_mode {
-            AffinityMode::Spread => "spread",
-            AffinityMode::Isolate => "isolate",
-            AffinityMode::Shared => "shared",
-            AffinityMode::None => "none",
-        };
-        eprintln!("  {}  affinity={mode_str}", color::dim("CPU"));
-    }
-
-    // Clone in parallel using threads
-    let results: Vec<_> = std::thread::scope(|s| {
-        let handles: Vec<_> = names.iter().enumerate().map(|(idx, pod_name)| {
-            let backend = &backend;
-            let store_path = base_dir.join("state");
-            let source_handle = &source_handle;
-            let bases_dir = &bases_dir;
-            let pod_affinity = affinities.as_ref().map(|a| a[idx].clone());
-            s.spawn(move || -> Result<(String, std::time::Duration)> {
-                let clone_start = std::time::Instant::now();
-                let handle = if let Some(ref src) = source_handle {
-                    backend.clone_pod(src, pod_name, use_current)?
-                } else {
-                    backend.clone_from_base(bases_dir, source, pod_name)?
-                };
-                let pod_store = PodStore::new(store_path.clone())?;
-                pod_store.save(&handle)?;
-
-                // Apply per-pod affinity by patching pod.yaml
-                if let Some(ref aff) = pod_affinity {
-                    if let Ok(state) = NativeState::from_handle(&handle) {
-                        let config_path = state.pod_dir.join("pod.yaml");
-                        if let Ok(yaml_str) = std::fs::read_to_string(&config_path) {
-                            if let Ok(mut config) = serde_yaml::from_str::<envpod_core::config::PodConfig>(&yaml_str) {
-                                config.processor.cpu_affinity = if aff.is_empty() {
-                                    None
-                                } else {
-                                    Some(aff.clone())
-                                };
-                                if let Ok(new_yaml) = serde_yaml::to_string(&config) {
-                                    let _ = std::fs::write(&config_path, new_yaml);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Ok((pod_name.clone(), clone_start.elapsed()))
-            })
-        }).collect();
-
-        handles.into_iter().map(|h| h.join().unwrap()).collect()
-    });
-
-    // Report results
-    let mut succeeded = 0usize;
-    let mut failed = 0usize;
-    for (idx, result) in results.iter().enumerate() {
-        match result {
-            Ok((name, elapsed)) => {
-                let aff_str = affinities.as_ref()
-                    .map(|a| if a[idx].is_empty() { " (no affinity)".into() } else { format!(" (cpus: {})", a[idx]) })
-                    .unwrap_or_default();
-                eprintln!("  {}  {} ({}){}", color::green("✓"), name, fmt_duration(*elapsed), aff_str);
-                succeeded += 1;
-            }
-            Err(e) => {
-                eprintln!("  {}  {e:#}", color::red("✗"));
-                failed += 1;
-            }
-        }
-    }
-
-    let total_elapsed = total_start.elapsed();
-    eprintln!();
-    eprintln!(
-        "  {} {succeeded}/{count} pods cloned in {}{}",
-        if failed == 0 { color::green("✓") } else { color::yellow("!") },
-        fmt_duration(total_elapsed),
-        if failed > 0 { format!(" ({failed} failed)") } else { String::new() },
-    );
-
-    // If command provided, start each pod in background
-    if !command.is_empty() && succeeded > 0 {
-        eprintln!();
-        eprintln!("  {} Starting {} pods...", color::bold("Launch"), succeeded);
-
-        for result in &results {
-            if let Ok((pod_name, _)) = result {
-                match cmd_run_background(
-                    base_dir, pod_name, command,
-                    false, None, &[], false, false, &[], &[], &[],
-                ) {
-                    Ok(()) => {}
-                    Err(e) => eprintln!("  {}  start {pod_name}: {e:#}", color::red("✗")),
-                }
-            }
-        }
-        eprintln!();
-        eprintln!("  {}  envpod ls", color::dim("Status"));
-    } else if command.is_empty() && succeeded > 0 {
-        eprintln!();
-        eprintln!("  {}  envpod run {name_prefix}-1 -- bash", color::dim("Run"));
-        eprintln!("  {}  envpod start --all -- <command>", color::dim("Start all"));
-    }
-
-    eprintln!();
-    if failed > 0 {
-        anyhow::bail!("{failed} clone(s) failed");
-    }
-    Ok(())
-}
-
-/// Compute per-pod CPU affinity assignments based on the strategy.
-/// Returns None if source has no affinity or mode is Shared with no changes.
-/// Returns Some(vec) with one affinity string per pod.
-fn compute_affinities(
-    count: usize,
-    source_affinity: &Option<String>,
-    mode: AffinityMode,
-) -> Result<Option<Vec<String>>> {
-    let source_aff = match source_affinity {
-        Some(a) if !a.is_empty() => a,
-        _ => return Ok(None), // no source affinity — nothing to distribute
-    };
-
-    match mode {
-        AffinityMode::Shared => Ok(None), // keep source affinity as-is on all clones
-        AffinityMode::None => {
-            // Strip affinity from all clones
-            Ok(Some(vec![String::new(); count]))
-        }
-        AffinityMode::Isolate | AffinityMode::Spread => {
-            // Parse available cores from source affinity (e.g., "0-7" → [0,1,2,...,7])
-            let available = parse_cpu_list(source_aff);
-            if available.is_empty() {
-                return Ok(None);
-            }
-
-            let num_cores = available.len();
-            let cores_per_pod = num_cores / count;
-
-            if cores_per_pod >= 1 {
-                // Enough cores to isolate: assign contiguous chunks
-                let mut assignments = Vec::with_capacity(count);
-                for i in 0..count {
-                    let start = i * cores_per_pod;
-                    let end = if i == count - 1 { num_cores } else { (i + 1) * cores_per_pod };
-                    let cores: Vec<String> = available[start..end].iter().map(|c| c.to_string()).collect();
-                    assignments.push(format_cpu_list(&cores));
-                }
-                Ok(Some(assignments))
-            } else if matches!(mode, AffinityMode::Isolate) {
-                anyhow::bail!(
-                    "not enough cores to isolate: {count} pods but only {num_cores} cores ({}). \
-                     Use --affinity spread to share cores, or reduce --parallel",
-                    source_aff,
-                );
-            } else {
-                // Spread mode: round-robin across available cores
-                eprintln!(
-                    "  {}  {count} pods on {num_cores} cores — round-robin (sharing)",
-                    color::yellow("!"),
-                );
-                let mut assignments = Vec::with_capacity(count);
-                for i in 0..count {
-                    let core = &available[i % num_cores];
-                    assignments.push(core.to_string());
-                }
-                Ok(Some(assignments))
-            }
-        }
-    }
-}
-
-/// Parse a CPU list string like "0-3,6,8-11" into a sorted vec of core numbers.
-fn parse_cpu_list(s: &str) -> Vec<usize> {
-    let mut cores = Vec::new();
-    for part in s.split(',') {
-        let part = part.trim();
-        if let Some((lo, hi)) = part.split_once('-') {
-            if let (Ok(lo), Ok(hi)) = (lo.trim().parse::<usize>(), hi.trim().parse::<usize>()) {
-                for c in lo..=hi {
-                    cores.push(c);
-                }
-            }
-        } else if let Ok(c) = part.parse::<usize>() {
-            cores.push(c);
-        }
-    }
-    cores.sort();
-    cores.dedup();
-    cores
-}
-
-/// Format core numbers back into a compact CPU list string.
-fn format_cpu_list(cores: &[String]) -> String {
-    cores.join(",")
 }
 
 // ---------------------------------------------------------------------------
@@ -2857,10 +2478,11 @@ async fn cmd_stop(store: &PodStore, base_dir: &std::path::Path, name: &str) -> R
     let handle = store.load(name)?;
     let native_state = NativeState::from_handle(&handle).ok();
 
-    // Clean up port forwards
+    // Clean up port forwards and firewall
     if let Some(ref s) = native_state {
         envpod_core::backend::native::cleanup_port_forwards(&s.pod_dir);
         envpod_core::backend::native::cleanup_internal_ports(&s.pod_dir);
+        envpod_core::backend::native::cleanup_pod_firewall(&s.pod_dir);
     }
 
     // Unregister from DNS daemon
@@ -2912,7 +2534,7 @@ async fn cmd_stop(store: &PodStore, base_dir: &std::path::Path, name: &str) -> R
 // run
 // ---------------------------------------------------------------------------
 
-async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, command: &[String], root: bool, user: Option<&str>, env_vars: &[String], enable_display: bool, enable_audio: bool, cli_ports: &[String], cli_public_ports: &[String], cli_internal_ports: &[String], cli_mount_cwd: bool, cli_no_mount_cwd: bool, agent: Option<&str>) -> Result<()> {
+async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, command: &[String], root: bool, user: Option<&str>, env_vars: &[String], enable_display: bool, enable_audio: bool, cli_ports: &[String], cli_public_ports: &[String], cli_internal_ports: &[String], cli_mount_cwd: bool, cli_no_mount_cwd: bool) -> Result<()> {
     if command.is_empty() {
         anyhow::bail!("no command specified — usage: envpod run {name} -- <command>");
     }
@@ -2938,35 +2560,6 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
 
     let mut extra_env: Vec<String> = env_vars.to_vec();
     extra_env.push(format!("ENVPOD_POD_NAME={name}"));
-    extra_env.push(format!("ENVPOD_POD_ID={}", handle.id));
-
-    // Pod identity: inject public key if available
-    if let Ok(Some(identity)) = envpod_core::identity::load_pod_identity(&state.pod_dir) {
-        extra_env.push(format!("ENVPOD_POD_PUBLIC_KEY={}", identity.public_key_hex));
-    }
-
-    // Agent identity: if --agent specified, inject agent env vars + vault filter
-    if let Some(agent_name) = agent {
-        let agent_reg = envpod_core::identity::get_agent(&state.pod_dir, agent_name)?
-            .ok_or_else(|| anyhow::anyhow!(
-                "agent '{}' is not registered in pod '{}'. Use: envpod agent {} register {}",
-                agent_name, name, name, agent_name
-            ))?;
-
-        let token = envpod_core::identity::generate_agent_token(
-            &state.pod_dir, handle.id, name, &agent_reg, 86400,
-        ).context("generate agent JWT")?;
-
-        extra_env.push(format!("ENVPOD_AGENT_ID={}", agent_reg.agent_id));
-        extra_env.push(format!("ENVPOD_AGENT_NAME={}", agent_reg.name));
-        extra_env.push(format!("ENVPOD_AGENT_TOKEN={}", token));
-
-        // Vault scoping: only inject the keys this agent is permitted to access
-        if !agent_reg.vault_keys.is_empty() {
-            extra_env.push(format!("ENVPOD_VAULT_FILTER={}", agent_reg.vault_keys.join(",")));
-        }
-    }
-
     // Ensure TERM is set inside the pod (needed for TUI apps like vim, claude).
     // Inherit from host if available, otherwise default to xterm-256color.
     if !extra_env.iter().any(|e| e.starts_with("TERM=")) {
@@ -3219,7 +2812,7 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
     }
     // Security boundary status — show what's enforced
     {
-        let has_cgroup = state.pod_dir.join("cgroup_procs").exists()
+        let has_cgroup = nix::unistd::geteuid().is_root()
             || std::path::Path::new(&format!("/sys/fs/cgroup/envpod/{}", name)).exists();
         let has_netns = state.network.is_some();
         let has_seccomp = pod_config.as_ref()
@@ -3391,6 +2984,23 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
         false
     };
 
+    // Pod firewall: default-DROP with ACCEPT only for configured ports
+    if let Some(ref net) = state.network {
+        if let Some(ref config) = pod_config {
+            match envpod_core::backend::native::setup_pod_firewall(
+                &state.pod_dir,
+                &net.pod_ip,
+                &config.network.expose,
+                &config.network.ports,
+                &config.network.public_ports,
+                &config.network.internal_ports,
+            ) {
+                Ok(()) => {}
+                Err(e) => eprintln!("warning: pod firewall setup failed: {e:#}"),
+            }
+        }
+    }
+
     // Pod discovery: register with the central envpod-dns daemon.
     // All pods register (so the daemon knows their allow_pods list for bilateral enforcement).
     // Only allow_discovery: true pods are resolvable by peers.
@@ -3455,7 +3065,6 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
                         action: AuditAction::BudgetExceeded,
                         detail: format!("max_duration={dur_str_owned} ({secs}s)"),
                         success: true,
-                    agent: None,
                     };
                     log.append(&entry).ok();
                 }))
@@ -3649,13 +3258,14 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
     // Clean up supervisor PID file
     let _ = std::fs::remove_file(state.pod_dir.join("supervisor.pid"));
 
-    // Clean up port forwards and discovery registration
+    // Clean up port forwards, firewall, and discovery registration
     if port_forward_active {
         envpod_core::backend::native::cleanup_port_forwards(&state.pod_dir);
     }
     if internal_active {
         envpod_core::backend::native::cleanup_internal_ports(&state.pod_dir);
     }
+    envpod_core::backend::native::cleanup_pod_firewall(&state.pod_dir);
     if discovery_active {
         let daemon = envpod_core::dns_daemon::DaemonClient::new(
             envpod_core::dns_daemon::DaemonClient::default_path()
@@ -5061,7 +4671,6 @@ fn cmd_kill(store: &PodStore, base_dir: &std::path::Path, name: &str) -> Result<
         action: AuditAction::Kill,
         detail: "forced kill + rollback".into(),
         success: true,
-            agent: None,
     })?;
 
     backend.stop(&handle)?;
@@ -5086,6 +4695,7 @@ async fn cmd_destroy(store: &PodStore, base_dir: &std::path::Path, name: &str, r
     if let Some(ref s) = native_state {
         envpod_core::backend::native::cleanup_port_forwards(&s.pod_dir);
         envpod_core::backend::native::cleanup_internal_ports(&s.pod_dir);
+        envpod_core::backend::native::cleanup_pod_firewall(&s.pod_dir);
     }
     // Always try to unregister — cleans up stale entries from crashed pods
     {
@@ -5715,7 +5325,6 @@ fn cmd_vault(store: &PodStore, name: &str, action: VaultAction) -> Result<()> {
                 action: AuditAction::VaultSet,
                 detail: format!("key={key}"),
                 success: true,
-            agent: None,
             })?;
 
             println!("Set vault key '{key}' in pod '{name}'");
@@ -5730,7 +5339,6 @@ fn cmd_vault(store: &PodStore, name: &str, action: VaultAction) -> Result<()> {
                         action: AuditAction::VaultGet,
                         detail: format!("key={key}"),
                         success: true,
-                    agent: None,
                     })?;
                     println!("{value}");
                 }
@@ -5761,7 +5369,6 @@ fn cmd_vault(store: &PodStore, name: &str, action: VaultAction) -> Result<()> {
                 action: AuditAction::VaultRemove,
                 detail: format!("key={key}"),
                 success: true,
-            agent: None,
             })?;
 
             println!("Removed vault key '{key}' from pod '{name}'");
@@ -5789,7 +5396,6 @@ fn cmd_vault(store: &PodStore, name: &str, action: VaultAction) -> Result<()> {
                 action: AuditAction::VaultSet,
                 detail: format!("import {} key(s) from {}", added, path.display()),
                 success: true,
-            agent: None,
             });
             println!("{} Imported {added} secret(s) into pod '{name}'", color::green("✓"));
             if skipped > 0 {
@@ -6008,7 +5614,6 @@ fn cmd_resize(
         action: AuditAction::Resize,
         detail: detail.clone(),
         success: true,
-            agent: None,
     })?;
 
     // --- 4. Print summary ---
@@ -6188,7 +5793,6 @@ fn cmd_mount(
             if readonly { "ro" } else { "rw" },
         ),
         success: true,
-    agent: None,
     })?;
 
     // Register undo entry
@@ -6233,7 +5837,6 @@ fn cmd_unmount(
         action: AuditAction::Unmount,
         detail: format!("{}", path.display()),
         success: true,
-    agent: None,
     })?;
 
     println!("Unmounted {} from pod '{name}'", path.display());
@@ -6334,7 +5937,6 @@ fn execute_undo(
         action: AuditAction::Undo,
         detail: format!("{} ({})", entry.description, &entry.id.to_string()[..8]),
         success: true,
-    agent: None,
     })?;
 
     println!(
@@ -6667,6 +6269,57 @@ fn cmd_ports(
         remove_internal_port(&state.pod_dir, spec)
             .with_context(|| format!("remove internal port '{spec}'"))?;
         println!("Removed internal port: {spec}");
+    }
+
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// expose (live firewall port mutation)
+// ---------------------------------------------------------------------------
+
+fn cmd_expose(store: &PodStore, name: &str, add: &[u16], remove: &[u16], list: bool) -> Result<()> {
+    use envpod_core::backend::native::{
+        read_firewall_state, expose_firewall_port, unexpose_firewall_port,
+    };
+    use envpod_core::backend::native::state::NativeState;
+
+    let handle = store.load(name)?;
+    let state = NativeState::from_handle(&handle)?;
+
+    let (pod_ip, current_ports) = read_firewall_state(&state.pod_dir);
+
+    // List-only mode (or no flags at all)
+    if list || (add.is_empty() && remove.is_empty()) {
+        if pod_ip.is_empty() {
+            println!("No firewall active on pod '{name}' — all ports accessible.");
+        } else if current_ports.is_empty() {
+            println!("Firewall active on pod '{name}' (pod_ip {pod_ip}) — no ports exposed (all traffic dropped).");
+        } else {
+            println!("Exposed ports on pod '{name}' (pod_ip {pod_ip}):");
+            let mut sorted = current_ports.clone();
+            sorted.sort();
+            for port in &sorted {
+                println!("  {port}");
+            }
+        }
+        return Ok(());
+    }
+
+    if pod_ip.is_empty() {
+        anyhow::bail!("no firewall active on pod '{name}' — start the pod with port/expose config first");
+    }
+
+    for port in add {
+        expose_firewall_port(&state.pod_dir, *port)
+            .with_context(|| format!("expose port {port} on pod '{name}'"))?;
+        eprintln!("  {} Exposed port {}", color::green("✓"), port);
+    }
+
+    for port in remove {
+        unexpose_firewall_port(&state.pod_dir, *port)
+            .with_context(|| format!("unexpose port {port} on pod '{name}'"))?;
+        eprintln!("  {} Unexposed port {}", color::green("✓"), port);
     }
 
     Ok(())
@@ -7021,6 +6674,175 @@ fn format_bytes(bytes: u64) -> String {
 }
 
 // ---------------------------------------------------------------------------
+// systemd service management
+// ---------------------------------------------------------------------------
+
+const SYSTEMD_UNIT_DIR: &str = "/etc/systemd/system";
+
+fn service_unit_name(pod_name: &str) -> String {
+    format!("envpod-pod-{pod_name}.service")
+}
+
+fn service_unit_path(pod_name: &str) -> std::path::PathBuf {
+    std::path::PathBuf::from(SYSTEMD_UNIT_DIR).join(service_unit_name(pod_name))
+}
+
+fn cmd_service(action: ServiceAction) -> Result<()> {
+    match action {
+        ServiceAction::Register { name, workdir } => {
+            let unit_path = service_unit_path(&name);
+            if unit_path.exists() {
+                anyhow::bail!("service already registered: {}", service_unit_name(&name));
+            }
+
+            let envpod_bin = which_envpod()?;
+            let work_dir = workdir.unwrap_or_else(|| {
+                std::env::current_dir()
+                    .map(|p| p.to_string_lossy().to_string())
+                    .unwrap_or_else(|_| "/var/lib/envpod".to_string())
+            });
+
+            let unit = format!(
+                "[Unit]\n\
+                 Description=envpod pod: {name}\n\
+                 After=network.target\n\
+                 \n\
+                 [Service]\n\
+                 Type=forking\n\
+                 ExecStart={bin} start {name}\n\
+                 ExecStop={bin} stop {name}\n\
+                 Restart=always\n\
+                 RestartSec=5\n\
+                 WorkingDirectory={workdir}\n\
+                 \n\
+                 [Install]\n\
+                 WantedBy=multi-user.target\n",
+                name = name,
+                bin = envpod_bin,
+                workdir = work_dir,
+            );
+
+            std::fs::write(&unit_path, &unit)
+                .with_context(|| format!("write {}", unit_path.display()))?;
+
+            // systemctl daemon-reload + enable + start
+            run_systemctl(&["daemon-reload"])?;
+            run_systemctl(&["enable", &service_unit_name(&name)])?;
+            run_systemctl(&["start", &service_unit_name(&name)])?;
+
+            eprintln!("  {}  Registered: {}", color::green("✓"), service_unit_name(&name));
+            eprintln!("  Auto-starts on boot. Restarts on crash.");
+            eprintln!();
+            eprintln!("  Status:     sudo envpod service status {name}");
+            eprintln!("  Logs:       sudo journalctl -u {} -f", service_unit_name(&name));
+            eprintln!("  Unregister: sudo envpod service unregister {name}");
+        }
+
+        ServiceAction::Unregister { name } => {
+            let unit_path = service_unit_path(&name);
+            let unit_name = service_unit_name(&name);
+
+            // Stop + disable (ignore errors if already stopped)
+            let _ = run_systemctl(&["stop", &unit_name]);
+            let _ = run_systemctl(&["disable", &unit_name]);
+
+            if unit_path.exists() {
+                std::fs::remove_file(&unit_path)
+                    .with_context(|| format!("remove {}", unit_path.display()))?;
+            }
+
+            run_systemctl(&["daemon-reload"])?;
+
+            eprintln!("  {}  Unregistered: {}", color::green("✓"), unit_name);
+        }
+
+        ServiceAction::Status { name } => {
+            let unit_name = service_unit_name(&name);
+            let output = std::process::Command::new("systemctl")
+                .args(["status", &unit_name])
+                .output()
+                .context("systemctl status")?;
+            print!("{}", String::from_utf8_lossy(&output.stdout));
+            if !output.stderr.is_empty() {
+                eprint!("{}", String::from_utf8_lossy(&output.stderr));
+            }
+        }
+
+        ServiceAction::List => {
+            // Find all envpod-pod-*.service files
+            let dir = std::path::Path::new(SYSTEMD_UNIT_DIR);
+            let mut found = Vec::new();
+            if let Ok(entries) = std::fs::read_dir(dir) {
+                for entry in entries.flatten() {
+                    let name = entry.file_name();
+                    let name_str = name.to_string_lossy();
+                    if name_str.starts_with("envpod-pod-") && name_str.ends_with(".service") {
+                        let pod_name = name_str
+                            .strip_prefix("envpod-pod-")
+                            .and_then(|s| s.strip_suffix(".service"))
+                            .unwrap_or(&name_str)
+                            .to_string();
+                        // Check if active
+                        let active = std::process::Command::new("systemctl")
+                            .args(["is-active", &name_str])
+                            .output()
+                            .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+                            .unwrap_or_else(|_| "unknown".to_string());
+                        found.push((pod_name, active));
+                    }
+                }
+            }
+
+            if found.is_empty() {
+                eprintln!("  No registered pod services.");
+            } else {
+                eprintln!("  {:<24} {}", color::bold("POD"), color::bold("STATUS"));
+                eprintln!("  {}", "-".repeat(40));
+                for (pod, status) in &found {
+                    let status_colored = match status.as_str() {
+                        "active" => color::green(status),
+                        "inactive" => color::dim(status),
+                        _ => color::red(status),
+                    };
+                    eprintln!("  {:<24} {}", pod, status_colored);
+                }
+                eprintln!();
+                eprintln!("  {} registered service(s)", found.len());
+            }
+        }
+
+        ServiceAction::Restart { name } => {
+            let unit_name = service_unit_name(&name);
+            run_systemctl(&["restart", &unit_name])?;
+            eprintln!("  {}  Restarted: {}", color::green("✓"), unit_name);
+        }
+    }
+
+    Ok(())
+}
+
+fn which_envpod() -> Result<String> {
+    // Try to find the envpod binary path
+    if let Ok(exe) = std::env::current_exe() {
+        return Ok(exe.to_string_lossy().to_string());
+    }
+    // Fallback
+    Ok("/usr/local/bin/envpod".to_string())
+}
+
+fn run_systemctl(args: &[&str]) -> Result<()> {
+    let output = std::process::Command::new("systemctl")
+        .args(args)
+        .output()
+        .with_context(|| format!("systemctl {}", args.join(" ")))?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        anyhow::bail!("systemctl {} failed: {}", args.join(" "), stderr.trim());
+    }
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
 // completions
 // ---------------------------------------------------------------------------
 
@@ -7029,7 +6851,7 @@ const POD_SUBCOMMANDS: &[&str] = &[
     "init", "setup", "run", "start", "stop", "restart", "fg", "diff", "commit", "rollback", "audit",
     "lock", "unlock", "kill", "destroy", "queue", "approve", "cancel", "status", "logs",
     "vault", "mount", "unmount", "undo", "remote", "monitor", "dns", "clone", "actions",
-    "ports", "discover", "snapshot", "resize",
+    "ports", "expose", "discover", "snapshot", "resize",
 ];
 
 fn print_completions(shell: Shell, base_dir: &std::path::Path) {
@@ -7501,6 +7323,11 @@ mod tests {
         let ids = findings_ids(&config);
         assert!(ids.contains(&"D-01"));
         assert!(ids.contains(&"D-02"));
+    }
+
+    #[test]
+    fn service_unit_name_format() {
+        assert_eq!(service_unit_name("license-server"), "envpod-pod-license-server.service");
     }
 
     #[test]

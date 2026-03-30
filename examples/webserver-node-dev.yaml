@@ -1,0 +1,47 @@
+# Node.js Development Server — React, Vue, Svelte, Next.js with live reload
+#
+# Mounts your project directory. npm start runs inside the governed pod.
+# Edit on host, browser auto-reloads. COW-protected.
+#
+# Usage:
+#   cd my-react-app
+#   sudo envpod init dev -c examples/webserver-node-dev.yaml
+#   sudo envpod start dev
+#   # Open http://<pod-ip>:3000
+#   # Expose: ngrok http <pod-ip>:3000
+#
+# Works with: React, Vue, Svelte, Next.js, Nuxt, Remix, Astro, Vite
+
+name: node-dev
+type: standard
+
+filesystem:
+  system_access: advanced
+  mount_cwd: true
+  tracking:
+    watch: [/opt]
+    ignore: [/var/cache, /var/lib/apt, /tmp, /run, /opt/*/node_modules]
+
+network:
+  mode: Monitored
+  dns:
+    mode: Denylist
+    deny: []
+
+processor:
+  cores: 2.0
+  memory: "2GB"
+  max_pids: 256
+
+budget:
+  max_duration: "12h"
+
+audit:
+  action_log: true
+
+setup:
+  - "curl -fsSL https://deb.nodesource.com/setup_22.x | bash -"
+  - "apt-get install -y nodejs"
+  - "cd /opt/*/. && npm install 2>/dev/null || true"
+
+start_command: ["bash", "-c", "cd /opt/*/. && npm start"]

@@ -1,0 +1,49 @@
+# Multi-Repo — agent works across multiple git repos simultaneously
+#
+# Mount multiple project directories into the pod with COW isolation.
+# The agent can read and modify all repos. Every change across all repos
+# appears in a single diff. Commit selectively per-repo or all at once.
+#
+# Usage:
+#   sudo envpod init multi -c examples/multi-repo.yaml
+#   sudo envpod run multi -- bash
+#   # Agent sees all repos, edits go to overlay
+#   # sudo envpod diff multi              → see all changes across repos
+#   # sudo envpod commit multi /opt/api   → commit only API changes
+#   # sudo envpod rollback multi          → discard everything
+
+name: multi-repo
+type: standard
+
+filesystem:
+  system_access: advanced
+  mounts:
+    - path: /home/user/projects/api
+      permissions: ReadWrite
+    - path: /home/user/projects/frontend
+      permissions: ReadWrite
+    - path: /home/user/projects/shared-lib
+      permissions: ReadWrite
+  tracking:
+    watch: [/home/user/projects]
+    ignore: [/var/cache, /var/lib/apt, /tmp, /run, node_modules, __pycache__, .git/objects]
+
+network:
+  mode: Monitored
+  dns:
+    mode: Denylist
+    deny: []
+
+processor:
+  cores: 4.0
+  memory: "8GB"
+  max_pids: 512
+
+budget:
+  max_duration: "8h"
+
+audit:
+  action_log: true
+
+setup:
+  - "apt-get update && apt-get install -y --no-install-recommends git curl python3 python3-pip nodejs npm"

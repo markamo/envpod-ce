@@ -1,0 +1,49 @@
+# Docker-in-Pod — agents that build and run containers, governed
+#
+# Bind-mounts the Docker socket so the agent can build images and
+# run containers. All agent filesystem changes go through COW overlay.
+# The Docker socket is read-write but the agent's own filesystem is governed.
+#
+# Usage:
+#   sudo envpod init builder -c examples/docker-in-pod.yaml
+#   sudo envpod run builder --root -- bash
+#   # Inside: docker build -t myapp . && docker run myapp
+#
+# Security note: Docker socket access = root on the host.
+# Use only with trusted agents. Consider --root for Docker commands.
+
+name: docker-builder
+type: standard
+
+filesystem:
+  system_access: advanced
+  mount_cwd: true
+  mounts:
+    - path: /var/run/docker.sock
+      permissions: ReadWrite
+  tracking:
+    watch: [/home, /workspace, /root, /opt]
+    ignore: [/var/cache, /var/lib/apt, /tmp, /run]
+
+network:
+  mode: Monitored
+  dns:
+    mode: Denylist
+    deny: []
+
+processor:
+  cores: 4.0
+  memory: "8GB"
+  max_pids: 1024
+
+devices:
+  gpu: false
+
+budget:
+  max_duration: "8h"
+
+audit:
+  action_log: true
+
+setup:
+  - "apt-get update && apt-get install -y --no-install-recommends docker.io git curl"

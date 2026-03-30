@@ -58,9 +58,11 @@ pub enum AuditAction {
     FileUpload,
     Resize,
     VaultProxy,
-    AgentRegister,
-    AgentRemove,
-    AgentTokenGenerate,
+    HealthCheckPass,
+    HealthCheckFail,
+    HealthRestart,
+    HealthFreeze,
+    HealthAlert,
 }
 
 impl std::fmt::Display for AuditAction {
@@ -81,9 +83,6 @@ pub struct AuditEntry {
     pub action: AuditAction,
     pub detail: String,
     pub success: bool,
-    /// Agent name if action was performed within an agent context.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub agent: Option<String>,
 }
 
 /// Append-only audit log backed by a JSONL file.
@@ -220,7 +219,6 @@ mod tests {
             action,
             detail: detail.into(),
             success: true,
-            agent: None,
         }
     }
 

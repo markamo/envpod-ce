@@ -1,0 +1,60 @@
+# Cron Agent — scheduled agent that runs on a timer, governed
+#
+# Agent executes a task on a schedule (every hour, daily, etc).
+# Every run is audited. Budget enforcement auto-kills if it runs too long.
+# Results accumulate in the overlay — review with diff, commit when ready.
+#
+# Usage:
+#   sudo envpod init scheduler -c examples/cron-agent.yaml
+#   sudo envpod start scheduler
+#   # Agent runs /workspace/task.sh every hour
+#   # Check results: sudo envpod diff scheduler
+#   # Accept: sudo envpod commit scheduler
+
+name: cron-agent
+type: standard
+
+filesystem:
+  system_access: advanced
+  workspace: /workspace
+  mount_cwd: false
+  tracking:
+    watch: [/workspace]
+    ignore: [/var/cache, /var/lib/apt, /tmp, /run]
+
+network:
+  mode: Monitored
+  dns:
+    mode: Allowlist
+    allow:
+      - api.anthropic.com
+      - github.com
+      - "*.github.com"
+
+processor:
+  cores: 2.0
+  memory: "4GB"
+  max_pids: 256
+
+budget:
+  max_duration: "720h"
+
+audit:
+  action_log: true
+
+setup:
+  - "apt-get update && apt-get install -y --no-install-recommends cron curl python3 python3-pip"
+  - "pip install anthropic requests"
+  - |
+    cat > /workspace/task.sh << 'TASK'
+    #!/bin/bash
+    # Your scheduled task here
+    echo "[$(date)] Running scheduled task..." >> /workspace/task.log
+    python3 /workspace/agent.py >> /workspace/task.log 2>&1
+    TASK
+    chmod +x /workspace/task.sh
+  - |
+    echo "0 * * * * root /workspace/task.sh" > /etc/cron.d/agent-task
+    chmod 644 /etc/cron.d/agent-task
+
+start_command: ["cron", "-f"]

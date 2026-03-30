@@ -1,0 +1,50 @@
+# Cursor IDE — connect Cursor to a governed pod via SSH
+#
+# Same as ide-ssh but branded for Cursor users. Cursor supports
+# VS Code Remote SSH extension. Your AI coding agent runs governed
+# inside envpod while you use Cursor's AI features on top.
+#
+# Usage:
+#   sudo envpod init cursor-dev -c examples/cursor.yaml
+#   sudo envpod run cursor-dev --root -- bash
+#   cursor --remote ssh-remote+root@localhost:2222 /workspace
+#
+# Password: envpod
+# All edits go through COW overlay → envpod diff → envpod commit
+
+name: cursor-dev
+type: standard
+
+filesystem:
+  system_access: advanced
+  mount_cwd: true
+  tracking:
+    watch: [/home, /workspace, /root]
+    ignore: [/var/cache, /var/lib/apt, /tmp, /run, node_modules, __pycache__]
+
+network:
+  mode: Monitored
+  dns:
+    mode: Denylist
+    deny: []
+
+processor:
+  cores: 4.0
+  memory: "8GB"
+  max_pids: 512
+
+ports:
+  - "2222:22"
+
+budget:
+  max_duration: "12h"
+
+audit:
+  action_log: true
+
+setup:
+  - "apt-get update && apt-get install -y --no-install-recommends openssh-server git curl python3 python3-pip nodejs npm"
+  - "mkdir -p /run/sshd"
+  - "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config"
+  - "echo 'root:envpod' | chpasswd"
+  - "/usr/sbin/sshd"

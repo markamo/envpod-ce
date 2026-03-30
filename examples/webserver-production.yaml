@@ -1,0 +1,66 @@
+# Production Web Server — Caddy with compression, caching, security headers, health checks
+#
+# Serves static files with production-grade performance.
+# Caddy handles: gzip/brotli, ETag, Cache-Control, security headers, access logs.
+# envpod handles: isolation, governance, vault, audit, health monitoring, auto-restart.
+#
+# Usage:
+#   cd my-built-site    # directory with index.html, static assets
+#   sudo envpod init my-site -c examples/webserver-production.yaml
+#   sudo envpod start my-site
+#   sudo envpod service register my-site
+#   # CF tunnel: my-site.example.com → http://<pod-ip>:8080
+#
+# For API servers, use webserver-api.yaml instead.
+
+name: production-site
+type: standard
+
+filesystem:
+  system_access: advanced
+  mount_cwd: true
+  tracking:
+    watch: [/workspace]
+    ignore: [/var/cache, /var/lib/apt, /tmp, /run]
+
+network:
+  mode: Monitored
+  dns:
+    mode: Allowlist
+    allow:
+      - archive.ubuntu.com
+      - "*.ubuntu.com"
+      - "*.caddyserver.com"
+      - "*.cloudsmith.io"
+      - github.com
+      - "*.github.com"
+      - "*.githubusercontent.com"
+
+processor:
+  cores: 1.0
+  memory: "256MB"
+  max_pids: 32
+
+budget:
+  max_duration: "720h"
+
+audit:
+  action_log: true
+
+health:
+  endpoint: /
+  port: 8080
+  interval: 30
+  timeout: 5
+  retries: 3
+  grace_period: 10
+  action: restart
+
+setup:
+  - |
+    apt-get update && apt-get install -y --no-install-recommends debian-keyring debian-archive-keyring apt-transport-https curl
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
+    apt-get update && apt-get install -y caddy
+
+start_command: ["bash", "-c", "caddy file-server --root /opt/*/. --listen :8080"]

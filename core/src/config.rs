@@ -31,7 +31,8 @@ pub struct PodConfig {
     pub queue: QueueConfig,
     pub web_display: WebDisplayConfig,
     pub host_user: HostUserConfig,
-    pub identity: IdentityConfig,
+    #[serde(default)]
+    pub health: crate::health::HealthConfig,
 
     /// Default user to run commands as inside the pod.
     /// Defaults to "agent" (non-root, UID 60000) for full pod boundary protection.
@@ -76,7 +77,7 @@ impl Default for PodConfig {
             queue: QueueConfig::default(),
             web_display: WebDisplayConfig::default(),
             host_user: HostUserConfig::default(),
-            identity: IdentityConfig::default(),
+            health: crate::health::HealthConfig::default(),
             user: default_user(),
             setup: Vec::new(),
             setup_script: None,
@@ -209,11 +210,6 @@ pub struct FilesystemConfig {
     /// The captured CWD path (set automatically during `envpod init` when mount_cwd is true).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cwd_path: Option<PathBuf>,
-    /// Sealed mode — no host bind mounts. System dirs come from the rootfs
-    /// copy only. The host filesystem is invisible to the agent.
-    /// Forces system_access to advanced (COW overlay, no live bind mounts).
-    #[serde(default)]
-    pub sealed: bool,
 }
 
 /// Controls which paths appear in `envpod diff` and `envpod commit` by default.
@@ -305,6 +301,12 @@ pub struct PodNetworkConfig {
     /// Default: [] (cannot discover any other pod).
     #[serde(default)]
     pub allow_pods: Vec<String>,
+    /// Ports exposed on the pod IP. Only these ports are reachable from the host.
+    /// If empty and no ports/public_ports/internal_ports are configured, all ports
+    /// are accessible (backward compatibility). If any port config exists, only
+    /// exposed ports are accessible.
+    #[serde(default)]
+    pub expose: Vec<u16>,
 }
 
 impl Default for PodNetworkConfig {
@@ -320,6 +322,7 @@ impl Default for PodNetworkConfig {
             internal_ports: Vec::new(),
             allow_discovery: false,
             allow_pods: Vec::new(),
+            expose: Vec::new(),
         }
     }
 }
@@ -612,26 +615,6 @@ pub struct HostUserConfig {
     pub dirs: Vec<String>,
     pub exclude: Vec<String>,
     pub include_dotfiles: Vec<String>,
-}
-
-// -- Identity -----------------------------------------------------------------
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[serde(default)]
-pub struct IdentityConfig {
-    /// Pre-declared agents for this pod.
-    /// Agents listed here are auto-registered at init time.
-    #[serde(default)]
-    pub agents: Vec<AgentConfig>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentConfig {
-    pub name: String,
-    #[serde(default)]
-    pub capabilities: Vec<String>,
-    #[serde(default)]
-    pub vault_keys: Vec<String>,
 }
 
 #[cfg(test)]

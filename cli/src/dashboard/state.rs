@@ -53,8 +53,6 @@ pub struct PodDetail {
     pub resources: Option<ResourceStats>,
     pub diff_count: usize,
     pub vault_keys: Vec<String>,
-    pub agents: Vec<envpod_core::identity::AgentRegistration>,
-    pub pod_public_key: Option<String>,
 }
 
 /// A filesystem diff entry for the dashboard.
@@ -125,12 +123,6 @@ pub fn pod_detail(store: &PodStore, base_dir: &Path, name: &str) -> Result<PodDe
         .and_then(|v| v.list().ok())
         .unwrap_or_default();
 
-    let agents = envpod_core::identity::list_agents(&state.pod_dir).unwrap_or_default();
-    let pod_public_key = envpod_core::identity::load_pod_identity(&state.pod_dir)
-        .ok()
-        .flatten()
-        .map(|m| m.public_key_hex);
-
     Ok(PodDetail {
         name: handle.name.clone(),
         status: format!("{:?}", state.status).to_lowercase(),
@@ -141,8 +133,6 @@ pub fn pod_detail(store: &PodStore, base_dir: &Path, name: &str) -> Result<PodDe
         resources,
         diff_count,
         vault_keys,
-        agents,
-        pod_public_key,
     })
 }
 

@@ -1,0 +1,42 @@
+# Development Web Server — quick, live-reload, no build tools
+#
+# Serves files from your current directory. Edit on host, see changes in browser.
+# COW-protected: attacker can't modify your source files.
+#
+# Usage:
+#   cd my-project
+#   sudo envpod init dev -c examples/webserver-dev.yaml
+#   sudo envpod start dev
+#   # Open http://<pod-ip>:8080
+#   # Expose: ngrok http <pod-ip>:8080
+#
+# For React/Vue/Svelte dev server, use webserver-node-dev.yaml instead.
+
+name: dev-server
+type: standard
+
+filesystem:
+  system_access: safe
+  mount_cwd: true
+
+network:
+  mode: Monitored
+  dns:
+    mode: Denylist
+    deny: []
+
+processor:
+  cores: 1.0
+  memory: "512MB"
+  max_pids: 64
+
+budget:
+  max_duration: "8h"
+
+audit:
+  action_log: true
+
+setup:
+  - "apt-get update && apt-get install -y --no-install-recommends python3"
+
+start_command: ["bash", "-c", "python3 -m http.server 8080"]

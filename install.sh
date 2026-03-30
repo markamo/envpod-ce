@@ -500,9 +500,35 @@ if [[ ! -f "$SCRIPT_DIR/envpod" ]]; then
     fail "envpod binary not found in $SCRIPT_DIR"
 fi
 
+NEW_VERSION=$("$SCRIPT_DIR/envpod" --version 2>/dev/null | head -1 || echo "unknown")
+
+# Check for existing installation
+if [[ -f "$INSTALL_DIR/envpod" ]]; then
+    OLD_VERSION=$("$INSTALL_DIR/envpod" --version 2>/dev/null | head -1 || echo "unknown")
+    echo ""
+    echo "  Existing installation detected:"
+    echo "    Current: $OLD_VERSION"
+    echo "    New:     $NEW_VERSION"
+    echo ""
+
+    # Remove old binary first (handles "Text file busy" when envpod is running)
+    rm -f "$INSTALL_DIR/envpod" 2>/dev/null || {
+        warn "Could not remove old binary — envpod may be running"
+        warn "Trying rename workaround..."
+        mv "$INSTALL_DIR/envpod" "$INSTALL_DIR/envpod.old.$$" 2>/dev/null || fail "Cannot replace running binary. Stop all pods first: sudo envpod stop --all"
+        info "Old binary moved aside (will be cleaned up)"
+    }
+    info "Upgrading: $OLD_VERSION → $NEW_VERSION"
+else
+    echo "  New installation: $NEW_VERSION"
+fi
+
 cp "$SCRIPT_DIR/envpod" "$INSTALL_DIR/envpod"
 chmod 755 "$INSTALL_DIR/envpod"
 info "Installed to $INSTALL_DIR/envpod"
+
+# Clean up old binary if rename was used
+rm -f "$INSTALL_DIR/envpod.old."* 2>/dev/null
 
 # ═══════════════════════════════════════════════════════════════════════
 # 3. Envpod group (run without sudo)
@@ -517,12 +543,12 @@ if [[ "$REAL_USER" != "root" && "$IN_CONTAINER" -eq 0 ]]; then
     echo "  This adds '$REAL_USER' to the 'envpod' group."
     echo "  After logging out and back in, envpod runs without sudo."
     echo ""
-    printf "  Add $REAL_USER to envpod group? [Y/n]: "
-    if read ENVPOD_GROUP_CHOICE </dev/tty 2>/dev/null; then
-        :
+    if (echo test >/dev/tty) 2>/dev/null; then
+        printf "  Add $REAL_USER to envpod group? [Y/n]: "
+        read ENVPOD_GROUP_CHOICE </dev/tty 2>/dev/null || ENVPOD_GROUP_CHOICE="y"
     else
-        echo ""
-        echo "  Non-interactive install — adding to envpod group automatically."
+        echo "  Adding $REAL_USER to envpod group in 5 seconds (Ctrl+C to cancel)..."
+        sleep 5
         ENVPOD_GROUP_CHOICE="y"
     fi
 

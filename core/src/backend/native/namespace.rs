@@ -61,7 +61,6 @@ pub fn spawn_isolated(
     mount_entries: &[(PathBuf, PathBuf, bool)],
     devices: crate::config::DevicesConfig,
     system_access: SystemAccess,
-    sealed: bool,
     quiet_log: Option<PathBuf>,
     run_as: Option<(u32, u32)>,
 ) -> Result<u32> {
@@ -177,7 +176,6 @@ pub fn spawn_isolated(
                 seccomp_profile,
                 &devices,
                 system_access,
-                sealed,
                 run_as,
             );
 
@@ -276,7 +274,6 @@ fn pre_exec_setup(
     seccomp_profile: super::seccomp::SeccompProfile,
     devices: &crate::config::DevicesConfig,
     system_access: SystemAccess,
-    sealed: bool,
     run_as: Option<(u32, u32)>,
 ) -> std::io::Result<()> {
     // 0. Add ourselves to the pod's cgroup (before namespace changes)
@@ -386,31 +383,22 @@ fn pre_exec_setup(
 
     // 4. Mount overlay — rootfs (empty skeleton) as lower, or "/" for legacy
     if rootfs.is_dir() {
-        if sealed {
-            // Sealed mode: overlay only, NO host bind mounts at all.
-            // System dirs come from rootfs copy (init-time snapshot).
-            // The host filesystem is completely invisible to the agent.
-            let rootfs_lower = vec![rootfs.to_path_buf()];
-            super::overlay::mount_overlay(&rootfs_lower, upper, work, merged)?;
-            mount_system_cow_overlays(merged, upper)?;
-        } else {
-            match system_access {
-                SystemAccess::Safe => {
-                    // Safe: overlay first, then read-only bind mounts on merged.
-                    // System dirs are immutable — agents can't write to them.
-                    let rootfs_lower = vec![rootfs.to_path_buf()];
-                    super::overlay::mount_overlay(&rootfs_lower, upper, work, merged)?;
-                    bind_system_essentials(merged)?;
-                }
-                SystemAccess::Advanced | SystemAccess::Dangerous => {
-                    // Advanced/Dangerous: overlay first, then per-system-dir
-                    // COW overlays. Each system dir gets its own overlayfs
-                    // with host dir as lower and pod-specific upper, so writes
-                    // go to the pod's sys_upper — never to the host.
-                    let rootfs_lower = vec![rootfs.to_path_buf()];
-                    super::overlay::mount_overlay(&rootfs_lower, upper, work, merged)?;
-                    mount_system_cow_overlays(merged, upper)?;
-                }
+        match system_access {
+            SystemAccess::Safe => {
+                // Safe: overlay first, then read-only bind mounts on merged.
+                // System dirs are immutable — agents can't write to them.
+                let rootfs_lower = vec![rootfs.to_path_buf()];
+                super::overlay::mount_overlay(&rootfs_lower, upper, work, merged)?;
+                bind_system_essentials(merged)?;
+            }
+            SystemAccess::Advanced | SystemAccess::Dangerous => {
+                // Advanced/Dangerous: overlay first, then per-system-dir
+                // COW overlays. Each system dir gets its own overlayfs
+                // with host dir as lower and pod-specific upper, so writes
+                // go to the pod's sys_upper — never to the host.
+                let rootfs_lower = vec![rootfs.to_path_buf()];
+                super::overlay::mount_overlay(&rootfs_lower, upper, work, merged)?;
+                mount_system_cow_overlays(merged, upper)?;
             }
         }
     } else {
@@ -448,17 +436,7 @@ fn pre_exec_setup(
     }
 
     // 5.5. Bind-mount configured paths from pod.yaml into merged
-    // Skip all user mounts in sealed mode — no host access
-    if sealed && !mount_entries.is_empty() {
-        let _ = std::io::Write::write_all(
-            &mut std::io::stderr(),
-            b"envpod: sealed mode - skipping all host bind mounts\n",
-        );
-    }
     for (host_path, pod_path, readonly) in mount_entries {
-        if sealed {
-            continue; // sealed mode — no host mounts
-        }
         if !host_path.exists() {
             eprintln!(
                 "warning: mount path {} does not exist on host — skipping",
@@ -929,7 +907,6 @@ mod tests {
             &[],
             crate::config::DevicesConfig::default(),
             crate::config::SystemAccess::Safe,
-            false, // sealed
             None,
             None,
         );
@@ -968,7 +945,6 @@ mod tests {
             &[],
             crate::config::DevicesConfig::default(),
             crate::config::SystemAccess::Safe,
-            false, // sealed
             None,
             None,
         )
@@ -1020,7 +996,6 @@ mod tests {
             &[],
             crate::config::DevicesConfig::default(),
             crate::config::SystemAccess::Safe,
-            false, // sealed
             None,
             None,
         )
@@ -1077,7 +1052,6 @@ mod tests {
             &[],
             crate::config::DevicesConfig::default(),
             crate::config::SystemAccess::Safe,
-            false, // sealed
             None,
             None,
         )

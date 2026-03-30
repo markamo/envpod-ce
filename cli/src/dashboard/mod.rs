@@ -165,9 +165,8 @@ async fn serve(base_dir: PathBuf, port: u16, no_open: bool) -> Result<()> {
 
     let app = Router::new()
         // API routes
-        .route("/api/v1/pods", get(api::list_pods).post(api::create_pod))
-        .route("/api/v1/pods/{id}", get(api::pod_detail).delete(api::destroy_pod))
-        .route("/api/v1/pods/{id}/clone", post(api::clone_pod))
+        .route("/api/v1/pods", get(api::list_pods))
+        .route("/api/v1/pods/{id}", get(api::pod_detail))
         .route("/api/v1/pods/{id}/audit", get(api::pod_audit))
         .route("/api/v1/pods/{id}/resources", get(api::pod_resources))
         .route("/api/v1/pods/{id}/diff", get(api::pod_diff))
@@ -184,7 +183,6 @@ async fn serve(base_dir: PathBuf, port: u16, no_open: bool) -> Result<()> {
         .route("/api/v1/pods/{id}/queue", get(api::pod_queue))
         .route("/api/v1/pods/{id}/queue/{action_id}/approve", post(api::pod_queue_approve))
         .route("/api/v1/pods/{id}/queue/{action_id}/cancel", post(api::pod_queue_cancel))
-        .route("/api/v1/presets", get(api::list_presets))
         .layer(middleware::from_fn_with_state(app_state.clone(), auth_middleware))
         // Static assets (no auth — token injected into HTML)
         .fallback(static_handler)

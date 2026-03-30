@@ -1186,6 +1186,299 @@ fn iptables_cmd(args: &[&str]) -> Result<()> {
 }
 
 // ---------------------------------------------------------------------------
+// Pod firewall (expose)
+// ---------------------------------------------------------------------------
+
+/// Extract the container port from a port-forward spec.
+///
+/// Formats: "host:container", "host:container/proto", "127.0.0.1:host:container",
+/// "127.0.0.1:host:container/proto", "port" (same port).
+fn extract_container_port(spec: &str) -> Option<u16> {
+    // Strip localhost prefix if present
+    let rest = spec.strip_prefix("127.0.0.1:").unwrap_or(spec);
+
+    // Strip protocol suffix
+    let (port_part, _) = match rest.rsplit_once('/') {
+        Some((p, _proto)) => (p, _proto),
+        None => (rest, "tcp"),
+    };
+
+    // "host:container" or just "port"
+    match port_part.rsplit_once(':') {
+        Some((_host, container)) => container.parse::<u16>().ok(),
+        None => port_part.parse::<u16>().ok(),
+    }
+}
+
+/// Extract the port from an internal port spec ("port" or "port/proto").
+fn extract_internal_port(spec: &str) -> Option<u16> {
+    let port_str = match spec.rsplit_once('/') {
+        Some((p, _)) => p,
+        None => spec,
+    };
+    port_str.parse::<u16>().ok()
+}
+
+/// Set up firewall rules so only explicitly exposed ports are reachable on the pod IP.
+///
+/// Collects allowed ports from: `expose`, `ports`, `public_ports`, `internal_ports`.
+/// If *none* of these are configured the firewall is skipped entirely
+/// (backward compatibility — pod is fully open). When any port config exists, a default
+/// DROP is installed on FORWARD for the pod IP, with ACCEPT rules for each allowed port
+/// and for established/related return traffic.
+pub fn setup_pod_firewall(
+    pod_dir: &Path,
+    pod_ip: &str,
+    expose: &[u16],
+    ports: &[String],
+    public_ports: &[String],
+    internal_ports: &[String],
+) -> Result<()> {
+    // Collect all ports that should be accessible
+    let mut allowed_ports: std::collections::HashSet<u16> = std::collections::HashSet::new();
+
+    // Explicit expose list
+    for p in expose {
+        allowed_ports.insert(*p);
+    }
+
+    // Ports from port forwarding (extract container port)
+    for spec in ports.iter().chain(public_ports.iter()) {
+        if let Some(container_port) = extract_container_port(spec) {
+            allowed_ports.insert(container_port);
+        }
+    }
+
+    // Internal ports
+    for spec in internal_ports {
+        if let Some(port) = extract_internal_port(spec) {
+            allowed_ports.insert(port);
+        }
+    }
+
+    // If nothing configured at all, skip firewall (backward compat)
+    if allowed_ports.is_empty() && expose.is_empty() {
+        return Ok(());
+    }
+
+    // ACCEPT established/related (return traffic always allowed)
+    iptables_cmd(&[
+        "-I", "FORWARD", "1",
+        "-d", pod_ip,
+        "-m", "conntrack", "--ctstate", "ESTABLISHED,RELATED",
+        "-j", "ACCEPT",
+    ])?;
+
+    // ACCEPT each allowed port (TCP + UDP)
+    for port in &allowed_ports {
+        let port_s = port.to_string();
+        iptables_cmd(&[
+            "-I", "FORWARD", "1",
+            "-d", pod_ip, "-p", "tcp", "--dport", &port_s,
+            "-j", "ACCEPT",
+        ])?;
+        iptables_cmd(&[
+            "-I", "FORWARD", "1",
+            "-d", pod_ip, "-p", "udp", "--dport", &port_s,
+            "-j", "ACCEPT",
+        ])?;
+    }
+
+    // DEFAULT DROP all other inbound to pod
+    iptables_cmd(&[
+        "-A", "FORWARD",
+        "-d", pod_ip,
+        "-j", "DROP",
+    ])?;
+
+    // Save state for cleanup
+    let record = serde_json::json!({
+        "pod_ip": pod_ip,
+        "allowed_ports": allowed_ports.iter().collect::<Vec<_>>(),
+    });
+    std::fs::write(
+        pod_dir.join("firewall_active.json"),
+        serde_json::to_string(&record)?,
+    )?;
+
+    Ok(())
+}
+
+/// Remove all firewall rules installed by [`setup_pod_firewall`].
+///
+/// Reads `firewall_active.json` from the pod directory to find which rules to
+/// remove. Silent on errors — best-effort cleanup.
+pub fn cleanup_pod_firewall(pod_dir: &Path) {
+    let path = pod_dir.join("firewall_active.json");
+    if let Ok(content) = std::fs::read_to_string(&path) {
+        if let Ok(record) = serde_json::from_str::<serde_json::Value>(&content) {
+            let pod_ip = record["pod_ip"].as_str().unwrap_or("");
+            if !pod_ip.is_empty() {
+                // Remove the DROP rule
+                let _ = iptables_cmd(&["-D", "FORWARD", "-d", pod_ip, "-j", "DROP"]);
+
+                // Remove ACCEPT rules for each port
+                if let Some(ports) = record["allowed_ports"].as_array() {
+                    for p in ports {
+                        if let Some(port) = p.as_u64() {
+                            let port_s = port.to_string();
+                            let _ = iptables_cmd(&[
+                                "-D", "FORWARD",
+                                "-d", pod_ip, "-p", "tcp", "--dport", &port_s,
+                                "-j", "ACCEPT",
+                            ]);
+                            let _ = iptables_cmd(&[
+                                "-D", "FORWARD",
+                                "-d", pod_ip, "-p", "udp", "--dport", &port_s,
+                                "-j", "ACCEPT",
+                            ]);
+                        }
+                    }
+                }
+
+                // Remove conntrack rule
+                let _ = iptables_cmd(&[
+                    "-D", "FORWARD",
+                    "-d", pod_ip,
+                    "-m", "conntrack", "--ctstate", "ESTABLISHED,RELATED",
+                    "-j", "ACCEPT",
+                ]);
+            }
+        }
+    }
+    std::fs::remove_file(&path).ok();
+}
+
+/// Read the current firewall state from `firewall_active.json`.
+///
+/// Returns `(pod_ip, allowed_ports)`. If no firewall is active, returns
+/// empty values.
+pub fn read_firewall_state(pod_dir: &Path) -> (String, Vec<u16>) {
+    let path = pod_dir.join("firewall_active.json");
+    if let Ok(content) = std::fs::read_to_string(&path) {
+        if let Ok(record) = serde_json::from_str::<serde_json::Value>(&content) {
+            let pod_ip = record["pod_ip"].as_str().unwrap_or("").to_string();
+            let ports = record["allowed_ports"]
+                .as_array()
+                .map(|arr| {
+                    arr.iter()
+                        .filter_map(|v| v.as_u64().map(|p| p as u16))
+                        .collect()
+                })
+                .unwrap_or_default();
+            return (pod_ip, ports);
+        }
+    }
+    (String::new(), vec![])
+}
+
+/// Add a port to the firewall allow-list of a running pod.
+///
+/// Inserts ACCEPT rules for TCP+UDP and updates `firewall_active.json`.
+/// If no firewall is active (no state file), this is a no-op and returns Ok.
+pub fn expose_firewall_port(pod_dir: &Path, port: u16) -> Result<()> {
+    let path = pod_dir.join("firewall_active.json");
+    if !path.exists() {
+        return Ok(());
+    }
+    let content = std::fs::read_to_string(&path).context("read firewall_active.json")?;
+    let mut record: serde_json::Value =
+        serde_json::from_str(&content).context("parse firewall_active.json")?;
+
+    let pod_ip = record["pod_ip"].as_str().unwrap_or("").to_string();
+    if pod_ip.is_empty() {
+        anyhow::bail!("firewall state has no pod_ip");
+    }
+
+    // Check if already exposed
+    let ports = record["allowed_ports"]
+        .as_array()
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|v| v.as_u64().map(|p| p as u16))
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    if ports.contains(&port) {
+        return Ok(()); // already exposed
+    }
+
+    let port_s = port.to_string();
+
+    // Insert ACCEPT rules BEFORE the DROP rule (position 1)
+    iptables_cmd(&[
+        "-I", "FORWARD", "1",
+        "-d", &pod_ip, "-p", "tcp", "--dport", &port_s,
+        "-j", "ACCEPT",
+    ])?;
+    iptables_cmd(&[
+        "-I", "FORWARD", "1",
+        "-d", &pod_ip, "-p", "udp", "--dport", &port_s,
+        "-j", "ACCEPT",
+    ])?;
+
+    // Update state file
+    let mut new_ports = ports;
+    new_ports.push(port);
+    record["allowed_ports"] = serde_json::json!(new_ports);
+    std::fs::write(&path, serde_json::to_string(&record)?)?;
+
+    Ok(())
+}
+
+/// Remove a port from the firewall allow-list of a running pod.
+///
+/// Deletes ACCEPT rules for TCP+UDP and updates `firewall_active.json`.
+/// If no firewall is active (no state file), this is a no-op and returns Ok.
+pub fn unexpose_firewall_port(pod_dir: &Path, port: u16) -> Result<()> {
+    let path = pod_dir.join("firewall_active.json");
+    if !path.exists() {
+        return Ok(());
+    }
+    let content = std::fs::read_to_string(&path).context("read firewall_active.json")?;
+    let mut record: serde_json::Value =
+        serde_json::from_str(&content).context("parse firewall_active.json")?;
+
+    let pod_ip = record["pod_ip"].as_str().unwrap_or("").to_string();
+    if pod_ip.is_empty() {
+        anyhow::bail!("firewall state has no pod_ip");
+    }
+
+    let ports = record["allowed_ports"]
+        .as_array()
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|v| v.as_u64().map(|p| p as u16))
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    if !ports.contains(&port) {
+        return Ok(()); // not exposed
+    }
+
+    let port_s = port.to_string();
+
+    // Remove ACCEPT rules
+    let _ = iptables_cmd(&[
+        "-D", "FORWARD",
+        "-d", &pod_ip, "-p", "tcp", "--dport", &port_s,
+        "-j", "ACCEPT",
+    ]);
+    let _ = iptables_cmd(&[
+        "-D", "FORWARD",
+        "-d", &pod_ip, "-p", "udp", "--dport", &port_s,
+        "-j", "ACCEPT",
+    ]);
+
+    // Update state file
+    let new_ports: Vec<u16> = ports.into_iter().filter(|p| *p != port).collect();
+    record["allowed_ports"] = serde_json::json!(new_ports);
+    std::fs::write(&path, serde_json::to_string(&record)?)?;
+
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
@@ -1251,6 +1544,58 @@ mod tests {
     fn parse_internal_port_invalid() {
         assert!(parse_internal_port("notaport").is_err());
         assert!(parse_internal_port("notaport/tcp").is_err());
+    }
+
+    // -- extract_container_port / extract_internal_port (firewall helpers) ---
+
+    #[test]
+    fn extract_container_port_host_container() {
+        assert_eq!(extract_container_port("8080:3000"), Some(3000));
+    }
+
+    #[test]
+    fn extract_container_port_with_proto() {
+        assert_eq!(extract_container_port("8080:3000/udp"), Some(3000));
+    }
+
+    #[test]
+    fn extract_container_port_same_port() {
+        assert_eq!(extract_container_port("3000"), Some(3000));
+    }
+
+    #[test]
+    fn extract_container_port_localhost() {
+        assert_eq!(extract_container_port("127.0.0.1:8080:3000"), Some(3000));
+    }
+
+    #[test]
+    fn extract_container_port_localhost_with_proto() {
+        assert_eq!(extract_container_port("127.0.0.1:8080:3000/tcp"), Some(3000));
+    }
+
+    #[test]
+    fn extract_container_port_localhost_same() {
+        assert_eq!(extract_container_port("127.0.0.1:3000"), Some(3000));
+    }
+
+    #[test]
+    fn extract_container_port_invalid() {
+        assert_eq!(extract_container_port("notaport:abc"), None);
+    }
+
+    #[test]
+    fn extract_internal_port_basic() {
+        assert_eq!(extract_internal_port("5000"), Some(5000));
+    }
+
+    #[test]
+    fn extract_internal_port_with_proto() {
+        assert_eq!(extract_internal_port("5353/udp"), Some(5353));
+    }
+
+    #[test]
+    fn extract_internal_port_invalid() {
+        assert_eq!(extract_internal_port("abc"), None);
     }
 
     #[test]

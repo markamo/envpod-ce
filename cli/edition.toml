@@ -1,0 +1,17 @@
+# envpod CE build edition config
+# Single source of truth for branding, version, and license.
+
+edition = "CE"
+version = "0.1.6"
+public_key = ""
+
+# About info
+product = "envpod"
+tagline = "Zero-trust governance environments for AI agents"
+author = "Mark Amo-Boateng, PhD"
+company = "Xtellix Inc."
+email = "mark@envpod.dev"
+website = "https://envpod.dev"
+license = "BSL-1.1"
+patent = "Patent pending"
+motto = "Docker isolates. Envpod governs."

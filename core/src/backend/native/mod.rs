@@ -31,6 +31,8 @@ pub use netns::{
     add_port_forward, remove_port_forward,
     add_internal_port, remove_internal_port,
     read_active_ports,
+    setup_pod_firewall, cleanup_pod_firewall,
+    read_firewall_state, expose_firewall_port, unexpose_firewall_port,
 };
 pub use gc::{gc_all, GcResult};
 pub use cgroup::{migrate_display_pids, has_guardian};
@@ -189,7 +191,6 @@ impl NativeBackend {
             action,
             detail,
             success,
-            agent: None,
         };
         if let Err(e) = log.append(&entry) {
             tracing::warn!(error = %e, ?action, "audit log write failed");
@@ -608,16 +609,6 @@ impl NativeBackend {
             }
         }
 
-        // Agent-scoped vault: if ENVPOD_VAULT_FILTER is set, only inject
-        // the vault keys the agent is permitted to access.
-        if let Some(filter_csv) = env_map.remove("ENVPOD_VAULT_FILTER") {
-            let allowed: Vec<String> = filter_csv.split(',').map(String::from).collect();
-            env_map.retain(|key, _| {
-                // Keep non-vault keys (ENVPOD_*, TERM, etc.) and allowed vault keys
-                key.starts_with("ENVPOD_") || allowed.contains(key)
-            });
-        }
-
         let vault_env = if env_map.is_empty() { None } else { Some(&env_map) };
 
         // Read security config (seccomp profile + /dev/shm size)
@@ -774,11 +765,6 @@ impl NativeBackend {
             .map(|c| c.filesystem.system_access)
             .unwrap_or_default();
 
-        // Sealed mode — no host bind mounts
-        let sealed = pod_config
-            .map(|c| c.filesystem.sealed)
-            .unwrap_or(false);
-
         // Resolve user name/uid to (uid, gid) from the pod's /etc/passwd
         let run_as = match user {
             Some(u) => Some(resolve_pod_user(&state.pod_dir, u)?),
@@ -803,7 +789,6 @@ impl NativeBackend {
             &mount_entries,
             devices,
             system_access,
-            sealed,
             quiet_log.map(|p| p.to_path_buf()),
             run_as,
         )

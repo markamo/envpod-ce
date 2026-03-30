@@ -104,8 +104,6 @@ function loadPodDetail() {
                 <button class="btn danger" onclick="podAction('rollback')" title="Rollback overlay changes">Rollback</button>
                 <button class="btn" onclick="podAction('freeze')" title="Freeze pod">Freeze</button>
                 <button class="btn" onclick="podAction('resume')" title="Resume pod">Resume</button>
-                <button class="btn primary" onclick="clonePod()" title="Clone this pod">Clone</button>
-                <button class="btn danger" onclick="destroyPod()" title="Destroy this pod">Destroy</button>
             `;
 
             let configHtml = '<div class="empty"><p>No configuration loaded</p></div>';
@@ -125,30 +123,7 @@ function loadPodDetail() {
                 `;
             }
 
-            // Identity section
-            let identityHtml = '';
-            if (pod.pod_public_key) {
-                identityHtml += `<h3 style="margin:20px 0 12px;font-size:14px;color:var(--text-dim)">Pod Identity</h3>
-                    <table>
-                        <tr><td style="width:200px;color:var(--text-dim)">Public Key</td><td><code style="font-size:11px">${escapeHtml(pod.pod_public_key)}</code></td></tr>
-                    </table>`;
-            }
-            if (pod.agents && pod.agents.length > 0) {
-                identityHtml += `<h3 style="margin:20px 0 12px;font-size:14px;color:var(--text-dim)">Agents (${pod.agents.length})</h3>
-                    <table>
-                        <thead><tr><th>Name</th><th>ID</th><th>Capabilities</th><th>Vault Keys</th></tr></thead>
-                        <tbody>${pod.agents.map(a => `
-                            <tr>
-                                <td style="font-weight:600">${escapeHtml(a.name)}</td>
-                                <td><code style="font-size:11px">${escapeHtml(a.agent_id.slice(0,8))}</code></td>
-                                <td>${a.capabilities.length ? escapeHtml(a.capabilities.join(', ')) : '<span style="color:var(--text-dim)">all</span>'}</td>
-                                <td>${a.vault_keys.length ? escapeHtml(a.vault_keys.join(', ')) : '<span style="color:var(--text-dim)">all</span>'}</td>
-                            </tr>
-                        `).join('')}</tbody>
-                    </table>`;
-            }
-
-            document.getElementById('section-overview').innerHTML = configHtml + identityHtml;
+            document.getElementById('section-overview').innerHTML = configHtml;
         })
         .catch(err => {
             document.getElementById('pod-name').textContent = `Error: ${err.message}`;
@@ -405,44 +380,7 @@ function podAction(action) {
         .catch(err => alert('Error: ' + err.message));
 }
 
-// ---- Destroy Pod ----
 
-function destroyPod() {
-    if (!confirm(`DESTROY pod "${podName}"?\n\nThis will permanently delete the pod and all its data. This cannot be undone.`)) return;
-    if (!confirm(`Are you really sure? Type the pod name in the next prompt to confirm.`)) return;
-    const typed = prompt(`Type "${podName}" to confirm destruction:`);
-    if (typed !== podName) {
-        alert('Pod name did not match. Destroy cancelled.');
-        return;
-    }
-    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}`, { method: 'DELETE' })
-        .then(r => r.json())
-        .then(res => {
-            if (res.error) { alert('Error: ' + res.error); return; }
-            alert('Pod destroyed.');
-            window.location.href = '/';
-        })
-        .catch(err => alert('Error: ' + err.message));
-}
-
-// ---- Clone Pod ----
-
-function clonePod() {
-    const newName = prompt(`Clone pod "${podName}".\n\nNew pod name:`);
-    if (!newName || !newName.trim()) return;
-    authFetch(`/api/v1/pods/${encodeURIComponent(podName)}/clone`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ new_name: newName.trim() }),
-    })
-        .then(r => r.json())
-        .then(res => {
-            if (res.error) { alert('Error: ' + res.error); return; }
-            alert(`Pod "${newName.trim()}" cloned successfully.`);
-            window.location.href = `/pod.html?name=${encodeURIComponent(newName.trim())}`;
-        })
-        .catch(err => alert('Error: ' + err.message));
-}
 
 function formatBytes(bytes) {
     if (!bytes || bytes === 0) return '0 B';

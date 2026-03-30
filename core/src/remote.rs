@@ -411,7 +411,6 @@ fn emit_audit(pod_dir: &Path, pod_name: &str, action: AuditAction, detail: &str)
         action,
         detail: detail.into(),
         success: true,
-            agent: None,
     })
     .ok();
 }
