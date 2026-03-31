@@ -1,0 +1,78 @@
+# Full Governance Pod — everything envpod replaces, in 34 lines
+#
+# This single file replaces:
+#   Dockerfile + docker-compose.yml + HashiCorp Vault + OPA/OPAL +
+#   OpenTelemetry Collector + Grafana + Loki + Prometheus + Falco +
+#   dnsmasq + custom seccomp profile + eBPF program + cgroups config +
+#   external scheduler = 12+ tools, 500+ lines, $3,000-8,000/month
+#
+# Usage:
+#   sudo envpod init my-agent -c examples/full-governance.yaml
+#   echo -n "sk-..." | sudo envpod vault my-agent set ANTHROPIC_API_KEY
+#   sudo envpod start my-agent
+#   sudo envpod ls                         # see pod IP
+#   sudo envpod diff my-agent              # see what agent changed
+#   sudo envpod commit my-agent            # approve changes
+#   sudo envpod rollback my-agent          # undo everything
+
+name: governed-agent                       # 1. Identity
+type: standard
+
+processor:                                 # 2. Compute
+  cores: 2.0
+  memory: "4GB"
+  max_pids: 256
+
+filesystem:                                # 3. Filesystem (COW)
+  system_access: advanced
+  mount_cwd: true
+  workspace: /workspace
+  tracking:
+    watch: [/workspace, /home]
+    ignore: [/var/cache, /var/lib/apt, /tmp, /run]
+
+network:                                   # 4. Network
+  mode: Monitored
+  dns:
+    mode: Allowlist
+    allow:
+      - api.anthropic.com
+      - "*.anthropic.com"
+      - github.com
+      - "*.github.com"
+      - pypi.org
+      - "*.pypi.org"
+      - files.pythonhosted.org
+  expose:
+    - 8080
+
+vault:                                     # 5. Secrets
+  env:
+    - ANTHROPIC_API_KEY
+    - DATABASE_URL
+
+audit:                                     # 6. Observability
+  action_log: true
+
+health:                                    # 7. Health + Recovery
+  endpoint: /health
+  port: 8080
+  interval: 30
+  timeout: 5
+  retries: 3
+  action: restart
+  grace_period: 10
+
+budget:                                    # 8. Lifecycle
+  max_duration: "8h"
+
+security:                                  # 9. Hardening
+  seccomp_profile: default
+  shm_size: "64MB"
+
+setup:
+  - "apt-get update && apt-get install -y python3 python3-pip"
+  - "pip install flask requests"
+  - "mkdir -p /workspace && chmod 777 /workspace"
+
+start_command: ["bash", "-c", "cd /workspace && python3 server.py"]

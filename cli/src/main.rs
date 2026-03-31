@@ -2846,6 +2846,7 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
 
     // Save terminal state before entering pod (restore on exit)
     let saved_termios = nix::sys::termios::tcgetattr(std::io::stdin()).ok();
+    let saved_fg_pgrp = nix::unistd::tcgetpgrp(std::io::stdin()).ok();
 
     // In background mode, the daemon sets ENVPOD_QUIET_LOG so spawn_isolated
     // writes output directly to the log file (no tee, no doubled output).
@@ -3319,6 +3320,10 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
     // We must re-acquire it and restore settings, otherwise sudo can't prompt.
     // Re-acquire controlling terminal (stolen by pod's TIOCSCTTY)
     unsafe { nix::libc::ioctl(0, nix::libc::TIOCSCTTY, 0) };
+    // Restore foreground process group (pod's setsid changes it)
+    if let Some(pgrp) = saved_fg_pgrp {
+        let _ = nix::unistd::tcsetpgrp(std::io::stdin(), pgrp);
+    }
     let _ = std::process::Command::new("stty").arg("sane").status();
 
     // Opt-in diagnostic: ENVPOD_TERMINAL_DEBUG=1 envpod run ...

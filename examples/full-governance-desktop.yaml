@@ -1,0 +1,92 @@
+# Full Governance Desktop Pod — 33 tools replaced by one file
+#
+# Everything from full-governance.yaml PLUS:
+#   XFCE desktop via noVNC, audio streaming, GPU passthrough.
+#   Browser-accessible governed desktop with full audit trail.
+#
+# This replaces: Dockerfile + docker-compose + Vault + OPA + OTel +
+#   Grafana + Loki + Prometheus + Falco + dnsmasq + seccomp + eBPF +
+#   cgroups + scheduler + Xvfb + noVNC + websockify + Fluxbox +
+#   PulseAudio + autoheal + PagerDuty + custom runbook = 33 tools
+#
+# Usage:
+#   sudo envpod init my-desktop -c examples/full-governance-desktop.yaml
+#   echo -n "sk-..." | sudo envpod vault my-desktop set ANTHROPIC_API_KEY
+#   sudo envpod start my-desktop
+#   sudo envpod ls                         # pod IP + noVNC port
+#   # Open http://<pod-ip>:6080/vnc.html   # full governed desktop
+
+name: governed-desktop
+type: standard
+
+web_display:                               # Display + Audio (replaces Xvfb + noVNC + websockify + PulseAudio)
+  type: novnc
+  port: 6080
+  resolution: "1920x1080"
+  audio: true
+
+devices:                                   # Desktop + GPU
+  desktop_env: xfce
+  gpu: true
+  display: true
+  audio: true
+
+processor:                                 # Compute (replaces cgroups config)
+  cores: 4.0
+  memory: "8GB"
+  max_pids: 2048
+
+filesystem:                                # Filesystem COW (replaces OverlayFS + custom tooling)
+  system_access: advanced
+  mount_cwd: true
+  workspace: /workspace
+  tracking:
+    watch: [/workspace, /home, /root]
+    ignore: [/var/cache, /var/lib/apt, /tmp, /run]
+
+network:                                   # Network (replaces dnsmasq + eBPF + iptables)
+  mode: Monitored
+  dns:
+    mode: Denylist
+    deny:
+      - "*.internal"
+      - "*.local"
+      - "*.corp"
+  expose:
+    - 6080
+    - 8080
+
+vault:                                     # Secrets (replaces HashiCorp Vault + Vault Agent)
+  env:
+    - ANTHROPIC_API_KEY
+
+audit:                                     # Observability (replaces Falco + OTel + Grafana + Loki)
+  action_log: true
+
+health:                                    # Health (replaces autoheal + custom runbook + PagerDuty)
+  endpoint: /vnc.html
+  port: 6080
+  interval: 30
+  timeout: 5
+  retries: 3
+  action: restart
+  grace_period: 15
+
+budget:                                    # Lifecycle (replaces systemd timer + cron)
+  max_duration: "24h"
+
+security:                                  # Security (replaces seccomp + AppArmor)
+  seccomp_profile: browser
+  shm_size: "512MB"
+
+setup:
+  # Chrome
+  - |
+    apt-get install -y wget gnupg
+    wget -qO- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+    apt-get update && apt-get install -y google-chrome-stable
+    sed -i 's|Exec=/usr/bin/google-chrome-stable|Exec=/usr/bin/google-chrome-stable --no-sandbox|g' /usr/share/applications/google-chrome.desktop
+  # Dev tools
+  - "apt-get install -y --no-install-recommends python3 python3-pip curl git"
+  - "mkdir -p /workspace && chmod 777 /workspace"
