@@ -136,8 +136,42 @@ pub fn spawn_isolated(
 
     // Quiet mode: redirect output directly to log file (no pipes, no threads).
     // Non-interactive + log_file: tee to both terminal and log file.
-    // Interactive: inherit stdout/stderr so the child detects the terminal.
+    // Interactive: use PTY relay so pod gets its own terminal without stealing ours.
     let interactive = std::io::stdin().is_terminal();
+
+    // PTY relay: create a pseudo-terminal for the pod. The pod gets the slave
+    // end and can call setsid+TIOCSCTTY safely (on its own PTY, not ours).
+    // We relay I/O between the real terminal and the master end.
+    let pty_master = if interactive && quiet_log.is_none() {
+        match nix::pty::openpty(None, None) {
+            Ok(pty) => {
+                use std::os::unix::io::AsRawFd;
+                let master_fd = pty.master.as_raw_fd();
+                let slave_fd = pty.slave.as_raw_fd();
+                // Dup slave for stdin/stdout/stderr (each needs its own fd)
+                let slave_in = slave_fd;
+                let slave_out = nix::unistd::dup(slave_fd).unwrap_or(slave_fd);
+                let slave_err = nix::unistd::dup(slave_fd).unwrap_or(slave_fd);
+                cmd.stdin(unsafe { Stdio::from_raw_fd(slave_in) });
+                cmd.stdout(unsafe { Stdio::from_raw_fd(slave_out) });
+                cmd.stderr(unsafe { Stdio::from_raw_fd(slave_err) });
+                // Forward terminal size to the PTY
+                let mut ws: libc::winsize = unsafe { std::mem::zeroed() };
+                if unsafe { libc::ioctl(0, libc::TIOCGWINSZ, &mut ws) } == 0 {
+                    unsafe { libc::ioctl(master_fd, libc::TIOCSWINSZ, &ws) };
+                }
+                // Dup master so it outlives the OwnedFd
+                let master_dup = nix::unistd::dup(master_fd).unwrap_or(master_fd);
+                // Keep pty alive until spawn (OwnedFd closes on drop)
+                std::mem::forget(pty);
+                Some(master_dup)
+            }
+            Err(_) => None, // fallback to inherited stdio
+        }
+    } else {
+        None
+    };
+
     if let Some(ref quiet_path) = quiet_log {
         let log_out = std::fs::OpenOptions::new()
             .create(true)
@@ -250,6 +284,78 @@ pub fn spawn_isolated(
                     }
                 });
             }
+        }
+    }
+
+    // PTY relay: forward I/O between real stdin/stdout and the PTY master.
+    // Two threads: one reads stdin → writes master, other reads master → writes stdout.
+    // Threads exit when the pod exits (master EOF) or stdin closes.
+    if let Some(master_fd) = pty_master {
+        use std::os::unix::io::FromRawFd;
+
+        // Set real terminal to raw mode so keystrokes pass through immediately
+        let saved_raw = nix::sys::termios::tcgetattr(std::io::stdin()).ok();
+        if let Some(ref t) = saved_raw {
+            let mut raw = t.clone();
+            nix::sys::termios::cfmakeraw(&mut raw);
+            let _ = nix::sys::termios::tcsetattr(
+                std::io::stdin(),
+                nix::sys::termios::SetArg::TCSANOW,
+                &raw,
+            );
+        }
+
+        let master_read = unsafe { std::fs::File::from_raw_fd(nix::unistd::dup(master_fd).unwrap_or(master_fd)) };
+        let mut master_write = unsafe { std::fs::File::from_raw_fd(master_fd) };
+
+        // stdin → master (user typing → pod)
+        let stdin_thread = std::thread::spawn(move || {
+            use std::io::Read;
+            let mut stdin = std::io::stdin().lock();
+            let mut buf = [0u8; 4096];
+            loop {
+                match stdin.read(&mut buf) {
+                    Ok(0) | Err(_) => break,
+                    Ok(n) => {
+                        if std::io::Write::write_all(&mut master_write, &buf[..n]).is_err() {
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+
+        // master → stdout (pod output → user)
+        let stdout_thread = std::thread::spawn(move || {
+            use std::io::Read;
+            let mut master = master_read;
+            let mut stdout = std::io::stdout().lock();
+            let mut buf = [0u8; 4096];
+            loop {
+                match master.read(&mut buf) {
+                    Ok(0) | Err(_) => break,
+                    Ok(n) => {
+                        if std::io::Write::write_all(&mut stdout, &buf[..n]).is_err() {
+                            break;
+                        }
+                        let _ = std::io::Write::flush(&mut stdout);
+                    }
+                }
+            }
+        });
+
+        // Wait for output thread (pod exit closes master → EOF)
+        let _ = stdout_thread.join();
+        // stdin thread will exit when we drop master_write or stdin closes
+        drop(stdin_thread); // detach — will exit on its own
+
+        // Restore terminal from raw mode
+        if let Some(ref t) = saved_raw {
+            let _ = nix::sys::termios::tcsetattr(
+                std::io::stdin(),
+                nix::sys::termios::SetArg::TCSANOW,
+                t,
+            );
         }
     }
 
