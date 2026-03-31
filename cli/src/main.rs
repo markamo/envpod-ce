@@ -3319,6 +3319,23 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
     // We must re-acquire it and restore settings, otherwise sudo can't prompt.
     // Re-acquire controlling terminal (stolen by pod's TIOCSCTTY)
     unsafe { nix::libc::ioctl(0, nix::libc::TIOCSCTTY, 0) };
+    let _ = std::process::Command::new("stty").arg("sane").status();
+
+    // Opt-in diagnostic: ENVPOD_TERMINAL_DEBUG=1 envpod run ...
+    if std::env::var("ENVPOD_TERMINAL_DEBUG").is_ok() {
+        let diag_path = std::path::Path::new("/tmp/envpod-terminal-diag.log");
+        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(diag_path) {
+            use std::io::Write;
+            let is_tty = unsafe { nix::libc::isatty(0) } == 1;
+            let sid = nix::unistd::getsid(None).ok();
+            let pgid = nix::unistd::getpgrp();
+            let pid = nix::unistd::getpid();
+            let _ = writeln!(f, "--- terminal restore (pid={pid} pgid={pgid} sid={sid:?}) ---");
+            let _ = writeln!(f, "stdin isatty: {is_tty}");
+            let _ = writeln!(f, "tcsetattr: {}", if saved_termios.is_some() { "restoring" } else { "no saved state" });
+        }
+    }
+
     if let Some(ref termios) = saved_termios {
         let _ = nix::sys::termios::tcsetattr(
             std::io::stdin(),
