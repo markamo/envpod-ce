@@ -3315,24 +3315,22 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
         dns_handle.join().await;
     }
 
-    // Restore terminal state (critical — prevents broken terminal after pod exit)
-    // The pod calls setsid() + TIOCSCTTY(1) which steals the controlling terminal.
-    // We must re-acquire it and restore settings, otherwise sudo can't prompt.
-    // Restore terminal after pod exit.
-    // The pod's setsid() + TIOCSCTTY(1) steals the controlling terminal and
-    // corrupts bash's job control state. The most reliable fix is to spawn a
-    // fresh shell (as the original user) which re-establishes the terminal.
+    // Restore terminal state after pod exit
     unsafe { nix::libc::ioctl(0, nix::libc::TIOCSCTTY, 0) };
     if let Some(pgrp) = saved_fg_pgrp {
         let _ = nix::unistd::tcsetpgrp(std::io::stdin(), pgrp);
     }
-    let _ = std::process::Command::new("stty").arg("sane").status();
-    // Spawn a login shell as the original user to reset terminal state
-    if let Ok(user) = std::env::var("SUDO_USER") {
-        let _ = std::process::Command::new("su")
-            .args(["-l", &user, "-c", "true"])
-            .status();
+    if let Some(ref termios) = saved_termios {
+        let _ = nix::sys::termios::tcsetattr(
+            std::io::stdin(),
+            nix::sys::termios::SetArg::TCSANOW,
+            termios,
+        );
     }
+    let _ = std::process::Command::new("stty").arg("sane").status();
+    // Hint: if terminal is unresponsive after pod exit, run: exec bash
+    eprintln!();
+    eprintln!("  {} If terminal is unresponsive, run: {}", color::dim("Tip"), color::green("exec bash"));
 
     // Opt-in diagnostic: ENVPOD_TERMINAL_DEBUG=1 envpod run ...
     if std::env::var("ENVPOD_TERMINAL_DEBUG").is_ok() {
@@ -3347,14 +3345,6 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
             let _ = writeln!(f, "stdin isatty: {is_tty}");
             let _ = writeln!(f, "tcsetattr: {}", if saved_termios.is_some() { "restoring" } else { "no saved state" });
         }
-    }
-
-    if let Some(ref termios) = saved_termios {
-        let _ = nix::sys::termios::tcsetattr(
-            std::io::stdin(),
-            nix::sys::termios::SetArg::TCSANOW,
-            termios,
-        );
     }
 
     Ok(())

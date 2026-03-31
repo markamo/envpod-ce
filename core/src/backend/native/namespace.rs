@@ -364,9 +364,10 @@ fn pre_exec_setup(
     // terminal the controlling terminal — only works if stdin is a TTY.
     // arg=1 "steals" the terminal from the parent session (requires
     // CAP_SYS_ADMIN, which we have since envpod runs as root).
-    // ENVPOD_NO_CTTY=1 skips terminal stealing (fixes sudo on enterprise systems)
-    let skip_ctty = std::env::var("ENVPOD_NO_CTTY").is_ok();
-    if !skip_ctty && unsafe { libc::isatty(0) } == 1 {
+    // Re-establish stdin as the controlling terminal of our new session.
+    // setsid() disconnected us, but TUI apps (Node.js/Ink, vim, etc.) need
+    // /dev/tty and raw mode for keyboard input.
+    if unsafe { libc::isatty(0) } == 1 {
         let rc = unsafe { libc::ioctl(0, libc::TIOCSCTTY, 1) };
         if rc != 0 {
             let e = std::io::Error::last_os_error();
