@@ -3315,6 +3315,10 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
     }
 
     // Restore terminal state (critical — prevents broken terminal after pod exit)
+    // The pod calls setsid() + TIOCSCTTY(1) which steals the controlling terminal.
+    // We must re-acquire it and restore settings, otherwise sudo can't prompt.
+    // Re-acquire controlling terminal (stolen by pod's TIOCSCTTY)
+    unsafe { nix::libc::ioctl(0, nix::libc::TIOCSCTTY, 0) };
     if let Some(ref termios) = saved_termios {
         let _ = nix::sys::termios::tcsetattr(
             std::io::stdin(),
