@@ -333,13 +333,20 @@ fn pre_exec_setup(
                 libc::close(fd);
             }
             let mut status: libc::c_int = 0;
-            libc::waitpid(pid, &mut status, 0);
-            if libc::WIFEXITED(status) {
-                libc::_exit(libc::WEXITSTATUS(status));
-            } else if libc::WIFSIGNALED(status) {
-                libc::_exit(128 + libc::WTERMSIG(status));
-            } else {
-                libc::_exit(1);
+            loop {
+                let r = libc::waitpid(pid, &mut status, 0);
+                if r < 0 {
+                    libc::_exit(0);
+                }
+                if libc::WIFEXITED(status) {
+                    libc::_exit(libc::WEXITSTATUS(status));
+                } else if libc::WIFSIGNALED(status) {
+                    libc::_exit(128 + libc::WTERMSIG(status));
+                } else if libc::WIFSTOPPED(status) {
+                    continue;
+                } else {
+                    libc::_exit(0);
+                }
             }
         }
     }

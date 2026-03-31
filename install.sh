@@ -543,7 +543,7 @@ if [[ "$REAL_USER" != "root" && "$IN_CONTAINER" -eq 0 ]]; then
     echo "  This adds '$REAL_USER' to the 'envpod' group."
     echo "  After logging out and back in, envpod runs without sudo."
     echo ""
-    if (echo test >/dev/tty) 2>/dev/null; then
+    if (: >/dev/tty) 2>/dev/null; then
         printf "  Add $REAL_USER to envpod group? [Y/n]: "
         read ENVPOD_GROUP_CHOICE </dev/tty 2>/dev/null || ENVPOD_GROUP_CHOICE="y"
     else

@@ -60,15 +60,10 @@ echo "  │       envpod CE uninstaller           │"
 echo "  └──────────────────────────────────────┘"
 echo -e "${NC}"
 
-# Verify this is the CE binary before removing
+# Show installed version before removing
 if [[ -f "$INSTALL_DIR/envpod" ]]; then
-    installed_ver="$("$INSTALL_DIR/envpod" --version 2>/dev/null || echo "")"
-    if echo "$installed_ver" | grep -qv "CE"; then
-        warn "Installed binary does not appear to be envpod CE (got: $installed_ver)"
-        warn "This may be the private/premium envpod binary."
-        read -r -p "  Remove it anyway? [y/N] " confirm
-        [[ "${confirm,,}" == "y" ]] || { echo "Aborted."; exit 0; }
-    fi
+    installed_ver="$("$INSTALL_DIR/envpod" --version 2>/dev/null || echo "unknown")"
+    info "Removing: $installed_ver"
 fi
 
 # ---------------------------------------------------------------------------

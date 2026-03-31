@@ -1200,7 +1200,7 @@ async fn cmd_init(
 
     // ── Banner ──
     let version = env!("CARGO_PKG_VERSION");
-    let tag = format!("envpod CE v{version} — Zero-trust governance for AI agents");
+    let tag = format!("envpod {} v{version} — {}", env!("ENVPOD_EDITION"), env!("ENVPOD_TAGLINE"));
     // Use char count (not byte len) so multi-byte chars like — don't widen the box
     let display_width = tag.chars().count();
     let inner_width = display_width + 2; // 1 space padding each side
@@ -2844,6 +2844,9 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
     use std::io::Write;
     std::io::stderr().flush().ok();
 
+    // Save terminal state before entering pod (restore on exit)
+    let saved_termios = nix::sys::termios::tcgetattr(std::io::stdin()).ok();
+
     // In background mode, the daemon sets ENVPOD_QUIET_LOG so spawn_isolated
     // writes output directly to the log file (no tee, no doubled output).
     let quiet_log_path = std::env::var("ENVPOD_QUIET_LOG").ok().map(std::path::PathBuf::from);
@@ -3163,6 +3166,8 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
         .context("failed to register SIGTSTP handler")?;
     let mut sigint = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt())
         .context("failed to register SIGINT handler")?;
+    let mut sighup = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::hangup())
+        .context("failed to register SIGHUP handler")?;
 
     let detached = tokio::select! {
         result = wait_task => {
@@ -3222,6 +3227,14 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
             nix::unistd::setsid().ok(); // new session, detach from terminal
 
             true
+        }
+        _ = sighup.recv() => {
+            // Terminal closed: kill child and exit cleanly
+            let pid = nix::unistd::Pid::from_raw(proc_handle.pid as i32);
+            nix::sys::signal::kill(pid, nix::sys::signal::Signal::SIGTERM).ok();
+            std::thread::sleep(std::time::Duration::from_millis(500));
+            nix::sys::signal::kill(pid, nix::sys::signal::Signal::SIGKILL).ok();
+            false
         }
     };
 
@@ -3301,6 +3314,15 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
         dns_handle.join().await;
     }
 
+    // Restore terminal state (critical — prevents broken terminal after pod exit)
+    if let Some(ref termios) = saved_termios {
+        let _ = nix::sys::termios::tcsetattr(
+            std::io::stdin(),
+            nix::sys::termios::SetArg::TCSANOW,
+            termios,
+        );
+    }
+
     Ok(())
 }
 
@@ -3330,7 +3352,7 @@ fn print_welcome_banner(pod_dir: &std::path::Path) {
 
     let version = env!("CARGO_PKG_VERSION");
 
-    let title = format!("envpod CE v{version} — Zero-trust governance for AI agents");
+    let title = format!("envpod {} v{version} — {}", env!("ENVPOD_EDITION"), env!("ENVPOD_TAGLINE"));
     // Box width = title display width + 2 padding (not byte length — em dash is multi-byte)
     let inner_width = title.chars().count() + 2;
     let top = format!("┌{}┐", "─".repeat(inner_width));
@@ -3655,8 +3677,16 @@ async fn cmd_fg(store: &PodStore, _base_dir: &std::path::Path, name: &str) -> Re
 
     if wait_result {
         // Process exited
+        let exit_code = std::fs::read_to_string(
+            state.pod_dir.join("last_exit_code")
+        ).ok().and_then(|s| s.trim().parse::<i32>().ok());
+
         eprintln!();
-        eprintln!("Process exited");
+        if let Some(code) = exit_code {
+            eprintln!("Process exited with code {code}");
+        } else {
+            eprintln!("Process exited");
+        }
     } else {
         // Detached via Ctrl+Z
         eprintln!();
