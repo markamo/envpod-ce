@@ -305,49 +305,40 @@ pub fn spawn_isolated(
             );
         }
 
-        let master_read = unsafe { std::fs::File::from_raw_fd(nix::unistd::dup(master_fd).unwrap_or(master_fd)) };
-        let mut master_write = unsafe { std::fs::File::from_raw_fd(master_fd) };
+        // Use raw fd reads (not stdin.lock()) to avoid deadlocking on cleanup
+        let master_read_fd = nix::unistd::dup(master_fd).unwrap_or(master_fd);
 
         // stdin → master (user typing → pod)
+        // Use raw libc::read to avoid locking stdin
+        let stdin_fd = 0i32; // STDIN_FILENO
+        let master_write_fd = master_fd;
         let stdin_thread = std::thread::spawn(move || {
-            use std::io::Read;
-            let mut stdin = std::io::stdin().lock();
             let mut buf = [0u8; 4096];
             loop {
-                match stdin.read(&mut buf) {
-                    Ok(0) | Err(_) => break,
-                    Ok(n) => {
-                        if std::io::Write::write_all(&mut master_write, &buf[..n]).is_err() {
-                            break;
-                        }
-                    }
-                }
+                let n = unsafe { libc::read(stdin_fd, buf.as_mut_ptr() as *mut libc::c_void, buf.len()) };
+                if n <= 0 { break; }
+                let written = unsafe { libc::write(master_write_fd, buf.as_ptr() as *const libc::c_void, n as usize) };
+                if written <= 0 { break; }
             }
         });
 
         // master → stdout (pod output → user)
+        let stdout_fd = 1i32; // STDOUT_FILENO
         let stdout_thread = std::thread::spawn(move || {
-            use std::io::Read;
-            let mut master = master_read;
-            let mut stdout = std::io::stdout().lock();
             let mut buf = [0u8; 4096];
             loop {
-                match master.read(&mut buf) {
-                    Ok(0) | Err(_) => break,
-                    Ok(n) => {
-                        if std::io::Write::write_all(&mut stdout, &buf[..n]).is_err() {
-                            break;
-                        }
-                        let _ = std::io::Write::flush(&mut stdout);
-                    }
-                }
+                let n = unsafe { libc::read(master_read_fd, buf.as_mut_ptr() as *mut libc::c_void, buf.len()) };
+                if n <= 0 { break; }
+                unsafe { libc::write(stdout_fd, buf.as_ptr() as *const libc::c_void, n as usize) };
             }
         });
 
-        // Wait for output thread (pod exit closes master → EOF)
+        // Wait for output thread (pod exit closes slave → master gets EOF)
         let _ = stdout_thread.join();
-        // stdin thread will exit when we drop master_write or stdin closes
-        drop(stdin_thread); // detach — will exit on its own
+        // Close master write to unblock stdin thread
+        unsafe { libc::close(master_write_fd) };
+        // Give stdin thread a moment to notice, then move on
+        std::thread::sleep(std::time::Duration::from_millis(100));
 
         // Restore terminal from raw mode
         if let Some(ref t) = saved_raw {
