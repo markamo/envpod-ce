@@ -3318,13 +3318,21 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
     // Restore terminal state (critical — prevents broken terminal after pod exit)
     // The pod calls setsid() + TIOCSCTTY(1) which steals the controlling terminal.
     // We must re-acquire it and restore settings, otherwise sudo can't prompt.
-    // Re-acquire controlling terminal (stolen by pod's TIOCSCTTY)
+    // Restore terminal after pod exit.
+    // The pod's setsid() + TIOCSCTTY(1) steals the controlling terminal and
+    // corrupts bash's job control state. The most reliable fix is to spawn a
+    // fresh shell (as the original user) which re-establishes the terminal.
     unsafe { nix::libc::ioctl(0, nix::libc::TIOCSCTTY, 0) };
-    // Restore foreground process group (pod's setsid changes it)
     if let Some(pgrp) = saved_fg_pgrp {
         let _ = nix::unistd::tcsetpgrp(std::io::stdin(), pgrp);
     }
     let _ = std::process::Command::new("stty").arg("sane").status();
+    // Spawn a login shell as the original user to reset terminal state
+    if let Ok(user) = std::env::var("SUDO_USER") {
+        let _ = std::process::Command::new("su")
+            .args(["-l", &user, "-c", "true"])
+            .status();
+    }
 
     // Opt-in diagnostic: ENVPOD_TERMINAL_DEBUG=1 envpod run ...
     if std::env::var("ENVPOD_TERMINAL_DEBUG").is_ok() {
