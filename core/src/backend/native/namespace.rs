@@ -333,21 +333,24 @@ pub fn spawn_isolated(
             }
         });
 
-        // Wait for output thread (pod exit closes slave → master gets EOF)
-        let _ = stdout_thread.join();
-        // Close master write to unblock stdin thread
-        unsafe { libc::close(master_write_fd) };
-        // Give stdin thread a moment to notice, then move on
-        std::thread::sleep(std::time::Duration::from_millis(100));
-
-        // Restore terminal from raw mode
-        if let Some(ref t) = saved_raw {
-            let _ = nix::sys::termios::tcsetattr(
-                std::io::stdin(),
-                nix::sys::termios::SetArg::TCSANOW,
-                t,
-            );
-        }
+        // Don't join relay threads here — spawn_isolated must return the PID
+        // immediately so cmd_run can start its wait loop, DNS server, etc.
+        // The relay threads run in background and die when the pod exits
+        // (master EOF → stdout thread exits, master close → stdin thread exits).
+        // Terminal raw mode is restored by cmd_run after the pod exits.
+        // Store the saved terminal state for cmd_run to restore.
+        std::thread::spawn(move || {
+            // Wait for pod exit (output thread EOF)
+            let _ = stdout_thread.join();
+            // Close master to unblock stdin thread
+            unsafe { libc::close(master_write_fd) };
+            // Stdin thread exits on its own (write to closed fd fails)
+            let _ = stdin_thread.join();
+            // Restore terminal from raw mode
+            if let Some(t) = saved_raw {
+                unsafe { libc::tcsetattr(0, libc::TCSANOW, &t as *const nix::sys::termios::Termios as *const libc::termios) };
+            }
+        });
     }
 
     Ok(pid)
