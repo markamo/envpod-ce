@@ -1404,6 +1404,14 @@ async fn cmd_init(
     }
 
     let state_opt = NativeState::from_handle(&handle).ok();
+
+    // Generate pod identity (Ed25519 keypair + auth token)
+    let pod_identity = if let Some(ref state) = state_opt {
+        envpod_core::pod_auth::generate_identity(&state.pod_dir).ok()
+    } else {
+        None
+    };
+
     eprintln!("{divider}");
     eprintln!(
         "  {} {} {}  {}",
@@ -1415,6 +1423,10 @@ async fn cmd_init(
     eprintln!("{divider}");
     eprintln!();
     print_pod_info(name, &config, state_opt.as_ref());
+    if let Some(ref id) = pod_identity {
+        eprintln!("  Key     {}", envpod_core::pod_auth::fingerprint(&id.public_key));
+        eprintln!("  Token   {}", color::dim(&id.auth_token));
+    }
     eprintln!();
 
     // ── Stage 2: Setup ──

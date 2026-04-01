@@ -2,7 +2,7 @@
 # Single source of truth for branding, version, and license.
 
 edition = "CE"
-version = "0.1.6"
+version = "0.1.7"
 public_key = ""
 
 # About info

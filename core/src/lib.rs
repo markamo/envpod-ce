@@ -8,6 +8,7 @@ pub mod audit;
 pub mod backend;
 pub mod budget;
 pub mod config;
+pub mod pod_auth;
 pub mod desktop;
 pub mod dns_daemon;
 pub mod error;
