@@ -417,6 +417,51 @@ pub fn unmount_overlay(merged: &Path) -> Result<()> {
     Ok(())
 }
 
+/// Unmount ALL mount points under a directory by scanning /proc/mounts.
+/// Mounts are unmounted deepest-first (reverse sorted by path length)
+/// so nested mounts are removed before their parents.
+/// Returns the number of mounts successfully unmounted.
+pub fn unmount_all_under(dir: &Path) -> usize {
+    let dir_str = match dir.to_str() {
+        Some(s) => s.to_string(),
+        None => return 0,
+    };
+
+    // Read /proc/mounts and find all mount points under dir
+    let mounts = match std::fs::read_to_string("/proc/mounts") {
+        Ok(m) => m,
+        Err(_) => return 0,
+    };
+
+    let mut mount_points: Vec<String> = mounts
+        .lines()
+        .filter_map(|line| {
+            let parts: Vec<&str> = line.splitn(3, ' ').collect();
+            if parts.len() >= 2 {
+                let mp = parts[1];
+                // Match mount points that are under our directory
+                if mp.starts_with(&dir_str) && (mp.len() == dir_str.len() || mp.as_bytes().get(dir_str.len()) == Some(&b'/')) {
+                    return Some(mp.to_string());
+                }
+            }
+            None
+        })
+        .collect();
+
+    // Sort by length descending — deepest mounts first
+    mount_points.sort_by(|a, b| b.len().cmp(&a.len()));
+    mount_points.dedup();
+
+    let mut count = 0;
+    for mp in &mount_points {
+        let path = Path::new(mp);
+        if nix::mount::umount2(path, nix::mount::MntFlags::MNT_DETACH).is_ok() {
+            count += 1;
+        }
+    }
+    count
+}
+
 // ---------------------------------------------------------------------------
 // Infrastructure file exclusions — files that should never appear in diff/commit
 // ---------------------------------------------------------------------------

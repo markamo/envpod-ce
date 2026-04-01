@@ -144,6 +144,7 @@ pub fn parse_duration_string(s: &str) -> Option<u64> {
             let n: u64 = num_buf.parse().ok()?;
             num_buf.clear();
             match ch {
+                'd' | 'D' => total += n * 86400,
                 'h' | 'H' => total += n * 3600,
                 'm' | 'M' => total += n * 60,
                 's' | 'S' => total += n,
@@ -387,10 +388,27 @@ impl ProcessorConfig {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct BudgetConfig {
+    /// Maximum wall-clock runtime. E.g. "2h", "30d", "720h".
     pub max_duration: Option<String>,
+    /// Warning before limit. E.g. "30m" before max_duration.
+    pub warning: Option<String>,
+    /// Graceful shutdown period (SIGTERM → wait → SIGKILL). E.g. "30s". Default "30s".
+    #[serde(default = "default_budget_grace")]
+    pub grace_period: String,
+    // Premium-only fields (parsed but ignored in CE):
+    #[serde(default)]
     pub max_requests: Option<u64>,
+    #[serde(default)]
     pub max_bandwidth: Option<String>,
+    #[serde(default)]
+    pub max_storage: Option<String>,
+    #[serde(default)]
+    pub action: Option<String>,
+    #[serde(default)]
+    pub renewable: Option<bool>,
 }
+
+fn default_budget_grace() -> String { "30s".to_string() }
 
 // -- Tools ----------------------------------------------------------------
 

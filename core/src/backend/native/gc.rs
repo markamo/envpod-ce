@@ -16,7 +16,7 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use super::{cgroup, netns};
+use super::{cgroup, netns, overlay};
 use crate::store::PodStore;
 use crate::backend::native::state::NativeState;
 
@@ -153,6 +153,7 @@ fn gc_cgroups(valid: &HashSet<String>) -> usize {
 }
 
 /// Remove pod directories in `{base_dir}/pods/` that have no corresponding state file.
+/// Unmounts any stale overlay/bind mounts first (the root cause of gc failures).
 fn gc_pod_directories(base_dir: &Path, valid: &HashSet<String>) -> usize {
     let mut count = 0;
     let pods_dir = base_dir.join("pods");
@@ -167,6 +168,9 @@ fn gc_pod_directories(base_dir: &Path, valid: &HashSet<String>) -> usize {
         if !valid.contains(&name) {
             let path = pods_dir.join(&name);
             if path.is_dir() {
+                // Unmount all stale mounts under this pod directory first.
+                // Without this, remove_dir_all silently fails on mounted dirs.
+                overlay::unmount_all_under(&path);
                 if std::fs::remove_dir_all(&path).is_ok() {
                     count += 1;
                 }

@@ -38,6 +38,7 @@ pub enum AuditAction {
     QueueCancel,
     QueueBlock,
     BudgetExceeded,
+    BudgetWarning,
     ToolBlocked,
     VaultSet,
     VaultGet,

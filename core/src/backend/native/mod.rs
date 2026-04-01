@@ -243,34 +243,10 @@ impl NativeBackend {
             cgroup::destroy(cg).ok();
         }
 
-        // Unmount all overlays: system COW sub-mounts first, then main overlay.
-        // System COW overlays (advanced/dangerous mode) mount inside merged/
-        // at merged/usr, merged/bin, etc. They must be unmounted before the
-        // main overlay at merged/ can be unmounted.
-        let merged = state.pod_dir.join("merged");
-        if merged.exists() {
-            // Unmount system COW overlays (best-effort, may not exist in safe mode)
-            let sys_dirs: Vec<&str> = {
-                let mut v: Vec<&str> = vec!["usr"];
-                v.extend(overlay::real_system_dirs());
-                v
-            };
-            for dir in &sys_dirs {
-                let mount_point = merged.join(dir);
-                if mount_point.exists() {
-                    overlay::unmount_overlay(&mount_point).ok();
-                }
-            }
-            // Unmount other bind mounts inside merged (proc, dev, sys, etc.)
-            for sub in &["proc", "sys", "dev", "dev/shm", "dev/pts", "tmp", "run"] {
-                let mount_point = merged.join(sub);
-                if mount_point.exists() {
-                    overlay::unmount_overlay(&mount_point).ok();
-                }
-            }
-            // Unmount the main overlay
-            overlay::unmount_overlay(&merged).ok();
-        }
+        // Unmount ALL mounts under the pod directory.
+        // Scans /proc/mounts to find every mount point (deepest first),
+        // so we never miss stale mounts that a hardcoded list would skip.
+        overlay::unmount_all_under(&state.pod_dir);
 
         // Unmount and delete loopback disk image
         if state.disk_image {

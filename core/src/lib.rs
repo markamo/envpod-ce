@@ -6,6 +6,7 @@ pub mod action_types;
 pub mod app_resolver;
 pub mod audit;
 pub mod backend;
+pub mod budget;
 pub mod config;
 pub mod desktop;
 pub mod dns_daemon;

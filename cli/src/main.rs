@@ -602,6 +602,12 @@ enum Commands {
     },
     /// Show envpod version, license, and project info
     About,
+    /// View budget status for a pod
+    #[command(name = "budget")]
+    Budget {
+        /// Pod name
+        name: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -1110,6 +1116,7 @@ async fn run(cli: Cli) -> Result<()> {
             print_completions(shell, base_dir);
             Ok(())
         }
+        Commands::Budget { name } => cmd_budget(&store, &name),
         Commands::About => {
             let version = concat!(env!("CARGO_PKG_VERSION"), " (", env!("ENVPOD_EDITION"), ")");
             let build = concat!(env!("ENVPOD_BUILD_HASH"), " ", env!("ENVPOD_BUILD_TIME"));
@@ -3046,36 +3053,13 @@ async fn cmd_run(store: &PodStore, base_dir: &std::path::Path, name: &str, comma
     let supervisor_pid_path = state.pod_dir.join("supervisor.pid");
     std::fs::write(&supervisor_pid_path, std::process::id().to_string())?;
 
-    // Budget enforcement: if max_duration is set, spawn a timer that kills the process
+    // Budget enforcement: time-based with warnings and graceful shutdown.
     let budget_handle = if let Some(ref cfg) = pod_config {
-        if let Some(ref dur_str) = cfg.budget.max_duration {
-            if let Some(secs) = config::parse_duration_string(dur_str) {
-                let pid_for_timer = proc_handle.pid;
-                let pod_dir = state.pod_dir.clone();
-                let pod_name = name.to_string();
-                let dur_str_owned = dur_str.clone();
-                let duration = std::time::Duration::from_secs(secs);
-                Some(tokio::spawn(async move {
-                    tokio::time::sleep(duration).await;
-                    // Time's up — kill the process
-                    eprintln!("Budget exceeded: max_duration={dur_str_owned} — killing process");
-                    let pid = nix::unistd::Pid::from_raw(pid_for_timer as i32);
-                    nix::sys::signal::kill(pid, nix::sys::signal::Signal::SIGKILL).ok();
-                    // Audit the budget exceeded event
-                    let log = AuditLog::new(&pod_dir);
-                    let entry = AuditEntry {
-                        timestamp: chrono::Utc::now(),
-                        pod_name,
-                        action: AuditAction::BudgetExceeded,
-                        detail: format!("max_duration={dur_str_owned} ({secs}s)"),
-                        success: true,
-                    };
-                    log.append(&entry).ok();
-                }))
-            } else {
-                eprintln!("warning: could not parse max_duration '{dur_str}'");
-                None
-            }
+        if let Some(enforcer) = envpod_core::budget::BudgetEnforcer::from_config(
+            &cfg.budget, name, state.pod_dir.clone(), proc_handle.pid,
+        ) {
+            let enforcer = std::sync::Arc::new(enforcer);
+            Some(tokio::spawn(enforcer.run()))
         } else {
             None
         }
@@ -6739,6 +6723,50 @@ fn service_unit_name(pod_name: &str) -> String {
 
 fn service_unit_path(pod_name: &str) -> std::path::PathBuf {
     std::path::PathBuf::from(SYSTEMD_UNIT_DIR).join(service_unit_name(pod_name))
+}
+
+fn cmd_budget(store: &PodStore, name: &str) -> Result<()> {
+    let handle = store.load(name)?;
+    let state = NativeState::from_handle(&handle)?;
+    let config = state.load_config()?
+        .context("no pod.yaml — cannot read budget")?;
+    let budget = &config.budget;
+
+    eprintln!();
+    eprintln!("  {} {name}", color::bold("Budget"));
+    eprintln!();
+
+    if let Some(ref dur) = budget.max_duration {
+        let pid_path = state.pod_dir.join("supervisor.pid");
+        let elapsed = pid_path.metadata()
+            .ok()
+            .and_then(|m| m.modified().ok())
+            .map(|t| t.elapsed().unwrap_or_default().as_secs())
+            .unwrap_or(0);
+        let limit = config::parse_duration_string(dur).unwrap_or(0);
+        let pct = if limit > 0 { (elapsed as f64 / limit as f64 * 100.0).min(100.0) } else { 0.0 };
+        let color = if pct >= 90.0 { "\x1b[31m" } else if pct >= 70.0 { "\x1b[33m" } else { "\x1b[32m" };
+        eprintln!("  duration    {color}{:.0}%\x1b[0m  ({} / {})",
+            pct,
+            envpod_core::budget::format_duration(elapsed),
+            envpod_core::budget::format_duration(limit),
+        );
+    } else {
+        eprintln!("  duration    {}", color::dim("not set"));
+    }
+
+    if budget.max_requests.is_some() || budget.max_bandwidth.is_some() || budget.max_storage.is_some() {
+        eprintln!();
+        eprintln!("  {}", color::dim("Multi-dimension budgets require envpod Premium"));
+    }
+
+    eprintln!();
+    eprintln!("  grace       {}", budget.grace_period);
+    if let Some(ref w) = budget.warning {
+        eprintln!("  warning     {w} before limit");
+    }
+    eprintln!();
+    Ok(())
 }
 
 fn cmd_service(action: ServiceAction) -> Result<()> {
