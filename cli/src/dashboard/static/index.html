@@ -26,7 +26,7 @@ function authHeaders(extra) {
 
 // Load pods on start + poll
 loadPods();
-setInterval(loadPods, 2000);
+setInterval(loadPods, 10000);
 
 function loadPods() {
     fetch('/api/v1/pods', { headers: authHeaders() })
