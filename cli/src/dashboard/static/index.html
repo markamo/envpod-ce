@@ -14,7 +14,6 @@
 
     <div class="actions">
         <button class="btn" onclick="loadPods()" title="Refresh">Refresh</button>
-        <button class="btn success" onclick="openCreateModal()">+ Create Pod</button>
     </div>
 
     <div id="pod-list"><div class="empty"><p>Loading...</p></div></div>
@@ -103,7 +102,6 @@ function renderPodCard(pod) {
                         ? `<button class="btn-sm warning" onclick="event.stopPropagation();podAction('${pod.name}','freeze')">Freeze</button>`
                         : ''
                 }
-                <button class="btn-sm danger" onclick="event.stopPropagation();destroyPod('${pod.name}')">Destroy</button>
             </div>
         </div>`;
 }
