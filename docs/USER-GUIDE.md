@@ -1,7 +1,7 @@
 <!-- type-delay 0.03 -->
 # envpod User Guide
 
-> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
+> **envpod v0.1.7** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -670,7 +670,7 @@ Resize CPU, memory, disk, or device settings on a pod. Resource changes apply **
 | Option | Live | Description |
 |--------|------|-------------|
 | `--cpus <n>` | Yes | CPU cores (fractional, e.g. 0.5, 2, 4) |
-| `--memory <size>` | Yes | Memory limit (e.g. "512MB", "2GB") |
+| `--memory <size>` | Yes | Memory limit (e.g. "59MB", "2GB") |
 | `--tmp-size <size>` | Yes | /tmp tmpfs size (e.g. "1GB", "4GB") |
 | `--max-pids <n>` | Yes | Max processes/threads |
 | `--cpu-affinity <cpus>` | Yes | Pin to CPUs (e.g. "0-1", "0,2") |

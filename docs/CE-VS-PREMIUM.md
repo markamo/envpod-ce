@@ -138,7 +138,7 @@ Premium adds identity, policy intelligence, fleet orchestration, and advanced mo
 | Pod init / run / destroy | Yes | Yes |
 | Clone (8ms) | Yes | Yes |
 | Start / stop / restart | Yes | Yes |
-| Systemd service registration | — | Yes |
+| Systemd service registration | Yes | Yes |
 | Infrastructure as Code (`envpod apply`) | — | Yes |
 | Namespace isolation | — | Yes |
 | Parallel clone with CPU affinity | — | Yes |
@@ -150,10 +150,10 @@ Premium adds identity, policy intelligence, fleet orchestration, and advanced mo
 
 | Feature | CE | Premium |
 |---|---|---|
-| 24+ CLI subcommands | Yes | Yes |
+| 47 CLI commands (CE) / 60 (Premium) | Yes | Yes |
 | Interactive init wizard | Yes | Yes |
 | 18+ built-in presets | Yes | Yes |
-| 55+ example configs | Yes | Yes |
+| 68+ example configs | Yes | Yes |
 | Web dashboard (fleet overview, diff viewer) | Yes | Yes |
 | Python SDK | Yes | Yes |
 | Node.js SDK | Yes | Yes |
@@ -203,8 +203,8 @@ See [OWASP-AGENTIC.md](OWASP-AGENTIC.md) for the full mapping.
 
 | Tier | Price | What you get |
 |---|---|---|
-| CE | **$0 forever** | 67 features, OWASP 10/10, kernel-level isolation |
-| Premium | **$399/seat/mo** | 110+ features, OPA, identity, scorecard, fleet, OTLP |
+| CE | **$0 forever** | 47 commands, OWASP 10/10, kernel-level isolation |
+| Premium | **$399/seat/mo** | 60 commands, 66 Premium features, OPA, identity, fleet, OTLP |
 | Enterprise | **Custom** | + SLA, dedicated support, compliance signing |
 
 ```bash

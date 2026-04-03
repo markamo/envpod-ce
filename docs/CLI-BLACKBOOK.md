@@ -1,6 +1,6 @@
 # envpod CLI Black Book
 
-> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
+> **envpod v0.1.7** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 

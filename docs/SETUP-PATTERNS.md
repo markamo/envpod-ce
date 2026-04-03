@@ -1,6 +1,6 @@
 # Setup Patterns & Troubleshooting
 
-> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
+> **envpod v0.1.7** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -156,11 +156,11 @@ Supported apps: `chrome`, `firefox`, `vscode`, `gimp`, `libreoffice`, `slack`, `
 | `Could not resolve` apt source | 3rd-party source not in DNS allowlist | Disable source or add domain to allowlist |
 | `Cannot change mode` tar error | `fchmod` blocked in user namespace | `tar --no-same-permissions` or `\|\| true` |
 | `install: Operation not permitted` | AppArmor `install(1)` needs CAP_MAC_ADMIN | Patch postinst: `sed -i 's/install --mode 644/touch/'` |
-| `setup_script` exit 127 | Script injected to wrong overlay layer | Fixed in v0.1.3 — `inject_setup_script` uses `sys_upper` for advanced mode |
+| `setup_script` exit 127 | Script injected to wrong overlay layer | Fixed in v0.1.7 — `inject_setup_script` uses `sys_upper` for advanced mode |
 | `/etc/alternatives` read-only | ReadOnly mount blocks `update-alternatives` | Remove the mount from pod.yaml |
 | `No space left on device` (pip) | `/tmp` tmpfs too small for downloads | Increase `processor.tmp_size` (e.g., `4GB`) |
 | Setup fails on re-run | `git clone` fails if dir exists | Use `test -d \|\| git clone` pattern |
-| OAuth login fails in pod | Token written but agent can't read (root ownership) | Fixed in v0.1.3 — `fix_upper_ownership` chowns agent home after setup |
+| OAuth login fails in pod | Token written but agent can't read (root ownership) | Fixed in v0.1.7 — `fix_upper_ownership` chowns agent home after setup |
 
 ## DNS Allowlist Domains
 

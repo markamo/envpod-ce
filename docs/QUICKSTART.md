@@ -1,7 +1,7 @@
 <!-- type-delay 0.03 -->
 # Quickstart Tutorial
 
-> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
+> **envpod v0.1.7** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -81,7 +81,7 @@ Check pod status:
 sudo envpod status tutorial
 ```
 
-The pod is fully isolated — separate PID namespace, mount namespace, network namespace, and cgroup limits (1 CPU core, 512 MB memory as defined in `basic-cli.yaml`).
+The pod is fully isolated — separate PID namespace, mount namespace, network namespace, and cgroup limits (1 CPU core, 59 MB memory as defined in `basic-cli.yaml`).
 
 ---
 

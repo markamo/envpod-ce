@@ -30,7 +30,7 @@ OverlayFS captures every write in a private overlay. The host is untouched until
 
 ## Architecture
 
-envpod is a single 12 MB static Linux binary with zero runtime dependencies. No daemon, no container engine, no base images. The agent runs on the host's real filesystem layout — reads from the real directory tree, writes captured in the overlay — eliminating the path remapping and environment mismatch that plague container-based approaches.
+envpod is a single 9 MB static Linux binary with zero runtime dependencies. No daemon, no container engine, no base images. The agent runs on the host's real filesystem layout — reads from the real directory tree, writes captured in the overlay — eliminating the path remapping and environment mismatch that plague container-based approaches.
 
 The governance layer is **backend-agnostic**, communicating through an `IsolationBackend` trait. The current implementation uses native Linux primitives (namespaces, cgroups v2, OverlayFS, seccomp-BPF). Docker and microVM backends are planned.
 

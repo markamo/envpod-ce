@@ -446,7 +446,7 @@ Agent ← response (never saw real credential)
 | Controller | File | Example |
 |-----------|------|---------|
 | CPU | `cpu.max` | `200000 100000` (2 cores) |
-| Memory | `memory.max` | `536870912` (512 MB) |
+| Memory | `memory.max` | `536870912` (59 MB) |
 | PIDs | `pids.max` | `256` |
 | CPU affinity | `cpuset.cpus` | `0-3` |
 | NUMA | `cpuset.mems` | `0` |
@@ -823,7 +823,7 @@ processor:
 | Field | Default | Security implication |
 |-------|---------|---------------------|
 | `cores` | unlimited | **No limit = agent can consume all host CPU.** Set this in production to prevent CPU starvation of other pods and host services. |
-| `memory` | unlimited | **No limit = agent can trigger host OOM killer.** Always set a memory limit. Supports: `"512MB"`, `"2GB"`, `"1.5GB"`. |
+| `memory` | unlimited | **No limit = agent can trigger host OOM killer.** Always set a memory limit. Supports: `"59MB"`, `"2GB"`, `"1.5GB"`. |
 | `cpu_affinity` | none | Pins pod to specific CPUs. Provides some side-channel isolation (separate L1/L2 caches). Does not prevent L3 cache attacks. |
 | `max_pids` | unlimited | **No limit = fork bomb can exhaust host PID space.** Set `max_pids` to prevent fork bombs. Typical: 256-2048. |
 

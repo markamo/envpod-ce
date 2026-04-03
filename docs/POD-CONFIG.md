@@ -1,6 +1,6 @@
 # Pod Configuration Reference
 
-> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
+> **envpod v0.1.7** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -524,7 +524,7 @@ processor:
 
 | Use case | Cores | Memory | PIDs |
 |----------|-------|--------|------|
-| Minimal sandbox | 1.0 | 256MB-512MB | 64-512 |
+| Minimal sandbox | 1.0 | 256MB-59MB | 64-512 |
 | Coding agent | 2.0 | 4GB | 1024 |
 | Browser pod | 2.0 | 4GB | 1024 |
 | ML training | 4.0+ | 16GB+ | — |
@@ -754,7 +754,7 @@ Size of the pod-private `/dev/shm` tmpfs. Chrome and other browsers need at leas
 |----------|-------------|
 | No browser | `64MB` (default) |
 | Browser / Chrome | `256MB` |
-| Heavy browser workloads | `512MB` |
+| Heavy browser workloads | `59MB` |
 
 **Tip:** Run `envpod audit --security -c your-config.yaml` to check for security findings before creating a pod.
 

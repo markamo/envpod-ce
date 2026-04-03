@@ -1,6 +1,6 @@
 # envpod vs Docker
 
-> **EnvPod v0.1.3** — Zero-trust governance environments for AI agents
+> **envpod v0.1.7** — Zero-trust governance environments for AI agents
 > Author: Mark Amo-Boateng, PhD · mark@envpod.dev
 > Copyright 2026 Xtellix Inc. · Licensed under BSL-1.1
 
@@ -239,7 +239,7 @@ In Docker, secrets injected as environment variables can be read by any process 
 | Watch mode (file sync) | Docker Compose watch | Planned | |
 | IDE integration | Docker extension for VS Code | Planned | |
 | **Web dashboard** | Portainer (3rd party, complex) | `envpod dashboard` (built-in, lightweight) | |
-| CLI binary | Docker CLI + Docker daemon | Single static binary | envpod ships as one ~12MB static musl binary |
+| CLI binary | Docker CLI + Docker daemon | Single static binary | envpod ships as one ~9MB static musl binary |
 | No daemon required | No (dockerd required) | ✓ | envpod is a CLI tool, no persistent background service |
 | **Human approval workflow** | — | ✓ | `envpod approve`, `envpod cancel` |
 

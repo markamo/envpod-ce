@@ -29,14 +29,14 @@ Install a specific version:
 
 <!-- no-exec -->
 ```bash
-curl -fsSL https://envpod.dev/install.sh | sudo bash -s -- --version 0.1.1
+curl -fsSL https://envpod.dev/install.sh | sudo bash -s -- --version 0.1.7
 ```
 
 Or set the version via environment variable:
 
 <!-- no-exec -->
 ```bash
-ENVPOD_VERSION=0.1.1 curl -fsSL https://envpod.dev/install.sh | sudo bash
+ENVPOD_VERSION=0.1.7 curl -fsSL https://envpod.dev/install.sh | sudo bash
 ```
 
 ## Install from Tarball
@@ -325,7 +325,7 @@ sudo bash /usr/local/share/envpod/uninstall.sh
 | Filesystem | overlayfs support | Mainline since 3.18 |
 | Download tools | curl, tar, gzip, ca-certificates | Only needed to download envpod |
 | Network tools | iptables, iproute2 | Required at runtime |
-| Disk | ~12 MB (binary) + pod storage | |
+| Disk | ~9 MB (binary) + pod storage | |
 | RAM | ~4 MB per idle pod | |
 
 ## Troubleshooting
