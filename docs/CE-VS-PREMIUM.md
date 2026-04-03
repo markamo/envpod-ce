@@ -49,13 +49,17 @@ Premium adds identity, policy intelligence, fleet orchestration, remote manageme
 |---|---|---|
 | OverlayFS copy-on-write | Yes | Yes |
 | diff / commit / rollback | Yes | Yes |
+| Selective commit (`--rollback-rest`) | Yes | Yes |
 | mount_cwd (COW overlay of working directory) | Yes | Yes |
 | Per-mount COW overlay (`cow: true`) | Yes | Yes |
 | POSIX ACL management for COW mounts | Yes | Yes |
 | Named snapshots | Yes | Yes |
 | Base pods + fast cloning (8ms) | Yes | Yes |
+| Base resize (`envpod base resize`) | Yes | Yes |
 | Garbage collection | Yes | Yes |
-| Disk size limits (loopback ext4) | Yes | Yes |
+| Disk size limits (`disk_size` loopback ext4) | Yes | Yes |
+| Tmp size limits (`tmp_size`) | Yes | Yes |
+| System access modes (safe/advanced/dangerous) | Yes | Yes |
 | OPA commit policy | — | Yes |
 
 ### Devices & Display
@@ -209,9 +213,19 @@ Premium adds identity, policy intelligence, fleet orchestration, remote manageme
 | 18+ built-in presets | Yes | Yes |
 | 68+ example configs | Yes | Yes |
 | Web dashboard (fleet, diff, freeze/resume) | Yes | Yes |
-| Python + TypeScript SDK | Yes | Yes |
+| Dashboard daemon mode (`--daemon`, `--stop`) | Yes | Yes |
+| Python + TypeScript SDK (44 methods) | Yes | Yes |
 | GPU / display / audio passthrough | Yes | Yes |
 | Web display (noVNC) | Yes | Yes |
+| Desktop environments (XFCE, Openbox, Sway) | Yes | Yes |
+| Auto pre-setup (apt fix, PEP 668, nvm) | Yes | Yes |
+| Setup scripts + start_command | Yes | Yes |
+| Jailbreak test (8 security categories) | Yes | Yes |
+| Update checker + screening rule auto-download | Yes | Yes |
+| envpod group (run without sudo) | Yes | Yes |
+| Rootless mode (pasta networking) | Yes | Yes |
+| Shell tab completions (bash/zsh/fish) | Yes | Yes |
+| Tilde expansion in mount paths | Yes | Yes |
 | `envpod up` / `envpod .` (one-command lifecycle) | — | Yes |
 | Toolchain declaration in pod.yaml | — | Yes |
 | IDE integration (`envpod ide`) | — | Yes |
