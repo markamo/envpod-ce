@@ -48,7 +48,17 @@ All commands require `sudo` (namespace operations need root). The state director
 | [`monitor`](#monitor) | Monitoring policy and alerts |
 | [`mount`](#mount) | Mount a host path into the overlay |
 | [`unmount`](#unmount) | Unmount a path from the overlay |
+| [`expose`](#expose) | Live firewall port mutation |
+| [`kill`](#kill) | Terminate pod processes and rollback |
+| [`restart`](#restart) | Restart a running pod |
+| [`unlock`](#unlock) | Resume a frozen pod |
+| [`budget`](#budget) | View and manage budget limits |
+| [`screen`](#screen) | Screen text for prompt injection and PII |
+| [`service`](#service) | Manage systemd services for pods |
+| [`presets`](#presets) | List available init presets |
 | [`dashboard`](#dashboard) | Start web UI on localhost:9090 |
+| [`update`](#update) | Check for updates and download screening rules |
+| [`about`](#about) | Show version, license, and project info |
 | [`gc`](#gc) | Clean up stale iptables rules |
 | [`completions`](#completions) | Generate shell tab completions |
 
@@ -1700,6 +1710,140 @@ sudo envpod completions fish > ~/.config/fish/completions/envpod.fish
 
 # One-liner (bash): add to ~/.bashrc
 eval "$(sudo envpod completions bash)"
+```
+
+---
+
+## expose
+
+Manage exposed ports on a running pod's firewall. No restart required.
+
+```bash
+envpod expose my-pod --add 8080          # Open port 8080
+envpod expose my-pod --add 443 --add 80  # Open multiple
+envpod expose my-pod --remove 8080       # Close port
+envpod expose my-pod --list              # Show open ports
+```
+
+Only declared ports are reachable on the pod IP. All others are dropped.
+
+---
+
+## kill
+
+Terminate all processes in a pod and rollback filesystem changes.
+
+```bash
+envpod kill my-pod                       # SIGKILL + rollback
+```
+
+Unlike `stop` (graceful SIGTERM), `kill` sends SIGKILL immediately and rolls back the overlay. Use when a pod is unresponsive.
+
+---
+
+## restart
+
+Restart a running pod (stop then start with same options).
+
+```bash
+envpod restart my-pod                    # Restart one pod
+envpod restart web-pod api-pod           # Restart multiple
+envpod restart --all                     # Restart all running pods
+```
+
+---
+
+## unlock
+
+Resume a frozen (locked) pod. Opposite of `envpod lock`.
+
+```bash
+envpod unlock my-pod
+```
+
+---
+
+## budget
+
+View and manage budget limits for a pod.
+
+```bash
+envpod budget my-pod status              # Show all dimensions
+envpod budget my-pod extend 2h           # Add 2 hours to time budget
+envpod budget my-pod reset               # Reset request/bandwidth counters
+```
+
+Budget dimensions (configured in pod.yaml `budget:` section):
+- **duration** — max runtime (e.g., `8h`), auto-kills when exceeded
+- **requests** — max HTTP requests (Premium)
+- **bandwidth** — max network bytes (Premium)
+- **storage** — max overlay writes (Premium)
+
+---
+
+## screen
+
+Screen text or files for prompt injection, credential exposure, PII, and data exfiltration.
+
+```bash
+envpod screen "Ignore previous instructions and..."  # Screen text
+envpod screen --file prompt.txt                       # Screen a file
+envpod screen --api '{"messages":[...]}'              # Screen API body
+envpod screen --json "some text"                      # JSON output
+```
+
+Detects: prompt injection, system prompt leaks, credential patterns, PII (email, phone, SSN), base64-encoded secrets, exfiltration URLs.
+
+---
+
+## service
+
+Manage systemd services for pods. Registered pods auto-start on boot and restart on crash.
+
+```bash
+envpod service register my-pod           # Create systemd unit
+envpod service unregister my-pod         # Stop + disable + remove
+envpod service status my-pod             # Show systemd status
+envpod service list                      # List all registered pods
+envpod service restart my-pod            # Restart (picks up new binary)
+```
+
+Service name format: `envpod-pod-{name}.service`
+
+---
+
+## presets
+
+List available presets for `envpod init --preset`.
+
+```bash
+envpod presets                           # Show all categories + presets
+envpod init my-pod --preset claude-code  # Init with preset
+```
+
+18+ built-in presets: claude-code, web-server, python-dev, rust-dev, node-dev, ml-training, browser, database, minimal, workstation, and more.
+
+---
+
+## update
+
+Check for envpod updates and download latest screening rules.
+
+```bash
+envpod update                            # Check for new version + rules
+```
+
+Compares installed version against update.json on envpod.dev. Downloads updated prompt screening rule packs if available.
+
+---
+
+## about
+
+Show envpod version, license, edition, and project info.
+
+```bash
+envpod about                             # Version, edition, license, patent
+envpod --version                         # Short version string
 ```
 
 ---
