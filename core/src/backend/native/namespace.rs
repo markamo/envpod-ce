@@ -58,7 +58,7 @@ pub fn spawn_isolated(
     shm_size: Option<u64>,
     tmp_size: u64,
     rootfs: &Path,
-    mount_entries: &[(PathBuf, PathBuf, bool)],
+    mounts: &[super::ResolvedMount],
     devices: crate::config::DevicesConfig,
     system_access: SystemAccess,
     quiet_log: Option<PathBuf>,
@@ -75,7 +75,7 @@ pub fn spawn_isolated(
     let netns_path = netns_path.map(|p| p.to_path_buf());
     let pod_name = pod_name.to_string();
     let rootfs = rootfs.to_path_buf();
-    let mount_entries = mount_entries.to_vec();
+    let mounts = mounts.to_vec();
     let devices = devices.clone();
 
     // Resolve HOME directory for non-root users before values move into closures.
@@ -204,7 +204,7 @@ pub fn spawn_isolated(
                 &work,
                 &merged,
                 &rootfs,
-                &mount_entries,
+                &mounts,
                 shm_size,
                 tmp_size,
                 seccomp_profile,
@@ -368,7 +368,7 @@ fn pre_exec_setup(
     work: &Path,
     merged: &Path,
     rootfs: &Path,
-    mount_entries: &[(PathBuf, PathBuf, bool)],
+    mounts: &[super::ResolvedMount],
     shm_size: Option<u64>,
     tmp_size: u64,
     seccomp_profile: super::seccomp::SeccompProfile,
@@ -545,51 +545,136 @@ fn pre_exec_setup(
         }
     }
 
-    // 5.5. Bind-mount configured paths from pod.yaml into merged
-    for (host_path, pod_path, readonly) in mount_entries {
-        if !host_path.exists() {
+    // 5.5. User mounts — unified bind mount + COW overlay loop.
+    let pod_dir_for_cow = upper.parent().map(|p| p.to_path_buf());
+    for mount in mounts {
+        if !mount.host_path.exists() {
             eprintln!(
                 "warning: mount path {} does not exist on host — skipping",
-                host_path.display()
+                mount.host_path.display()
             );
             continue;
         }
-        let rel = pod_path.strip_prefix("/").unwrap_or(pod_path);
+
+        let rel = mount.pod_path.strip_prefix("/").unwrap_or(&mount.pod_path);
         let target = merged.join(rel);
-        if host_path.is_dir() {
+
+        if mount.cow {
+            // COW overlay mount: host dir = lower, pod-specific upper = writable.
+            let pod_dir = pod_dir_for_cow.as_ref().ok_or_else(||
+                std::io::Error::other("cannot determine pod dir from upper")
+            )?;
+            let cow_upper_base = pod_dir.join("cow_mounts_upper");
+            let cow_work_base = pod_dir.join("cow_mounts_work");
+
+            if !mount.host_path.is_dir() { continue; }
             std::fs::create_dir_all(&target)?;
-        } else {
-            if let Some(parent) = target.parent() {
-                std::fs::create_dir_all(parent)?;
+
+            let dir_hash = format!("{:x}", {
+                use std::collections::hash_map::DefaultHasher;
+                use std::hash::{Hash, Hasher};
+                let mut h = DefaultHasher::new();
+                mount.host_path.hash(&mut h);
+                h.finish()
+            });
+            let cow_upper = cow_upper_base.join(&dir_hash);
+            let cow_work = cow_work_base.join(&dir_hash);
+            std::fs::create_dir_all(&cow_upper)?;
+            std::fs::create_dir_all(&cow_work)?;
+
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&cow_upper, std::fs::Permissions::from_mode(0o777))?;
+
+            // Pre-copy host files to upper with agent ownership
+            let agent_uid = run_as.unwrap_or((60000, 60000));
+            fn pre_copy_to_upper(src: &Path, dst: &Path, uid: u32, gid: u32) -> std::io::Result<()> {
+                use std::os::unix::fs::PermissionsExt;
+                for entry in std::fs::read_dir(src)? {
+                    let entry = entry?;
+                    let ft = entry.file_type()?;
+                    let name = entry.file_name();
+                    let s = src.join(&name);
+                    let d = dst.join(&name);
+                    if ft.is_dir() {
+                        std::fs::create_dir_all(&d)?;
+                        nix::unistd::chown(&d, Some(nix::unistd::Uid::from_raw(uid)), Some(nix::unistd::Gid::from_raw(gid)))
+                            .map_err(|e| std::io::Error::other(format!("chown {}: {e}", d.display())))?;
+                        std::fs::set_permissions(&d, std::fs::Permissions::from_mode(0o755))?;
+                        pre_copy_to_upper(&s, &d, uid, gid)?;
+                    } else if ft.is_file() {
+                        std::fs::copy(&s, &d)?;
+                        nix::unistd::chown(&d, Some(nix::unistd::Uid::from_raw(uid)), Some(nix::unistd::Gid::from_raw(gid)))
+                            .map_err(|e| std::io::Error::other(format!("chown {}: {e}", d.display())))?;
+                        std::fs::set_permissions(&d, std::fs::Permissions::from_mode(0o644))?;
+                    }
+                }
+                Ok(())
             }
-            if !target.exists() {
-                std::fs::File::create(&target)?;
+            if let Err(e) = pre_copy_to_upper(&mount.host_path, &cow_upper, agent_uid.0, agent_uid.1) {
+                tracing::warn!(path = %mount.host_path.display(), error = %e, "COW pre-copy failed");
             }
-        }
-        nix::mount::mount(
-            Some(host_path.as_path()),
-            &target,
-            None::<&str>,
-            MsFlags::MS_BIND | MsFlags::MS_REC,
-            None::<&str>,
-        )
-        .map_err(|e| std::io::Error::other(format!(
-            "bind mount {} → {}: {e}",
-            host_path.display(),
-            target.display()
-        )))?;
-        if *readonly {
+
+            let opts = format!(
+                "lowerdir={},upperdir={},workdir={},index=off,metacopy=off",
+                mount.host_path.display(),
+                cow_upper.display(),
+                cow_work.display(),
+            );
+
             nix::mount::mount(
-                None::<&str>,
+                Some("overlay"),
+                &target,
+                Some("overlay"),
+                MsFlags::empty(),
+                Some(opts.as_str()),
+            )
+            .map_err(|e| std::io::Error::other(format!(
+                "COW mount {} → {}: {e}",
+                mount.host_path.display(),
+                target.display()
+            )))?;
+
+            std::fs::set_permissions(&target, std::fs::Permissions::from_mode(0o1777))?;
+
+            let mapping_file = cow_upper_base.join(format!("{}.path", dir_hash));
+            let _ = std::fs::write(&mapping_file, mount.host_path.to_string_lossy().as_bytes());
+        } else {
+            // Bind mount
+            if mount.host_path.is_dir() {
+                std::fs::create_dir_all(&target)?;
+            } else {
+                if let Some(parent) = target.parent() {
+                    std::fs::create_dir_all(parent)?;
+                }
+                if !target.exists() {
+                    std::fs::File::create(&target)?;
+                }
+            }
+            nix::mount::mount(
+                Some(mount.host_path.as_path()),
                 &target,
                 None::<&str>,
-                MsFlags::MS_BIND | MsFlags::MS_REMOUNT | MsFlags::MS_RDONLY,
+                MsFlags::MS_BIND | MsFlags::MS_REC,
                 None::<&str>,
             )
             .map_err(|e| std::io::Error::other(format!(
-                "readonly remount {}: {e}",
+                "bind mount {} → {}: {e}",
+                mount.host_path.display(),
                 target.display()
             )))?;
+            if mount.readonly {
+                nix::mount::mount(
+                    None::<&str>,
+                    &target,
+                    None::<&str>,
+                    MsFlags::MS_BIND | MsFlags::MS_REMOUNT | MsFlags::MS_RDONLY,
+                    None::<&str>,
+                )
+                .map_err(|e| std::io::Error::other(format!(
+                    "readonly remount {}: {e}",
+                    target.display()
+                )))?;
+            }
         }
     }
 
@@ -670,9 +755,16 @@ fn pre_exec_setup(
     nix::unistd::pivot_root(merged, &old_root)
         .map_err(|e| std::io::Error::other(format!("pivot_root: {e}")))?;
 
-    // 8. chdir to /
-    std::env::set_current_dir("/")
-        .map_err(|e| std::io::Error::other(format!("chdir /: {e}")))?;
+    // 8. chdir to CWD (if mount_cwd) or /
+    if let Some(cwd_mount) = mounts.iter().find(|m| m.is_cwd) {
+        if std::env::set_current_dir(&cwd_mount.pod_path).is_err() {
+            std::env::set_current_dir("/")
+                .map_err(|e| std::io::Error::other(format!("chdir /: {e}")))?;
+        }
+    } else {
+        std::env::set_current_dir("/")
+            .map_err(|e| std::io::Error::other(format!("chdir /: {e}")))?;
+    }
 
     // 9. Detach the old root
     nix::mount::umount2("/old_root", nix::mount::MntFlags::MNT_DETACH)

@@ -11,6 +11,7 @@
 //! - PID namespace                 — process isolation (child is PID 1)
 //! - seccomp-BPF                   — syscall allowlist filtering
 
+pub(crate) mod acl;
 pub(crate) mod cgroup;
 pub(crate) mod dev_mask;
 pub mod gc;
@@ -21,6 +22,25 @@ pub(crate) mod overlay;
 pub(crate) mod proc_mask;
 pub(crate) mod seccomp;
 pub mod state;
+
+/// A resolved mount entry ready for namespace setup.
+/// Unifies bind mounts and COW overlay mounts into a single type.
+#[derive(Debug, Clone)]
+pub struct ResolvedMount {
+    pub host_path: PathBuf,
+    pub pod_path: PathBuf,
+    pub readonly: bool,
+    pub cow: bool,
+    /// If true, chdir to this path after pivot_root.
+    pub is_cwd: bool,
+}
+
+impl ResolvedMount {
+    /// Read-only bind mount (devices, sockets, apps).
+    pub fn bind_ro(host_path: PathBuf, pod_path: PathBuf, _readonly: bool) -> Self {
+        Self { host_path, pod_path, readonly: true, cow: false, is_cwd: false }
+    }
+}
 
 // Re-export for CLI use
 pub use overlay::{filter_diff, is_protected, partition_protected, snapshot_base, has_base, resolve_base_name, destroy_base, PROTECTED_SYSTEM_PATHS};
@@ -243,9 +263,16 @@ impl NativeBackend {
             cgroup::destroy(cg).ok();
         }
 
+        // Remove POSIX ACLs from host paths (set during start for COW mounts).
+        for acl_path in &state.acl_paths {
+            if acl_path.exists() {
+                if let Err(e) = acl::remove_agent_acl(acl_path, 60000) {
+                    tracing::warn!(path = %acl_path.display(), error = %e, "ACL cleanup failed");
+                }
+            }
+        }
+
         // Unmount ALL mounts under the pod directory.
-        // Scans /proc/mounts to find every mount point (deepest first),
-        // so we never miss stale mounts that a hardcoded list would skip.
         overlay::unmount_all_under(&state.pod_dir);
 
         // Unmount and delete loopback disk image
@@ -420,6 +447,7 @@ impl NativeBackend {
             lower_dirs: vec![PathBuf::from("/")],
             network,
             disk_image: false, // clones don't inherit loopback
+            acl_paths: Vec::new(),
         };
 
         // 5. Audit entry
@@ -507,6 +535,7 @@ impl NativeBackend {
             lower_dirs: vec![PathBuf::from("/")],
             network,
             disk_image: false, // clones don't inherit loopback
+            acl_paths: Vec::new(),
         };
 
         // Audit entry
@@ -602,42 +631,56 @@ impl NativeBackend {
             .map(|c| c.devices.clone())
             .unwrap_or_default();
 
-        // Build mount entries from pod config (filesystem.mounts)
-        let mut mount_entries: Vec<(PathBuf, PathBuf, bool)> = pod_config
-            .map(|c| {
-                c.filesystem
-                    .mounts
-                    .iter()
-                    .map(|m| {
-                        let host_path = expand_tilde(&m.path);
-                        let pod_path = host_path.clone();
-                        let readonly = m.permissions == MountPermission::ReadOnly;
-                        (host_path, pod_path, readonly)
-                    })
-                    .collect()
-            })
-            .unwrap_or_default();
+        // Build unified mount list from all sources.
+        let mut mounts: Vec<ResolvedMount> = Vec::new();
 
-        // Mount CWD (filesystem.mount_cwd + cwd_path)
+        // 1. Pod config filesystem.mounts
+        if let Some(config) = pod_config {
+            for m in &config.filesystem.mounts {
+                let host_path = expand_tilde(&m.path);
+                let pod_path = m.target.clone().unwrap_or_else(|| host_path.clone());
+                mounts.push(ResolvedMount {
+                    host_path,
+                    pod_path,
+                    readonly: m.permissions == MountPermission::ReadOnly,
+                    cow: m.cow,
+                    is_cwd: false,
+                });
+            }
+        }
+
+        // 2. mount_cwd — COW overlay mount of the CWD
         if let Some(config) = pod_config {
             if config.filesystem.mount_cwd {
                 if let Some(ref cwd) = config.filesystem.cwd_path {
-                    if cwd.exists() && !mount_entries.iter().any(|(h, _, _)| h == cwd) {
-                        mount_entries.push((cwd.clone(), cwd.clone(), true)); // read-only, COW
-                        tracing::info!(path = %cwd.display(), "mounting CWD");
+                    if cwd.exists() && !mounts.iter().any(|m| m.host_path == *cwd) {
+                        mounts.push(ResolvedMount {
+                            host_path: cwd.clone(),
+                            pod_path: cwd.clone(),
+                            readonly: false,
+                            cow: true,
+                            is_cwd: true,
+                        });
+                        tracing::info!(path = %cwd.display(), "mounting CWD (COW overlay)");
                     }
                 }
             }
         }
 
-        // Auto-mount host apps (filesystem.apps)
+        // 3. Auto-mount host apps — read-only bind mounts
         if let Some(config) = pod_config {
             for app_name in &config.filesystem.apps {
                 match crate::app_resolver::resolve_app(app_name) {
                     Ok(resolved) => {
                         for path in &resolved.paths {
-                            if path.exists() && !mount_entries.iter().any(|(h, _, _)| h == path) {
-                                mount_entries.push((path.clone(), path.clone(), true));
+                            if path.exists() && !mounts.iter().any(|m| m.host_path == *path) {
+                                mounts.push(ResolvedMount {
+                                    host_path: path.clone(),
+                                    pod_path: path.clone(),
+                                    readonly: true,
+                                    cow: false,
+                                    is_cwd: false,
+                                });
                             }
                         }
                     }
@@ -648,14 +691,20 @@ impl NativeBackend {
             }
         }
 
-        // Clone host user directory mounts
+        // 4. Clone host user directory mounts
         if let Some(config) = pod_config {
             if config.host_user.clone_host {
                 if let Ok(user) = crate::user_clone::get_host_user() {
                     let user_mounts = crate::user_clone::user_dir_mounts(&user, &config.host_user);
                     for (host_path, pod_path, readonly) in user_mounts {
-                        if host_path.exists() && !mount_entries.iter().any(|(h, _, _)| h == &host_path) {
-                            mount_entries.push((host_path, pod_path, readonly));
+                        if host_path.exists() && !mounts.iter().any(|m| m.host_path == host_path) {
+                            mounts.push(ResolvedMount {
+                                host_path,
+                                pod_path,
+                                readonly,
+                                cow: false,
+                                is_cwd: false,
+                            });
                         }
                     }
                 }
@@ -670,7 +719,7 @@ impl NativeBackend {
             match protocol {
                 DisplayProtocol::Wayland => {
                     if let Some(socket) = detect_wayland_socket(real_uid) {
-                        mount_entries.push((socket, PathBuf::from("/tmp/wayland-0"), true));
+                        mounts.push(ResolvedMount::bind_ro(socket, PathBuf::from("/tmp/wayland-0"), true));
                     } else {
                         tracing::warn!("display_protocol is wayland but no Wayland socket found");
                     }
@@ -678,17 +727,17 @@ impl NativeBackend {
                 DisplayProtocol::X11 => {
                     let x11 = PathBuf::from("/tmp/.X11-unix");
                     if x11.exists() {
-                        mount_entries.push((x11.clone(), x11, true));
+                        mounts.push(ResolvedMount::bind_ro(x11.clone(), x11, true));
                     }
                 }
                 DisplayProtocol::Auto => {
                     // Prefer Wayland, fall back to X11
                     if let Some(socket) = detect_wayland_socket(real_uid) {
-                        mount_entries.push((socket, PathBuf::from("/tmp/wayland-0"), true));
+                        mounts.push(ResolvedMount::bind_ro(socket, PathBuf::from("/tmp/wayland-0"), true));
                     } else {
                         let x11 = PathBuf::from("/tmp/.X11-unix");
                         if x11.exists() {
-                            mount_entries.push((x11.clone(), x11, true));
+                            mounts.push(ResolvedMount::bind_ro(x11.clone(), x11, true));
                         }
                     }
                 }
@@ -702,7 +751,7 @@ impl NativeBackend {
                 AudioProtocol::Pipewire => {
                     let pipewire = PathBuf::from(format!("/run/user/{real_uid}/pipewire-0"));
                     if pipewire.exists() {
-                        mount_entries.push((pipewire, PathBuf::from("/tmp/pipewire-0"), true));
+                        mounts.push(ResolvedMount::bind_ro(pipewire, PathBuf::from("/tmp/pipewire-0"), true));
                     } else {
                         tracing::warn!("audio_protocol is pipewire but no PipeWire socket found");
                     }
@@ -710,12 +759,12 @@ impl NativeBackend {
                 AudioProtocol::Pulseaudio => {
                     let pulse_native = PathBuf::from(format!("/run/user/{real_uid}/pulse/native"));
                     if pulse_native.exists() {
-                        mount_entries.push((pulse_native, PathBuf::from("/tmp/pulse-native"), true));
+                        mounts.push(ResolvedMount::bind_ro(pulse_native, PathBuf::from("/tmp/pulse-native"), true));
                     } else {
                         // PipeWire's PulseAudio compat socket as fallback
                         let pipewire = PathBuf::from(format!("/run/user/{real_uid}/pipewire-0"));
                         if pipewire.exists() {
-                            mount_entries.push((pipewire, PathBuf::from("/tmp/pulse-native"), true));
+                            mounts.push(ResolvedMount::bind_ro(pipewire, PathBuf::from("/tmp/pulse-native"), true));
                         }
                     }
                 }
@@ -724,9 +773,9 @@ impl NativeBackend {
                     let pipewire = PathBuf::from(format!("/run/user/{real_uid}/pipewire-0"));
                     let pulse_native = PathBuf::from(format!("/run/user/{real_uid}/pulse/native"));
                     if pipewire.exists() {
-                        mount_entries.push((pipewire, PathBuf::from("/tmp/pipewire-0"), true));
+                        mounts.push(ResolvedMount::bind_ro(pipewire, PathBuf::from("/tmp/pipewire-0"), true));
                     } else if pulse_native.exists() {
-                        mount_entries.push((pulse_native, PathBuf::from("/tmp/pulse-native"), true));
+                        mounts.push(ResolvedMount::bind_ro(pulse_native, PathBuf::from("/tmp/pulse-native"), true));
                     }
                 }
             }
@@ -747,6 +796,31 @@ impl NativeBackend {
             None => None,
         };
 
+        // Set POSIX ACLs on host paths for COW overlay mounts.
+        let agent_uid = run_as.map(|(u, _)| u).unwrap_or(60000);
+        let mut acl_paths: Vec<PathBuf> = Vec::new();
+        for mount in &mounts {
+            if mount.cow && !mount.readonly {
+                if let Err(e) = acl::set_agent_acl(&mount.host_path, agent_uid) {
+                    tracing::warn!(
+                        path = %mount.host_path.display(),
+                        error = %e,
+                        "failed to set ACL for COW mount"
+                    );
+                } else {
+                    acl_paths.push(mount.host_path.clone());
+                }
+            }
+        }
+        if !acl_paths.is_empty() {
+            let mut updated_state = state.clone();
+            updated_state.acl_paths = acl_paths;
+            let state_path = updated_state.pod_dir.join("state.json");
+            if let Ok(json) = serde_json::to_string_pretty(&updated_state) {
+                let _ = std::fs::write(&state_path, json);
+            }
+        }
+
         let result = namespace::spawn_isolated(
             command,
             &state.lower_dirs,
@@ -762,7 +836,7 @@ impl NativeBackend {
             shm_size,
             tmp_size,
             &rootfs,
-            &mount_entries,
+            &mounts,
             devices,
             system_access,
             quiet_log.map(|p| p.to_path_buf()),
@@ -1000,6 +1074,7 @@ impl IsolationBackend for NativeBackend {
             lower_dirs: vec![PathBuf::from("/")],
             network,
             disk_image,
+            acl_paths: Vec::new(),
         };
 
         Self::emit_audit(
@@ -1177,6 +1252,15 @@ impl IsolationBackend for NativeBackend {
             }
         }
 
+        // Also scan COW mount uppers (mount_cwd writable overlays)
+        let cow_upper = state.pod_dir.join("cow_mounts_upper");
+        if cow_upper.exists() {
+            if let Ok(ref mut diffs) = result {
+                let cow_diffs = overlay::diff_cow_mounts(&cow_upper, &state.pod_dir)?;
+                diffs.extend(cow_diffs);
+            }
+        }
+
         let detail = match &result {
             Ok(diffs) => format!("{} change(s)", diffs.len()),
             Err(e) => format!("error: {e}"),
@@ -1205,6 +1289,12 @@ impl IsolationBackend for NativeBackend {
             overlay::commit_sys_upper(&sys_upper, sys_target)?;
         }
 
+        // Also commit COW mount overlay changes (mount_cwd and cow: true mounts).
+        let cow_upper = state.pod_dir.join("cow_mounts_upper");
+        if result.is_ok() && cow_upper.exists() {
+            overlay::commit_cow_mounts(&cow_upper)?;
+        }
+
         let detail = match (&result, paths) {
             (Ok(()), None) => "all".to_string(),
             (Ok(()), Some(p)) => format!("{} file(s)", p.len()),
@@ -1225,6 +1315,15 @@ impl IsolationBackend for NativeBackend {
             let sys_work = state.sys_work_dir();
             if sys_upper.exists() {
                 overlay::rollback(&sys_upper, &sys_work)?;
+            }
+        }
+
+        // Clear COW mount overlay uppers
+        if result.is_ok() {
+            let cow_upper = state.pod_dir.join("cow_mounts_upper");
+            let cow_work = state.pod_dir.join("cow_mounts_work");
+            if cow_upper.exists() {
+                overlay::rollback(&cow_upper, &cow_work)?;
             }
         }
 

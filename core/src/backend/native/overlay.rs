@@ -671,6 +671,165 @@ pub fn commit_sys_upper(sys_upper: &Path, target: &Path) -> Result<()> {
     Ok(())
 }
 
+/// Diff COW mount upper dirs (writable mount_cwd overlays).
+pub fn diff_cow_mounts(cow_upper: &Path, _pod_dir: &Path) -> Result<Vec<FileDiff>> {
+    let mut diffs = Vec::new();
+
+    let entries = match fs::read_dir(cow_upper) {
+        Ok(e) => e,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(diffs),
+        Err(e) => return Err(e.into()),
+    };
+
+    for entry in entries {
+        let entry = entry?;
+        if !entry.metadata()?.is_dir() { continue; }
+        let hash_dir = entry.path();
+        let host_path = find_cow_mount_source(&hash_dir);
+        walk_cow_upper(&hash_dir, &hash_dir, host_path.as_deref(), &mut diffs)?;
+    }
+
+    Ok(diffs)
+}
+
+fn find_cow_mount_source(cow_upper_hash: &Path) -> Option<PathBuf> {
+    let hash_name = cow_upper_hash.file_name()?.to_string_lossy();
+    let mapping = cow_upper_hash.parent()?.join(format!("{hash_name}.path"));
+    if let Ok(path_str) = fs::read_to_string(&mapping) {
+        return Some(PathBuf::from(path_str.trim()));
+    }
+    None
+}
+
+fn walk_cow_upper(
+    upper_root: &Path,
+    current: &Path,
+    host_path: Option<&Path>,
+    diffs: &mut Vec<FileDiff>,
+) -> Result<()> {
+    let entries = match fs::read_dir(current) {
+        Ok(e) => e,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(e) => return Err(e.into()),
+    };
+
+    for entry in entries {
+        let entry = entry?;
+        let path = entry.path();
+        let metadata = match entry.metadata() {
+            Ok(m) => m,
+            Err(_) => continue,
+        };
+
+        if metadata.is_dir() {
+            walk_cow_upper(upper_root, &path, host_path, diffs)?;
+            continue;
+        }
+
+        let rel = path.strip_prefix(upper_root).unwrap_or(&path);
+        let display_path = if let Some(hp) = host_path {
+            hp.join(rel)
+        } else {
+            PathBuf::from("/").join("cow_mount").join(rel)
+        };
+
+        let kind = if let Some(hp) = host_path {
+            if hp.join(rel).exists() { DiffKind::Modified } else { DiffKind::Added }
+        } else {
+            DiffKind::Added
+        };
+
+        diffs.push(FileDiff { path: display_path, kind, size: metadata.len() });
+    }
+
+    Ok(())
+}
+
+/// Commit COW mount overlay changes back to the original host paths.
+pub fn commit_cow_mounts(cow_upper: &Path) -> Result<()> {
+    let entries = match fs::read_dir(cow_upper) {
+        Ok(e) => e,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(e) => return Err(e.into()),
+    };
+
+    for entry in entries {
+        let entry = entry?;
+        if !entry.metadata()?.is_dir() { continue; }
+        let hash_dir = entry.path();
+
+        let host_path = find_cow_mount_source(&hash_dir);
+        if let Some(ref target) = host_path {
+            cow_commit_walk(&hash_dir, &hash_dir, target)?;
+            fs::remove_dir_all(&hash_dir).ok();
+            fs::create_dir_all(&hash_dir).ok();
+        }
+    }
+
+    Ok(())
+}
+
+fn cow_commit_walk(upper_root: &Path, current: &Path, host_root: &Path) -> Result<()> {
+    use std::os::unix::fs::MetadataExt;
+
+    let entries = match fs::read_dir(current) {
+        Ok(e) => e,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(e) => return Err(e.into()),
+    };
+
+    for entry in entries {
+        let entry = entry?;
+        let path = entry.path();
+        let metadata = entry.metadata()?;
+        let rel_path = path.strip_prefix(upper_root)
+            .context("path not under upper root")?;
+
+        if is_excluded(rel_path) { continue; }
+
+        let target = host_root.join(rel_path);
+
+        if is_whiteout(&metadata) {
+            if target.is_dir() {
+                fs::remove_dir_all(&target).ok();
+            } else if target.exists() || target.symlink_metadata().is_ok() {
+                fs::remove_file(&target).ok();
+            }
+        } else if metadata.is_dir() {
+            fs::create_dir_all(&target)?;
+            cow_commit_walk(upper_root, &path, host_root)?;
+        } else {
+            if let Some(parent) = target.parent() {
+                fs::create_dir_all(parent)?;
+            }
+
+            let (orig_uid, orig_gid) = if target.exists() {
+                let m = fs::metadata(&target)?;
+                (m.uid(), m.gid())
+            } else if let Some(parent) = target.parent() {
+                if let Ok(m) = fs::metadata(parent) { (m.uid(), m.gid()) } else { (0, 0) }
+            } else {
+                (0, 0)
+            };
+
+            fs::copy(&path, &target).with_context(|| {
+                format!("cow commit: {} → {}", path.display(), target.display())
+            })?;
+
+            nix::unistd::chown(
+                &target,
+                Some(nix::unistd::Uid::from_raw(orig_uid)),
+                Some(nix::unistd::Gid::from_raw(orig_gid)),
+            ).ok();
+            let _ = std::process::Command::new("setfacl")
+                .args(["-b", &target.to_string_lossy()])
+                .output();
+        }
+    }
+
+    Ok(())
+}
+
 /// Check if a file is an overlayfs whiteout (character device major=0 minor=0).
 /// Whiteouts represent files deleted from the lower layer.
 fn is_whiteout(metadata: &fs::Metadata) -> bool {

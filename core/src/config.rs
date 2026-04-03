@@ -253,13 +253,22 @@ impl Default for TrackingConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MountEntry {
+    /// Host path to mount into the pod.
     pub path: PathBuf,
+    /// Path inside the pod (defaults to host path if omitted).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub target: Option<PathBuf>,
     #[serde(default = "default_mount_permission")]
     pub permissions: MountPermission,
+    /// When true, mount as a per-path COW overlay instead of bind mount.
+    /// Writes go to the pod's overlay upper (visible in diff, committable).
+    /// Host files are never modified. Requires POSIX ACLs on host path.
+    #[serde(default)]
+    pub cow: bool,
 }
 
 fn default_mount_permission() -> MountPermission {
-    MountPermission::ReadOnly
+    MountPermission::ReadWrite
 }
 
 // -- Network --------------------------------------------------------------

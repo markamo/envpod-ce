@@ -28,6 +28,9 @@ pub struct NativeState {
     /// Whether this pod uses a loopback disk image for overlay storage.
     #[serde(default)]
     pub disk_image: bool,
+    /// Host paths with POSIX ACLs set for agent (UID 60000) — for cleanup on destroy.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub acl_paths: Vec<PathBuf>,
 }
 
 /// Persisted network namespace state for a pod.
@@ -213,6 +216,7 @@ mod tests {
             lower_dirs: vec![PathBuf::from("/")],
             network: None,
             disk_image: false,
+            acl_paths: Vec::new(),
         };
 
         let json = state.to_json();
@@ -251,6 +255,7 @@ mod tests {
                 subnet_base: "10.200".into(),
             }),
             disk_image: false,
+            acl_paths: Vec::new(),
         };
 
         let json = state.to_json();
@@ -375,6 +380,7 @@ mod tests {
             lower_dirs: vec![PathBuf::from("/")],
             network: None,
             disk_image: false,
+            acl_paths: Vec::new(),
         };
 
         assert_eq!(state.upper_dir(), PathBuf::from("/var/lib/envpod/pods/abc/upper"));
