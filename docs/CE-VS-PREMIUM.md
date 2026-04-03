@@ -161,7 +161,9 @@ Premium adds identity, policy intelligence, fleet orchestration, remote manageme
 |---|---|---|
 | Append-only audit log | Yes | Yes |
 | Static security scan | Yes | Yes |
-| Prompt screening | Yes | Yes |
+| Prompt screening — Layer 1 (regex, ~1ms) | Yes | Yes |
+| Prompt screening — Layer 2 (local AI, Ollama, ~200ms) | — | Planned |
+| Prompt screening — Layer 3 (cloud AI, Claude/GPT, ~500ms) | — | Planned |
 | Monitoring agent (auto-freeze) | Yes | Yes |
 | Governance scorecard (7 dimensions, CWA grading) | — | Yes |
 | Automated security testing (`envpod verify`) | — | Yes |
