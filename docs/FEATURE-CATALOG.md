@@ -808,7 +808,17 @@ envpod node uninstall
 
 Connects to relay, accepts: ls, init, start, stop, destroy.
 
-### SDKs (CE)
+### SDKs — Three Connection Modes
+
+The SDK provides three ways to connect to pods, depending on where you are:
+
+| Class | Connection | From where | Auth |
+|-------|-----------|-----------|------|
+| `Pod` | Local CLI subprocess | Same machine | None (uses sudo) |
+| `RemotePod` | WebSocket relay | Any machine, any network | Pod token |
+| `ServiceClient` | HTTPS to service proxy | Anywhere (internet) | Service token |
+
+#### Pod — Local (CE)
 
 ```python
 from envpod import Pod
@@ -827,6 +837,76 @@ await pod.destroy();
 ```
 
 44 methods: lifecycle, vault, DNS, snapshots, resources, display, screening, remote, clone, disposable.
+
+#### RemotePod — Relay (Premium)
+
+Control pods from any machine via the WebSocket relay. Full governance plane (status/freeze/resume/kill/diff/audit/budget) + execution plane (run commands inside the pod).
+
+```python
+from envpod import RemotePod
+
+pod = RemotePod("my-agent-a1b2c3d4",
+    token="your-pod-token",        # from envpod token <pod>
+    relay="relay.envpod.dev")
+
+pod.status()                        # governance plane
+pod.freeze()
+pod.resume()
+pod.diff()
+pod.audit()
+
+result = pod.run("python3 evaluate.py")   # execution plane
+print(result.stdout)
+
+result = pod.run_script("""
+    import torch
+    print(f"CUDA: {torch.cuda.is_available()}")
+""")
+```
+
+```typescript
+import { RemotePod } from 'envpod';
+
+const pod = new RemotePod("my-agent-a1b2c3d4", {
+    token: "your-pod-token",
+    relay: "relay.envpod.dev",
+});
+
+await pod.status();
+await pod.run("ls -la /workspace");
+await pod.freeze();
+```
+
+#### ServiceClient — Service Proxy (Premium)
+
+Connect to pod services exposed at `*.envpod.cloud`. HTTP client with automatic service token auth.
+
+```python
+from envpod import ServiceClient
+
+# Private service (requires token)
+svc = ServiceClient("my-api", token="a3f2c1d8...")
+resp = svc.get("/api/data")
+resp = svc.post("/api/submit", json={"query": "analyze"})
+
+# Public service (no token)
+pub = ServiceClient("my-site", public=True)
+resp = pub.get("/")
+
+# Health check
+if svc.is_healthy():
+    print("Service is up")
+```
+
+```typescript
+import { ServiceClient } from 'envpod';
+
+const svc = new ServiceClient("my-api", { token: "a3f2c1d8..." });
+const data = await svc.get("/api/data");
+await svc.post("/api/submit", { query: "analyze" });
+
+const pub = new ServiceClient("my-site", { public: true });
+```
 
 ---
 
