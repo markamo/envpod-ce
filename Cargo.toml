@@ -2,6 +2,11 @@
 members = ["cli", "core", "dns"]
 resolver = "2"
 
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+
 [workspace.package]
 version = "0.1.7"
 edition = "2021"
