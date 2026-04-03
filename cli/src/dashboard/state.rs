@@ -27,8 +27,7 @@ pub struct PodSummary {
     pub status: String,
     pub created_at: String,
     pub backend: String,
-    pub diff_count: usize,
-    pub resources: Option<ResourceStats>,
+    pub pod_ip: Option<String>,
 }
 
 /// Live resource stats from cgroup.
@@ -81,8 +80,9 @@ pub struct FileDiffResult {
     pub lines: Vec<DiffLine>,
 }
 
-/// List all pods with summary info.
-pub fn list_pods(store: &PodStore, base_dir: &Path) -> Result<Vec<PodSummary>> {
+/// List all pods with lightweight summary (no diff count, no resource stats).
+/// Designed for fast fleet view — no expensive filesystem walks.
+pub fn list_pods(store: &PodStore, _base_dir: &Path) -> Result<Vec<PodSummary>> {
     let handles = store.list()?;
     let mut summaries = Vec::new();
 
@@ -92,17 +92,14 @@ pub fn list_pods(store: &PodStore, base_dir: &Path) -> Result<Vec<PodSummary>> {
             Err(_) => continue,
         };
 
-        let config = state.load_config()?.unwrap_or_default();
-        let diff_count = count_diffs(&handle, &state, &config, base_dir);
-        let resources = read_resources(&state);
+        let pod_ip = state.network.as_ref().map(|n| n.pod_ip.clone());
 
         summaries.push(PodSummary {
             name: handle.name.clone(),
             status: format!("{:?}", state.status).to_lowercase(),
             created_at: handle.created_at.to_rfc3339(),
             backend: handle.backend.clone(),
-            diff_count,
-            resources,
+            pod_ip,
         });
     }
 
