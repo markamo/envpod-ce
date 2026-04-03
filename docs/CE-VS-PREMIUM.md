@@ -58,6 +58,21 @@ Premium adds identity, policy intelligence, fleet orchestration, remote manageme
 | Disk size limits (loopback ext4) | Yes | Yes |
 | OPA commit policy | — | Yes |
 
+### Devices & Display
+
+| Feature | CE | Premium |
+|---|---|---|
+| GPU passthrough (NVIDIA, AMD) | Yes | Yes |
+| GPU info masking (when disabled) | Yes | Yes |
+| Display forwarding (Wayland + X11) | Yes | Yes |
+| Audio forwarding (PipeWire + PulseAudio) | Yes | Yes |
+| Web display (noVNC desktop in browser) | Yes | Yes |
+| noVNC audio streaming | Yes | Yes |
+| noVNC file upload | Yes | Yes |
+| noVNC clipboard sync | Yes | Yes |
+| Pod resize (`envpod resize`) | Yes | Yes |
+| Extra device mounts (`devices.extra`) | Yes | Yes |
+
 ### Network
 
 | Feature | CE | Premium |
