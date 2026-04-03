@@ -65,6 +65,8 @@ envpod license activate <KEY>
 
 ## 1. Filesystem Governance
 
+> Docs: [FILESYSTEM.md](FILESYSTEM.md) · [SECURITY-MODEL.md](SECURITY-MODEL.md) · [POD-CONFIG.md](POD-CONFIG.md) · [SEALED-MODE.md](SEALED-MODE.md)
+
 The foundation. Every agent write goes to a copy-on-write overlay. The host is never modified until a human reviews and commits.
 
 ### Copy-on-Write Filesystem (CE)
@@ -182,6 +184,8 @@ filesystem:
 
 ## 2. Network Isolation
 
+> Docs: [POD-NETWORKING.md](POD-NETWORKING.md) · [DOH-BLOCKING.md](DOH-BLOCKING.md) · [TAILSCALE.md](TAILSCALE.md)
+
 Every pod gets its own network namespace with DNS filtering.
 
 ### DNS Filtering (CE)
@@ -294,6 +298,8 @@ Self-hosted Tailscale coordination at `mesh.envpod.dev`.
 
 ## 3. Process Isolation
 
+> Docs: [SECURITY-MODEL.md](SECURITY-MODEL.md) · [CAPABILITIES.md](CAPABILITIES.md)
+
 ### PID Namespace (CE)
 
 Agent is PID 1. Cannot see or signal host processes.
@@ -345,6 +351,8 @@ When GPU disabled, `/dev/nvidia*` info paths masked with empty tmpfs.
 
 ## 4. Credential Vault
 
+> Docs: [VAULT-PROXY.md](VAULT-PROXY.md) · [POD-CONFIG.md](POD-CONFIG.md)
+
 ### Encrypted Storage (CE)
 
 ChaCha20-Poly1305 at rest.
@@ -389,6 +397,8 @@ Rego rules control which agents can read which keys.
 ---
 
 ## 5. Action Queue & Governance
+
+> Docs: [ACTION-CATALOG.md](ACTION-CATALOG.md) · [POLICY.md](POLICY.md)
 
 ### Four Approval Tiers (CE)
 
@@ -443,6 +453,8 @@ envpod policy my-agent check
 ---
 
 ## 6. Monitoring & Audit
+
+> Docs: [MONITORING.md](MONITORING.md) · [HEALTH.md](HEALTH.md) · [SCORECARD.md](SCORECARD.md) · [OWASP-AGENTIC.md](OWASP-AGENTIC.md) · [VERIFY.md](VERIFY.md) · [OPENTELEMETRY.md](OPENTELEMETRY.md)
 
 ### Append-Only Audit Log (CE)
 
@@ -536,6 +548,8 @@ Pre-built dashboards: fleet overview, pod detail, security. Loki for log aggrega
 
 ## 7. Prompt Screening
 
+> Docs: [SCREENING.md](SCREENING.md)
+
 ### Layer 1 — Regex (CE)
 
 ~1ms. 53 patterns across 4 categories.
@@ -570,6 +584,8 @@ Built-in boundary probe covering: path traversal, proc escape, network, syscalls
 ---
 
 ## 8. Devices & Display
+
+> Docs: [DEVICES.md](DEVICES.md) · [WEB-DISPLAY.md](WEB-DISPLAY.md)
 
 ### GPU Passthrough (CE)
 
@@ -609,6 +625,8 @@ envpod resize my-agent --desktop xfce --web-display true
 ---
 
 ## 9. Identity & Authentication
+
+> Docs: [IDENTITY.md](IDENTITY.md) · [OIDC.md](OIDC.md)
 
 ### Pod Identity (Premium)
 
@@ -651,6 +669,8 @@ Supports Okta, Azure AD, Google, Keycloak, Auth0. Three identity layers: human �
 ---
 
 ## 10. Fleet Management
+
+> Docs: [USER-GUIDE.md](USER-GUIDE.md) · [CLI-BLACKBOOK.md](CLI-BLACKBOOK.md) · [IAC.md](IAC.md) · [PARALLEL-CLONE.md](PARALLEL-CLONE.md) · [UP.md](UP.md) · [IDE.md](IDE.md)
 
 ### Pod Lifecycle (CE)
 
@@ -739,6 +759,8 @@ SSH ProxyCommand — VS Code, Cursor, JetBrains Gateway.
 
 ## 11. Remote Management
 
+> Docs: [REMOTE-CONTROL.md](REMOTE-CONTROL.md) · [SDK.md](SDK.md) · [QUICKSTART-REMOTE.md](QUICKSTART-REMOTE.md)
+
 ### Local Remote Control (CE)
 
 ```bash
@@ -810,6 +832,8 @@ await pod.destroy();
 
 ## 12. Service Proxy
 
+> Docs: [SERVICE-PROXY.md](SERVICE-PROXY.md) · [CLOUD-ARCHITECTURE.md](CLOUD-ARCHITECTURE.md)
+
 Expose pod services at `*.envpod.cloud`. See [SERVICE-PROXY.md](SERVICE-PROXY.md) for full docs.
 
 ### Configuration (Premium)
@@ -846,6 +870,8 @@ Relay tunnel (default, ~200ms) or direct Tailscale IP (~5ms) if enabled.
 
 ## 13. Web Dashboard
 
+> Docs: [DASHBOARD.md](DASHBOARD.md)
+
 `envpod dashboard` → `http://localhost:9090`
 
 ### Fleet View (CE)
@@ -870,6 +896,8 @@ Create, destroy, clone pods from browser. Agent identity table. Pod public key d
 ---
 
 ## 14. Developer Experience
+
+> Docs: [QUICKSTART.md](QUICKSTART.md) · [SETUP-PATTERNS.md](SETUP-PATTERNS.md) · [TOOLCHAIN.md](TOOLCHAIN.md) · [DEVCONTAINER.md](DEVCONTAINER.md) · [PROVIDERS.md](PROVIDERS.md) · [FRAMEWORK-INTEGRATIONS.md](FRAMEWORK-INTEGRATIONS.md)
 
 ### Interactive Init (CE)
 
@@ -958,6 +986,8 @@ Documented governance for 15+ AI frameworks: LangChain, CrewAI, AutoGen, OpenAI 
 
 ## 15. Licensing & Distribution
 
+> Docs: [LICENSING.md](LICENSING.md) · [LICENSING-SYSTEM.md](LICENSING-SYSTEM.md)
+
 ### CE License (CE)
 
 BSL 1.1. Converts to AGPL-3.0 on 2030-03-07. Free forever for any use.
@@ -988,6 +1018,8 @@ When license expires, Premium commands print "requires Premium license." All 47 
 
 ## 16. Compliance & Standards
 
+> Docs: [OWASP-AGENTIC.md](OWASP-AGENTIC.md) · [NIST-AI-RMF.md](NIST-AI-RMF.md)
+
 ### OWASP Agentic Security (CE + Premium)
 
 10/10 risks covered at kernel level:
@@ -1017,6 +1049,8 @@ Risk categorization, transparency, human oversight, documentation mapped.
 
 ## 17. Platform Support
 
+> Docs: [PLATFORMS.md](PLATFORMS.md) · [EMBEDDED.md](EMBEDDED.md) · [INSTALL.md](INSTALL.md)
+
 | Platform | Status |
 |----------|--------|
 | Ubuntu 22.04+ | Full |
@@ -1036,6 +1070,8 @@ Risk categorization, transparency, human oversight, documentation mapped.
 ---
 
 ## 18. Performance
+
+> Docs: [BENCHMARKS.md](BENCHMARKS.md) · [COMPARE-DOCKER.md](COMPARE-DOCKER.md)
 
 | Metric | envpod | Docker |
 |--------|--------|--------|
