@@ -410,9 +410,19 @@ fn pre_exec_setup(
         "unshare(NEWNS|NEWPID|NEWUTS) failed: {e}. Ensure envpod is running as root"
     )))?;
 
-    // 2. Set hostname for UTS isolation
-    nix::unistd::sethostname(pod_name)
-        .map_err(|e| std::io::Error::other(format!("sethostname: {e}")))?;
+    // 2. Set hostname for UTS isolation.
+    // Safety: only set if we're in a new UTS namespace (unshare succeeded above).
+    let my_uts = std::fs::read_link("/proc/self/ns/uts").ok();
+    let init_uts = std::fs::read_link("/proc/1/ns/uts").ok();
+    if my_uts != init_uts {
+        nix::unistd::sethostname(pod_name)
+            .map_err(|e| std::io::Error::other(format!("sethostname: {e}")))?;
+    } else {
+        let _ = std::io::Write::write_all(
+            &mut std::io::stderr(),
+            b"envpod: WARNING - UTS namespace not isolated, skipping sethostname\n",
+        );
+    }
 
     // ── PID namespace fork ──────────────────────────────────────
     unsafe {

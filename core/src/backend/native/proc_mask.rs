@@ -514,11 +514,18 @@ pub fn mask_proc_files(merged: &Path, cgroup_procs: Option<&Path>) -> io::Result
         }
     }
 
-    // NOTE: /proc/stat is NOT masked. It contains live-updating CPU counters
-    // that tools like htop use to compute CPU %. A static bind-mount would
-    // freeze the values, making usage always show 0%. The sysfs directory
-    // masking below ensures htop shows the correct number of CPU bars, and
-    // the real /proc/stat provides live data for the visible CPUs.
+    // Mask /proc/stat when CPU set is restricted — filter cpuN lines to match
+    // allowed CPUs. Prevents agent from discovering real host CPU count.
+    if let Some(ref cpus) = effective_cpus {
+        if let Err(e) = mask_and_bind(&staging, &proc_dir, "stat", |content| {
+            mask_stat(content, cpus)
+        }) {
+            let _ = io::Write::write_all(
+                &mut io::stderr(),
+                format!("envpod: /proc/stat masking failed (non-fatal): {e}\n").as_bytes(),
+            );
+        }
+    }
 
     // Set CPU affinity so nproc reports the correct count.
     // When cpuset.cpus is explicitly restrictive, the kernel already
