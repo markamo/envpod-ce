@@ -48,6 +48,7 @@ pub struct PodDetail {
     pub created_at: String,
     pub backend: String,
     pub pod_dir: String,
+    pub pod_ip: Option<String>,
     pub config: Option<PodConfig>,
     pub resources: Option<ResourceStats>,
     pub diff_count: usize,
@@ -120,12 +121,15 @@ pub fn pod_detail(store: &PodStore, base_dir: &Path, name: &str) -> Result<PodDe
         .and_then(|v| v.list().ok())
         .unwrap_or_default();
 
+    let pod_ip = state.network.as_ref().map(|n| n.pod_ip.clone());
+
     Ok(PodDetail {
         name: handle.name.clone(),
         status: format!("{:?}", state.status).to_lowercase(),
         created_at: handle.created_at.to_rfc3339(),
         backend: handle.backend.clone(),
         pod_dir: state.pod_dir.display().to_string(),
+        pod_ip,
         config: Some(config.clone()),
         resources,
         diff_count,

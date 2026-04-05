@@ -82,6 +82,10 @@ function loadPodDetail() {
                     <div class="value">${pod.status}</div>
                 </div>
                 <div class="info-item">
+                    <div class="label">Pod IP</div>
+                    <div class="value">${pod.pod_ip || '-'}</div>
+                </div>
+                <div class="info-item">
                     <div class="label">Backend</div>
                     <div class="value">${pod.backend}</div>
                 </div>
