@@ -286,6 +286,14 @@ fn create_default_user(rootfs: &Path) -> Result<()> {
             .context("write agent to group")?;
     }
 
+    // Inject live vault auto-reload into bash.
+    let bashrc = rootfs.join("etc/bash.bashrc");
+    if let Ok(mut existing) = fs::read_to_string(&bashrc) {
+        existing.push_str("\n# envpod: auto-reload vault secrets on change\n");
+        existing.push_str("PROMPT_COMMAND='if [ /run/envpod/secrets.env -nt /tmp/.envpod-env-ts 2>/dev/null ]; then source /run/envpod/secrets.env 2>/dev/null; touch /tmp/.envpod-env-ts; fi'\n");
+        fs::write(&bashrc, existing).ok();
+    }
+
     // Create home directory with correct ownership.
     // chown requires root — tolerate EPERM for non-root test environments.
     let home = rootfs.join("home/agent");
