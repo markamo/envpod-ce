@@ -242,6 +242,21 @@ const ALLOWED_SYSCALLS: &[libc::c_long] = &[
     libc::SYS_setsockopt,
     libc::SYS_getsockopt,
     libc::SYS_socketpair,
+    // ── File allocation + sync (required by PostgreSQL, databases, large file ops) ──
+    libc::SYS_fallocate,
+    libc::SYS_sync_file_range,
+    // ── System V IPC (required by PostgreSQL, Redis, some databases) ──
+    libc::SYS_shmget,
+    libc::SYS_shmat,
+    libc::SYS_shmdt,
+    libc::SYS_shmctl,
+    libc::SYS_semget,
+    libc::SYS_semop,
+    libc::SYS_semctl,
+    libc::SYS_msgget,
+    libc::SYS_msgsnd,
+    libc::SYS_msgrcv,
+    libc::SYS_msgctl,
     // ── Polling / event / timer ──
     #[cfg(target_arch = "x86_64")]
     libc::SYS_poll,               // x86_64 only; aarch64 uses ppoll
@@ -272,6 +287,8 @@ const ALLOWED_SYSCALLS: &[libc::c_long] = &[
     libc::SYS_clock_nanosleep,
     libc::SYS_gettimeofday,
     libc::SYS_nanosleep,
+    libc::SYS_setitimer,            // interval timers (PostgreSQL, databases)
+    libc::SYS_getitimer,
     // ── inotify ──
     libc::SYS_inotify_init1,
     libc::SYS_inotify_add_watch,
