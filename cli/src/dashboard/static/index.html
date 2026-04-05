@@ -107,8 +107,9 @@ function renderPodCard(pod) {
                 ${isFrozen
                     ? `<button class="btn-sm success" onclick="event.stopPropagation();podAction('${pod.name}','resume')">Resume</button>`
                     : isRunning
-                        ? `<button class="btn-sm warning" onclick="event.stopPropagation();podAction('${pod.name}','freeze')">Freeze</button>`
-                        : ''
+                        ? `<button class="btn-sm warning" onclick="event.stopPropagation();podAction('${pod.name}','stop')">Stop</button>
+                           <button class="btn-sm warning" onclick="event.stopPropagation();podAction('${pod.name}','freeze')">Freeze</button>`
+                        : `<button class="btn-sm success" onclick="event.stopPropagation();podAction('${pod.name}','start')">Start</button>`
                 }
             </div>
         </div>`;

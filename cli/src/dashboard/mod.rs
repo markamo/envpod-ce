@@ -173,6 +173,8 @@ async fn serve(base_dir: PathBuf, port: u16, no_open: bool) -> Result<()> {
         .route("/api/v1/pods/{id}/rollback", post(api::pod_rollback))
         .route("/api/v1/pods/{id}/freeze", post(api::pod_freeze))
         .route("/api/v1/pods/{id}/resume", post(api::pod_resume))
+        .route("/api/v1/pods/{id}/start", post(api::pod_start))
+        .route("/api/v1/pods/{id}/stop", post(api::pod_stop))
         .route("/api/v1/pods/{id}/snapshots", get(api::pod_snapshots).post(api::pod_snapshot_create))
         .route("/api/v1/pods/{id}/snapshots/{snap_id}/restore", post(api::pod_snapshot_restore))
         .route("/api/v1/pods/{id}/snapshots/{snap_id}/promote", post(api::pod_snapshot_promote))

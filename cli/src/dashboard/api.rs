@@ -275,6 +275,70 @@ pub async fn pod_resume(
     Ok(Json(serde_json::json!({ "status": "resumed", "pod": name })))
 }
 
+/// POST /api/v1/pods/:id/stop
+pub async fn pod_stop(
+    State(state): State<Arc<AppState>>,
+    Path(name): Path<String>,
+) -> Result<Json<serde_json::Value>, (StatusCode, Json<ApiError>)> {
+    let (handle, native_state) = pod_state::get_state(&state.store, &name)
+        .map_err(|e| err(StatusCode::NOT_FOUND, format!("{e:#}")))?;
+
+    let backend = create_backend(&handle.backend, &state.base_dir)
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
+
+    backend.stop(&handle)
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
+
+    let log = AuditLog::new(&native_state.pod_dir);
+    let _ = log.append(&AuditEntry {
+        timestamp: chrono::Utc::now(),
+        pod_name: name.clone(),
+        action: AuditAction::Stop,
+        detail: "via dashboard".into(),
+        success: true,
+    });
+
+    Ok(Json(serde_json::json!({ "status": "stopped", "pod": name })))
+}
+
+/// POST /api/v1/pods/:id/start
+pub async fn pod_start(
+    State(state): State<Arc<AppState>>,
+    Path(name): Path<String>,
+) -> Result<Json<serde_json::Value>, (StatusCode, Json<ApiError>)> {
+    let (handle, native_state) = pod_state::get_state(&state.store, &name)
+        .map_err(|e| err(StatusCode::NOT_FOUND, format!("{e:#}")))?;
+
+    let config = native_state.load_config()
+        .ok()
+        .flatten()
+        .unwrap_or_default();
+    let command: Vec<String> = if config.start_command.is_empty() {
+        vec!["sleep".into(), "infinity".into()]
+    } else {
+        config.start_command.clone()
+    };
+
+    let user = Some(config.user.as_str());
+
+    let backend = create_backend(&handle.backend, &state.base_dir)
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
+
+    backend.start(&handle, &command, user, &[], None)
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
+
+    let log = AuditLog::new(&native_state.pod_dir);
+    let _ = log.append(&AuditEntry {
+        timestamp: chrono::Utc::now(),
+        pod_name: name.clone(),
+        action: AuditAction::Start,
+        detail: format!("via dashboard: {}", command.join(" ")),
+        success: true,
+    });
+
+    Ok(Json(serde_json::json!({ "status": "started", "pod": name, "command": command.join(" ") })))
+}
+
 /// GET /api/v1/pods/:id/snapshots
 pub async fn pod_snapshots(
     State(state): State<Arc<AppState>>,
