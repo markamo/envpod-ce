@@ -477,7 +477,7 @@ Never put API keys or passwords in `actions.json`. Reference a vault key by name
 Store the actual secret in the vault:
 
 ```bash
-sudo envpod vault set myagent STRIPE_SECRET_KEY sk-live-...
+echo -n "sk-live-..." | sudo envpod vault myagent set STRIPE_SECRET_KEY
 ```
 
 At execution time, envpod fetches `STRIPE_SECRET_KEY` from the vault and injects it into the request header. The agent never sees the value — it only passes the `url` and `body` params.

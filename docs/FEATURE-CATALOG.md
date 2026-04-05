@@ -366,11 +366,15 @@ When GPU disabled, `/dev/nvidia*` info paths masked with empty tmpfs.
 ChaCha20-Poly1305 at rest.
 
 ```bash
-envpod vault my-agent set API_KEY sk-ant-abc123...
+echo -n "sk-ant-abc123..." | envpod vault my-agent set API_KEY   # from pipe
+envpod vault my-agent set API_KEY                                 # interactive (Ctrl+D to end)
 envpod vault my-agent list
+envpod vault my-agent get API_KEY
 envpod vault my-agent import .env
-envpod vault my-agent delete API_KEY
+envpod vault my-agent rm API_KEY
 ```
+
+Value always read from stdin — never as CLI argument (stays out of shell history).
 
 Agent sees secrets as environment variables + live file at `/run/envpod/secrets.env`.
 
@@ -380,14 +384,12 @@ Transparent HTTPS MITM. Agent sees a fake key, proxy swaps with real one on ever
 
 ```bash
 # Set a key with proxy protection — agent sees fake, proxy injects real
-envpod vault my-agent set API_KEY --proxy
-# Enter: sk-ant-real-key-here
+echo -n "sk-ant-real-key" | envpod vault my-agent set API_KEY --proxy
 #   Agent sees: sk-ant-f7x9k2m4zB (fake, same format)
 #   Real key stored as API_KEY_real (encrypted, proxy-only)
 
 # Set a plain key — agent sees real value (CE behavior)
-envpod vault my-agent set DATABASE_URL
-# Enter: postgres://localhost:5432/mydb
+echo -n "postgres://localhost:5432/mydb" | envpod vault my-agent set DATABASE_URL
 ```
 
 On `envpod run`, if any `_real` keys exist: per-pod CA generated, all DNS remapped to proxy, L1 screening on every request/response, fake keys swapped for real at TLS termination. Zero config.
