@@ -30,6 +30,7 @@
         <button class="tab" onclick="showTab('resources')">Resources</button>
         <button class="tab" onclick="showTab('snapshots')">Snapshots</button>
         <button class="tab" onclick="showTab('queue')">Queue</button>
+        <button class="tab-refresh" onclick="refreshActiveTab()" title="Refresh current tab">↻</button>
     </div>
 
     <div id="section-overview" class="section active"></div>
@@ -55,18 +56,17 @@ function authFetch(url, opts) {
     return fetch(url, opts);
 }
 
+// Track which tabs have been loaded and which is active
+let activeTab = 'overview';
+let loadedTabs = {};
+let resourcePollTimer = null;
+
 if (!podName) {
     document.getElementById('pod-name').textContent = 'No pod specified';
 } else {
     document.title = `envpod — ${podName}`;
     loadPodDetail();
-    loadAudit();
-    loadDiff();
-    loadResources();
-    loadSnapshots();
-    loadQueue();
-    setInterval(loadResources, 10000);
-    setInterval(loadQueue, 15000);
+    // Only overview loaded on start — other tabs load on click
 }
 
 function loadPodDetail() {
@@ -362,6 +362,36 @@ function showTab(name) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     event.target.classList.add('active');
     document.getElementById('section-' + name).classList.add('active');
+    activeTab = name;
+
+    // Load tab content on first click
+    if (!loadedTabs[name]) {
+        loadedTabs[name] = true;
+        switch (name) {
+            case 'audit': loadAudit(); break;
+            case 'diff': loadDiff(); break;
+            case 'resources': loadResources(); break;
+            case 'snapshots': loadSnapshots(); break;
+            case 'queue': loadQueue(); break;
+        }
+    }
+
+    // Start/stop resource polling based on active tab
+    if (resourcePollTimer) { clearInterval(resourcePollTimer); resourcePollTimer = null; }
+    if (name === 'resources') {
+        resourcePollTimer = setInterval(loadResources, 5000);
+    }
+}
+
+function refreshActiveTab() {
+    switch (activeTab) {
+        case 'overview': loadPodDetail(); break;
+        case 'audit': loadAudit(); break;
+        case 'diff': loadDiff(); break;
+        case 'resources': loadResources(); break;
+        case 'snapshots': loadSnapshots(); break;
+        case 'queue': loadQueue(); break;
+    }
 }
 
 function podAction(action) {
@@ -374,8 +404,8 @@ function podAction(action) {
         .then(result => {
             alert(JSON.stringify(result.status || result.error));
             loadPodDetail();
-            loadDiff();
-            loadAudit();
+            loadedTabs = {};
+            refreshActiveTab();
         })
         .catch(err => alert('Error: ' + err.message));
 }

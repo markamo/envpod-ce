@@ -60,16 +60,24 @@ function authHeaders(extra) {
     return Object.assign({ 'Authorization': 'Bearer ' + TOKEN }, extra || {});
 }
 
-// Load pods once on start (no polling)
+// Load pods on start + auto-refresh every 5s (lightweight — just name/status/IP)
 loadPods();
+setInterval(loadPods, 5000);
+
+let lastPodsJson = '';
 
 function loadPods() {
     fetch('/api/v1/pods', { headers: authHeaders() })
         .then(r => r.json())
         .then(pods => {
+            // Only update DOM if data changed (prevents flicker)
+            const json = JSON.stringify(pods);
+            if (json === lastPodsJson) return;
+            lastPodsJson = json;
+
             const el = document.getElementById('pod-list');
             if (!pods || pods.length === 0) {
-                el.innerHTML = '<div class="empty"><h3>No pods found</h3><p>Click "+ Create Pod" above to get started</p></div>';
+                el.innerHTML = '<div class="empty"><h3>No pods found</h3><p>Create a pod with: envpod init my-agent</p></div>';
             } else {
                 el.innerHTML = '<div class="pod-grid">' + pods.map(renderPodCard).join('') + '</div>';
             }
