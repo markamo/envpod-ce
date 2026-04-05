@@ -103,11 +103,17 @@ function loadPodDetail() {
                 </div>
             `;
 
+            const isRunning = pod.status === 'running';
+            const isFrozen = pod.status === 'frozen';
+            const isStopped = !isRunning && !isFrozen;
+
             document.getElementById('pod-actions').innerHTML = `
+                ${isStopped ? `<button class="btn success" onclick="podAction('start')" title="Start pod">Start</button>` : ''}
+                ${isRunning ? `<button class="btn warning" onclick="podAction('stop')" title="Stop pod">Stop</button>` : ''}
+                ${isRunning ? `<button class="btn" onclick="podAction('freeze')" title="Freeze pod">Freeze</button>` : ''}
+                ${isFrozen ? `<button class="btn success" onclick="podAction('resume')" title="Resume pod">Resume</button>` : ''}
                 <button class="btn success" onclick="podAction('commit')" title="Commit overlay changes">Commit</button>
                 <button class="btn danger" onclick="podAction('rollback')" title="Rollback overlay changes">Rollback</button>
-                <button class="btn" onclick="podAction('freeze')" title="Freeze pod">Freeze</button>
-                <button class="btn" onclick="podAction('resume')" title="Resume pod">Resume</button>
             `;
 
             let configHtml = '<div class="empty"><p>No configuration loaded</p></div>';
