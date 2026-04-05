@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+<div id="toast-container"></div>
 <div class="container">
     <header>
         <h1>envpod <span class="version">dashboard</span></h1>
@@ -115,13 +116,22 @@ function renderPodCard(pod) {
         </div>`;
 }
 
+function toast(msg, type) {
+    const el = document.createElement('div');
+    el.className = 'toast ' + (type || 'info');
+    el.textContent = msg;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(() => el.classList.add('show'), 10);
+    setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, type === 'error' ? 6000 : 3000);
+}
+
 function podAction(name, action) {
-    // Show spinner on the card
     const card = document.querySelector(`.pod-card a[href*="${encodeURIComponent(name)}"]`);
     if (card) {
         const actions = card.parentElement.querySelector('.card-actions');
         if (actions) actions.innerHTML = '<span class="loading">⟳</span>';
     }
+    toast(`${action}ing ${name}...`, 'info');
 
     fetch(`/api/v1/pods/${encodeURIComponent(name)}/${action}`, {
         method: 'POST',
@@ -130,23 +140,34 @@ function podAction(name, action) {
     .then(r => r.json().then(data => ({ ok: r.ok, data })))
     .then(({ ok, data }) => {
         if (!ok || data.error) {
-            alert(`${action} failed: ${data.error || 'unknown error'}`);
+            toast(`${action} ${name}: ${data.error || 'failed'}`, 'error');
+        } else {
+            toast(`${name} ${data.status || action + 'ed'}`, 'success');
         }
         lastPodsJson = '';
         loadPods();
     })
-    .catch(err => alert(`${action} failed: ${err.message}`));
+    .catch(err => toast(`${action} ${name}: ${err.message}`, 'error'));
 }
 
 function destroyPod(name) {
     if (!confirm(`Destroy pod "${name}"? This cannot be undone.`)) return;
+    toast(`Destroying ${name}...`, 'info');
     fetch(`/api/v1/pods/${encodeURIComponent(name)}`, {
         method: 'DELETE',
         headers: authHeaders(),
     })
-    .then(r => r.json())
-    .then(() => loadPods())
-    .catch(err => alert(`Destroy failed: ${err.message}`));
+    .then(r => r.json().then(data => ({ ok: r.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok || data.error) {
+            toast(`destroy ${name}: ${data.error || 'failed'}`, 'error');
+        } else {
+            toast(`${name} destroyed`, 'success');
+        }
+        lastPodsJson = '';
+        loadPods();
+    })
+    .catch(err => toast(`destroy ${name}: ${err.message}`, 'error'));
 }
 
 // ---- Create Pod Modal ----

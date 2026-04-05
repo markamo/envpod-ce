@@ -114,6 +114,33 @@ header h1 span.version {
 .btn-sm.danger { color: var(--red); border-color: rgba(248,81,73,0.4); }
 .btn-sm.danger:hover { background: rgba(248,81,73,0.1); }
 
+#toast-container {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 420px;
+}
+.toast {
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity 0.2s, transform 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.toast.show { opacity: 1; transform: translateX(0); }
+.toast.success { border-color: rgba(63,185,80,0.6); color: var(--green); }
+.toast.error { border-color: rgba(248,81,73,0.6); color: var(--red); }
+.toast.info { border-color: rgba(88,166,255,0.4); color: var(--blue, #58a6ff); }
+
 .loading {
     display: inline-block;
     font-size: 16px;
