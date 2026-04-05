@@ -181,7 +181,7 @@ fn cleanup_pod_iptables(veth: &str) {
 /// After `destroy_netns`, iptables rules referencing deleted veth interfaces
 /// remain in the chains but never match traffic. This function removes them.
 /// Returns the number of rules removed.
-pub fn gc_iptables() -> Result<usize> {
+pub fn gc_iptables(active_pod_ips: &std::collections::HashSet<String>) -> Result<usize> {
     // 1. Get all current veth-*-h interfaces
     let active_veths: std::collections::HashSet<String> = std::fs::read_dir("/sys/class/net/")
         .map(|entries| {
@@ -199,7 +199,9 @@ pub fn gc_iptables() -> Result<usize> {
         .context("iptables-save")?;
     let rules = String::from_utf8_lossy(&output.stdout);
 
-    // 3. Find rules referencing dead veth interfaces
+    // 3. Find stale rules: dead veth interfaces OR dead pod IPs
+    //    Catches: OUTPUT DNAT, PREROUTING DNAT, POSTROUTING MASQUERADE,
+    //    FORWARD ACCEPT — anything referencing a dead veth or pod IP.
     let mut dead_rules: Vec<String> = Vec::new();
     let mut current_table = String::new();
 
@@ -211,18 +213,55 @@ pub fn gc_iptables() -> Result<usize> {
         if !line.starts_with("-A ") {
             continue;
         }
-        // Check if this rule references a veth-*-h interface that no longer exists
+
         let parts: Vec<&str> = line.split_whitespace().collect();
+        let mut is_dead = false;
+
         for (i, part) in parts.iter().enumerate() {
+            // Dead veth interface (-i veth-*-h or -o veth-*-h)
             if (*part == "-i" || *part == "-o") && i + 1 < parts.len() {
                 let iface = parts[i + 1];
                 if iface.starts_with("veth-") && !active_veths.contains(iface) {
-                    // Convert -A to -D for deletion
-                    let delete_rule = line.replacen("-A ", "-D ", 1);
-                    dead_rules.push(format!("{}\t{}", current_table, delete_rule));
+                    is_dead = true;
                     break;
                 }
             }
+
+            // Dead pod IP in DNAT --to-destination (OUTPUT, PREROUTING)
+            if *part == "--to-destination" && i + 1 < parts.len() {
+                let dest = parts[i + 1];
+                let ip = dest.split(':').next().unwrap_or("");
+                if ip.starts_with("10.200.") && !active_pod_ips.contains(ip) {
+                    is_dead = true;
+                    break;
+                }
+            }
+
+            // Dead pod IP in -d (POSTROUTING MASQUERADE, FORWARD rules)
+            if *part == "-d" && i + 1 < parts.len() {
+                let dest = parts[i + 1];
+                if dest.starts_with("10.200.") && !dest.contains('/') && !active_pod_ips.contains(dest) {
+                    is_dead = true;
+                    break;
+                }
+            }
+
+            // Dead pod subnet in -s (POSTROUTING MASQUERADE for general NAT)
+            if *part == "-s" && i + 1 < parts.len() {
+                let src = parts[i + 1];
+                if src.starts_with("10.200.") && src.ends_with("/30") {
+                    let pod_ip = src.replace(".0/30", ".2");
+                    if !active_pod_ips.contains(&pod_ip) {
+                        is_dead = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if is_dead {
+            let delete_rule = line.replacen("-A ", "-D ", 1);
+            dead_rules.push(format!("{}\t{}", current_table, delete_rule));
         }
     }
 
@@ -703,6 +742,9 @@ struct PortForwardRecord {
     /// If true, only OUTPUT DNAT was added (no PREROUTING/FORWARD) — localhost-only access.
     #[serde(default)]
     host_only: bool,
+    /// Host veth interface name (for POSTROUTING MASQUERADE cleanup).
+    #[serde(default)]
+    host_veth: String,
 }
 
 /// Parse a port spec into (host_port, container_port, proto, host_only).
@@ -812,6 +854,7 @@ pub fn setup_port_forwards(pod_dir: &Path, host_veth: &str, pod_ip: &str, ports:
             container_port,
             pod_ip: pod_ip.to_string(),
             host_only,
+            host_veth: host_veth.to_string(),
         });
     }
 
@@ -859,6 +902,15 @@ pub fn cleanup_port_forwards(pod_dir: &Path) {
             "-d", "127.0.0.1", "-p", &r.proto, "--dport", &host_port_s,
             "-j", "DNAT", "--to-destination", &dest,
         ]).ok();
+
+        // Clean up POSTROUTING MASQUERADE (if host_veth is recorded)
+        if !r.host_veth.is_empty() {
+            iptables_cmd(&[
+                "-t", "nat", "-D", "POSTROUTING",
+                "-s", "127.0.0.1", "-d", &r.pod_ip, "-p", &r.proto, "--dport", &container_port_s,
+                "-o", &r.host_veth, "-j", "MASQUERADE",
+            ]).ok();
+        }
     }
 
     std::fs::remove_file(&path).ok();
@@ -1020,12 +1072,23 @@ pub fn add_port_forward(pod_dir: &Path, host_veth: &str, pod_ip: &str, spec: &st
         "-j", "DNAT", "--to-destination", &dest,
     ]).with_context(|| format!("OUTPUT DNAT for '{spec}'"))?;
 
+    // POSTROUTING MASQUERADE: After OUTPUT DNAT rewrites dest from 127.0.0.1 to
+    // pod_ip, the packet still has source 127.0.0.1. The pod would reply to
+    // 127.0.0.1 which stays inside its own namespace. MASQUERADE on the host veth
+    // rewrites the source to the host veth IP so the reply comes back.
+    iptables_cmd(&[
+        "-t", "nat", "-A", "POSTROUTING",
+        "-s", "127.0.0.1", "-d", pod_ip, "-p", proto, "--dport", &container_port_s,
+        "-o", host_veth, "-j", "MASQUERADE",
+    ]).with_context(|| format!("POSTROUTING MASQUERADE for '{spec}'"))?;
+
     records.push(PortForwardRecord {
         proto: proto.to_string(),
         host_port,
         container_port,
         pod_ip: pod_ip.to_string(),
         host_only,
+        host_veth: host_veth.to_string(),
     });
     let json = serde_json::to_string(&records).context("serialize port forward records")?;
     std::fs::write(&path, json).context("save port_forwards_active.json")?;
@@ -1072,6 +1135,15 @@ pub fn remove_port_forward(pod_dir: &Path, spec: &str) -> Result<()> {
         "-d", "127.0.0.1", "-p", &r.proto, "--dport", &host_port_s,
         "-j", "DNAT", "--to-destination", &dest,
     ]).ok();
+
+    // Clean up POSTROUTING MASQUERADE (if host_veth is recorded)
+    if !r.host_veth.is_empty() {
+        iptables_cmd(&[
+            "-t", "nat", "-D", "POSTROUTING",
+            "-s", "127.0.0.1", "-d", &r.pod_ip, "-p", &r.proto, "--dport", &container_port_s,
+            "-o", &r.host_veth, "-j", "MASQUERADE",
+        ]).ok();
+    }
 
     let json = serde_json::to_string(&records).context("serialize port forward records")?;
     std::fs::write(&path, json).context("save port_forwards_active.json")?;

@@ -8,7 +8,7 @@ lto = true
 codegen-units = 1
 
 [workspace.package]
-version = "0.1.8"
+version = "0.1.9-rc1"
 edition = "2021"
 license = "BSL-1.1"
 repository = "https://github.com/markamo/envpod-ce"

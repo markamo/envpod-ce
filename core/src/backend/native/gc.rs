@@ -53,6 +53,7 @@ pub fn gc_all(base_dir: &Path, store: &PodStore) -> Result<GcResult> {
     let mut valid_cgroups: HashSet<String> = HashSet::new();
     let mut valid_pod_dirs: HashSet<String> = HashSet::new();
     let mut valid_indices: HashSet<u8> = HashSet::new();
+    let mut valid_pod_ips: HashSet<String> = HashSet::new();
 
     for handle in &pods {
         if let Ok(state) = NativeState::from_handle(handle) {
@@ -68,16 +69,17 @@ pub fn gc_all(base_dir: &Path, store: &PodStore) -> Result<GcResult> {
                 }
             }
 
-            // Track valid network namespace and index
+            // Track valid network namespace, index, and pod IP
             if let Some(ref net) = state.network {
                 valid_netns.insert(net.netns_name.clone());
                 valid_indices.insert(net.pod_index);
+                valid_pod_ips.insert(net.pod_ip.clone());
             }
         }
     }
 
-    // 1. Stale iptables rules
-    result.iptables_rules = netns::gc_iptables()?;
+    // 1. Stale iptables rules (dead veth interfaces + dead pod IPs)
+    result.iptables_rules = netns::gc_iptables(&valid_pod_ips)?;
 
     // 2. Orphaned network namespaces
     result.network_namespaces = gc_network_namespaces(&valid_netns);
