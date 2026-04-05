@@ -378,6 +378,24 @@ Value always read from stdin — never as CLI argument (stays out of shell histo
 
 Agent sees secrets as environment variables + live file at `/run/envpod/secrets.env`.
 
+### Live Key Rotation — Zero Downtime (CE)
+
+Swap API keys while the agent is running. No restart. No downtime.
+
+```bash
+# Agent is running, using ANTHROPIC_KEY...
+# Key hits rate limit — swap instantly:
+echo -n "sk-ant-fresh-key" | envpod vault my-agent set ANTHROPIC_KEY
+
+# Agent's bash auto-reloads on next prompt (PROMPT_COMMAND)
+# Python/Node agents reading /run/envpod/secrets.env pick it up on next read
+# Vault proxy (Premium) swaps the mapping instantly
+```
+
+No other tool does this. Docker: recreate container. Kubernetes: redeploy pod. envpod: one pipe command.
+
+Use cases: key rotation schedules, multi-provider failover, emergency revocation.
+
 ### Vault Proxy — Agent Never Sees Keys (Premium)
 
 Transparent HTTPS MITM. Agent sees a fake key, proxy swaps with real one on every HTTPS request. Activates automatically when any `--proxy` key exists.
