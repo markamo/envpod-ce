@@ -368,9 +368,10 @@ function showTab(name) {
     document.getElementById('section-' + name).classList.add('active');
     activeTab = name;
 
-    // Load tab content on first click
+    // Load tab content on first click — show loading spinner
     if (!loadedTabs[name]) {
         loadedTabs[name] = true;
+        document.getElementById('section-' + name).innerHTML = '<div class="empty"><span class="loading">⟳</span> Loading...</div>';
         switch (name) {
             case 'audit': loadAudit(); break;
             case 'diff': loadDiff(); break;

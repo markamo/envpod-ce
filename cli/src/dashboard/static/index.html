@@ -116,6 +116,13 @@ function renderPodCard(pod) {
 }
 
 function podAction(name, action) {
+    // Show spinner on the card
+    const card = document.querySelector(`.pod-card a[href*="${encodeURIComponent(name)}"]`);
+    if (card) {
+        const actions = card.parentElement.querySelector('.card-actions');
+        if (actions) actions.innerHTML = '<span class="loading">⟳</span>';
+    }
+
     fetch(`/api/v1/pods/${encodeURIComponent(name)}/${action}`, {
         method: 'POST',
         headers: authHeaders(),
@@ -125,6 +132,7 @@ function podAction(name, action) {
         if (!ok || data.error) {
             alert(`${action} failed: ${data.error || 'unknown error'}`);
         }
+        lastPodsJson = '';
         loadPods();
     })
     .catch(err => alert(`${action} failed: ${err.message}`));
