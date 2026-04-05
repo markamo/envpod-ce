@@ -331,6 +331,14 @@ security:
   seccomp: default      # default (~145) | browser (+10) | none
 ```
 
+| Profile | Syscalls | Use for |
+|---------|----------|---------|
+| `default` | ~130 | AI agents, CLI tools, web servers, compilers |
+| `browser` | ~143 | Chrome, Firefox, Electron, VS Code desktop |
+| `none` | All | Databases, deterministic services (no agent = no risk) |
+
+**Guidance:** AI agents need `default` or `browser` (unpredictable behavior). Databases and web servers are safe with `none` (deterministic, human-written code). Split architecture: agent pod (`default`) + database pod (`none`).
+
 ### NO_NEW_PRIVS (CE)
 
 Always enabled. Prevents privilege escalation via setuid binaries.
@@ -368,16 +376,21 @@ Agent sees secrets as environment variables + live file at `/run/envpod/secrets.
 
 ### Vault Proxy — Agent Never Sees Keys (Premium)
 
-Transparent HTTPS MITM. Agent sends dummy credentials, proxy injects real ones.
+Transparent HTTPS MITM. Agent sees a fake key, proxy swaps with real one on every HTTPS request. Activates automatically when any `--proxy` key exists.
 
-```yaml
-vault:
-  proxy: true
-  bindings:
-    - domain: api.anthropic.com
-      header: x-api-key
-      vault_key: ANTHROPIC_KEY
+```bash
+# Set a key with proxy protection — agent sees fake, proxy injects real
+envpod vault my-agent set API_KEY --proxy
+# Enter: sk-ant-real-key-here
+#   Agent sees: sk-ant-f7x9k2m4zB (fake, same format)
+#   Real key stored as API_KEY_real (encrypted, proxy-only)
+
+# Set a plain key — agent sees real value (CE behavior)
+envpod vault my-agent set DATABASE_URL
+# Enter: postgres://localhost:5432/mydb
 ```
+
+On `envpod run`, if any `_real` keys exist: per-pod CA generated, all DNS remapped to proxy, L1 screening on every request/response, fake keys swapped for real at TLS termination. Zero config.
 
 ### Per-Agent Vault Scoping (Premium)
 
@@ -1076,6 +1089,7 @@ BSL 1.1. Converts to AGPL-3.0 on 2030-03-07. Free forever for any use.
 
 ```bash
 envpod license activate <KEY>
+envpod license activate --key-file license.key    # from .key file
 envpod license status
 envpod license deactivate
 ```

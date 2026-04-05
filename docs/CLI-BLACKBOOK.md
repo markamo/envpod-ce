@@ -1040,7 +1040,12 @@ echo "sk-..." | sudo envpod vault myagent set OPENAI_API_KEY
 
 # From file
 cat ~/.secrets/openai | sudo envpod vault myagent set OPENAI_API_KEY
+
+# With vault proxy protection (Premium) — agent sees fake key, proxy injects real
+echo "sk-ant-real-key" | sudo envpod vault myagent set API_KEY --proxy
 ```
+
+`--proxy` generates a fake key with the same format, stores the real key as `{KEY}_real`. On `envpod run`, the vault proxy auto-starts and swaps fake→real on every HTTPS request.
 
 ### vault get
 
