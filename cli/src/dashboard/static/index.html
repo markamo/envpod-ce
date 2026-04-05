@@ -120,8 +120,13 @@ function podAction(name, action) {
         method: 'POST',
         headers: authHeaders(),
     })
-    .then(r => r.json())
-    .then(() => loadPods())
+    .then(r => r.json().then(data => ({ ok: r.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok || data.error) {
+            alert(`${action} failed: ${data.error || 'unknown error'}`);
+        }
+        loadPods();
+    })
     .catch(err => alert(`${action} failed: ${err.message}`));
 }
 

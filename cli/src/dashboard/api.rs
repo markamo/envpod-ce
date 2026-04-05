@@ -277,66 +277,38 @@ pub async fn pod_resume(
 
 /// POST /api/v1/pods/:id/stop
 pub async fn pod_stop(
-    State(state): State<Arc<AppState>>,
+    State(_state): State<Arc<AppState>>,
     Path(name): Path<String>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, Json<ApiError>)> {
-    let (handle, native_state) = pod_state::get_state(&state.store, &name)
-        .map_err(|e| err(StatusCode::NOT_FOUND, format!("{e:#}")))?;
+    let output = std::process::Command::new("envpod")
+        .args(["stop", &name])
+        .output()
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("spawn envpod stop: {e}")))?;
 
-    let backend = create_backend(&handle.backend, &state.base_dir)
-        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
-
-    backend.stop(&handle)
-        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
-
-    let log = AuditLog::new(&native_state.pod_dir);
-    let _ = log.append(&AuditEntry {
-        timestamp: chrono::Utc::now(),
-        pod_name: name.clone(),
-        action: AuditAction::Stop,
-        detail: "via dashboard".into(),
-        success: true,
-    });
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(err(StatusCode::INTERNAL_SERVER_ERROR, format!("stop failed: {}", stderr.trim())));
+    }
 
     Ok(Json(serde_json::json!({ "status": "stopped", "pod": name })))
 }
 
 /// POST /api/v1/pods/:id/start
 pub async fn pod_start(
-    State(state): State<Arc<AppState>>,
+    State(_state): State<Arc<AppState>>,
     Path(name): Path<String>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, Json<ApiError>)> {
-    let (handle, native_state) = pod_state::get_state(&state.store, &name)
-        .map_err(|e| err(StatusCode::NOT_FOUND, format!("{e:#}")))?;
+    let output = std::process::Command::new("envpod")
+        .args(["start", &name])
+        .output()
+        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("spawn envpod start: {e}")))?;
 
-    let config = native_state.load_config()
-        .ok()
-        .flatten()
-        .unwrap_or_default();
-    let command: Vec<String> = if config.start_command.is_empty() {
-        vec!["sleep".into(), "infinity".into()]
-    } else {
-        config.start_command.clone()
-    };
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(err(StatusCode::INTERNAL_SERVER_ERROR, format!("start failed: {}", stderr.trim())));
+    }
 
-    let user = Some(config.user.as_str());
-
-    let backend = create_backend(&handle.backend, &state.base_dir)
-        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
-
-    backend.start(&handle, &command, user, &[], None)
-        .map_err(|e| err(StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#}")))?;
-
-    let log = AuditLog::new(&native_state.pod_dir);
-    let _ = log.append(&AuditEntry {
-        timestamp: chrono::Utc::now(),
-        pod_name: name.clone(),
-        action: AuditAction::Start,
-        detail: format!("via dashboard: {}", command.join(" ")),
-        success: true,
-    });
-
-    Ok(Json(serde_json::json!({ "status": "started", "pod": name, "command": command.join(" ") })))
+    Ok(Json(serde_json::json!({ "status": "started", "pod": name })))
 }
 
 /// GET /api/v1/pods/:id/snapshots
