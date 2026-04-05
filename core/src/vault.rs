@@ -192,9 +192,9 @@ pub fn write_env_file(pod_dir: &Path, secrets: &HashMap<String, String>) -> Resu
         let needs_quote = value.chars().any(|c| matches!(c, ' ' | '\t' | '"' | '\'' | '\\' | '$' | '`' | '!'));
         if needs_quote {
             let escaped = value.replace('\\', "\\\\").replace('"', "\\\"");
-            content.push_str(&format!("{key}=\"{escaped}\"\n"));
+            content.push_str(&format!("export {key}=\"{escaped}\"\n"));
         } else {
-            content.push_str(&format!("{key}={value}\n"));
+            content.push_str(&format!("export {key}={value}\n"));
         }
     }
     fs::write(&path, &content)
@@ -218,6 +218,8 @@ pub fn parse_env_file(content: &str) -> Result<HashMap<String, String>> {
         if line.is_empty() || line.starts_with('#') {
             continue;
         }
+        // Strip optional "export " prefix
+        let line = line.strip_prefix("export ").unwrap_or(line);
         let eq = line.find('=').ok_or_else(|| {
             anyhow::anyhow!("line {}: missing '=' in env file: {line}", lineno + 1)
         })?;
@@ -516,8 +518,8 @@ mod tests {
         vault.refresh_env_file(tmp.path()).unwrap();
 
         let content = std::fs::read_to_string(tmp.path().join("vault_env")).unwrap();
-        assert!(content.contains("API_KEY=sk-test-123\n"), "got: {content}");
-        assert!(content.contains("DB_URL=postgres://localhost/db\n"), "got: {content}");
+        assert!(content.contains("export API_KEY=sk-test-123\n"), "got: {content}");
+        assert!(content.contains("export DB_URL=postgres://localhost/db\n"), "got: {content}");
     }
 
     #[test]
@@ -528,7 +530,7 @@ mod tests {
         vault.refresh_env_file(tmp.path()).unwrap();
 
         let content = std::fs::read_to_string(tmp.path().join("vault_env")).unwrap();
-        assert!(content.contains("MSG=\"hello world\"\n"), "got: {content}");
+        assert!(content.contains("export MSG=\"hello world\"\n"), "got: {content}");
     }
 
     #[test]
