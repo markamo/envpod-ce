@@ -214,7 +214,16 @@ fn setup_devpts(dev_path: &Path) -> io::Result<()> {
     .map_err(|e| io::Error::other(format!("bind mount /dev/pts: {e}")))?;
 
     // Symlink /dev/ptmx → pts/ptmx
-    std::os::unix::fs::symlink("pts/ptmx", dev_path.join("ptmx"))?;
+    let ptmx = dev_path.join("ptmx");
+    let _ = std::fs::remove_file(&ptmx);
+    std::os::unix::fs::symlink("pts/ptmx", &ptmx)?;
+
+    // Ensure ptmx is world-accessible (required for forkpty in code-server, VS Code, etc.)
+    let pts_ptmx = pts_path.join("ptmx");
+    if pts_ptmx.exists() {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = std::fs::set_permissions(&pts_ptmx, std::fs::Permissions::from_mode(0o666));
+    }
 
     Ok(())
 }
