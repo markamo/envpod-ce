@@ -298,6 +298,18 @@ pub async fn pod_start(
     State(_state): State<Arc<AppState>>,
     Path(name): Path<String>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, Json<ApiError>)> {
+    // Check if pod is already running to prevent duplicate supervisors
+    let already_running = std::process::Command::new("pgrep")
+        .args(["-f", &format!("envpod.*run {}( |$)", name)])
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status()
+        .map(|s| s.success())
+        .unwrap_or(false);
+    if already_running {
+        return Ok(Json(serde_json::json!({ "status": "already_running", "pod": name })));
+    }
+
     let output = std::process::Command::new("envpod")
         .args(["start", &name])
         .output()

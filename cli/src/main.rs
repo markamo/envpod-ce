@@ -2530,6 +2530,22 @@ async fn cmd_stop(store: &PodStore, base_dir: &std::path::Path, name: &str) -> R
             }
         }
         std::fs::remove_file(s.pod_dir.join("supervisor.pid")).ok();
+        // Kill all processes in the pod's network namespace
+        if let Some(ref net) = s.network {
+            let _ = std::process::Command::new("ip")
+                .args(["netns", "pids", &net.netns_name])
+                .output()
+                .map(|o| {
+                    for line in String::from_utf8_lossy(&o.stdout).lines() {
+                        if let Ok(pid) = line.trim().parse::<i32>() {
+                            nix::sys::signal::kill(
+                                nix::unistd::Pid::from_raw(pid),
+                                nix::sys::signal::Signal::SIGKILL,
+                            ).ok();
+                        }
+                    }
+                });
+        }
     }
 
     // Stop processes inside the cgroup
@@ -4772,6 +4788,22 @@ async fn cmd_destroy(store: &PodStore, base_dir: &std::path::Path, name: &str, r
                     std::thread::sleep(std::time::Duration::from_millis(50));
                 }
             }
+        }
+        // Kill all processes in the pod's network namespace
+        if let Some(ref net) = s.network {
+            let _ = std::process::Command::new("ip")
+                .args(["netns", "pids", &net.netns_name])
+                .output()
+                .map(|o| {
+                    for line in String::from_utf8_lossy(&o.stdout).lines() {
+                        if let Ok(pid) = line.trim().parse::<i32>() {
+                            nix::sys::signal::kill(
+                                nix::unistd::Pid::from_raw(pid),
+                                nix::sys::signal::Signal::SIGKILL,
+                            ).ok();
+                        }
+                    }
+                });
         }
     }
 

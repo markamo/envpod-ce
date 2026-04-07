@@ -96,6 +96,12 @@ pub fn gc_all(base_dir: &Path, store: &PodStore) -> Result<GcResult> {
     // 6. Stale netns index files
     result.index_files = gc_index_files(base_dir, &valid_indices);
 
+    // 7. Verify host network interface health
+    let host_iface = netns::detect_host_interface_cached(Some(base_dir)).ok();
+    if let Some(ref iface) = host_iface {
+        netns::verify_host_interface(iface).ok();
+    }
+
     Ok(result)
 }
 

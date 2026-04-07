@@ -93,11 +93,12 @@ pub fn list_pods(store: &PodStore, _base_dir: &Path) -> Result<Vec<PodSummary>> 
             Err(_) => continue,
         };
 
+        let effective_status = effective_pod_status(&handle.name, &state);
         let pod_ip = state.network.as_ref().map(|n| n.pod_ip.clone());
 
         summaries.push(PodSummary {
             name: handle.name.clone(),
-            status: format!("{:?}", state.status).to_lowercase(),
+            status: format!("{:?}", effective_status).to_lowercase(),
             created_at: handle.created_at.to_rfc3339(),
             backend: handle.backend.clone(),
             pod_ip,
@@ -106,6 +107,29 @@ pub fn list_pods(store: &PodStore, _base_dir: &Path) -> Result<Vec<PodSummary>> 
 
     summaries.sort_by(|a, b| a.name.cmp(&b.name));
     Ok(summaries)
+}
+
+/// Check effective pod status by looking for a running supervisor process.
+fn effective_pod_status(name: &str, state: &NativeState) -> envpod_core::backend::native::state::NativeStatus {
+    let has_supervisor = std::process::Command::new("pgrep")
+        .args(["-f", &format!("envpod.*run {}( |$)", name)])
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status()
+        .map(|s| s.success())
+        .unwrap_or(false);
+    let pid_alive = state.init_pid
+        .map(|pid| std::path::Path::new(&format!("/proc/{pid}")).exists())
+        .unwrap_or(false);
+
+    if pid_alive || has_supervisor {
+        match state.status {
+            envpod_core::backend::native::state::NativeStatus::Frozen => state.status.clone(),
+            _ => envpod_core::backend::native::state::NativeStatus::Running,
+        }
+    } else {
+        envpod_core::backend::native::state::NativeStatus::Stopped
+    }
 }
 
 /// Get detailed info for a single pod.
@@ -122,10 +146,11 @@ pub fn pod_detail(store: &PodStore, base_dir: &Path, name: &str) -> Result<PodDe
         .unwrap_or_default();
 
     let pod_ip = state.network.as_ref().map(|n| n.pod_ip.clone());
+    let effective_status = effective_pod_status(name, &state);
 
     Ok(PodDetail {
         name: handle.name.clone(),
-        status: format!("{:?}", state.status).to_lowercase(),
+        status: format!("{:?}", effective_status).to_lowercase(),
         created_at: handle.created_at.to_rfc3339(),
         backend: handle.backend.clone(),
         pod_dir: state.pod_dir.display().to_string(),

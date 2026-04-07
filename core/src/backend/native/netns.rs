@@ -381,14 +381,46 @@ impl VethConfig {
     }
 }
 
+/// Verify the host's default network interface hasn't been renamed.
+/// Netplan/NetworkManager can rename the primary interface when new veth
+/// pairs appear. If that happens, the host loses internet connectivity.
+pub fn verify_host_interface(expected: &str) -> Result<()> {
+    if Path::new(&format!("/sys/class/net/{expected}")).exists() {
+        return Ok(());
+    }
+    tracing::warn!(expected = expected, "host interface disappeared after veth creation");
+    let output = Command::new("ip").args(["route", "get", "8.8.8.8"]).output();
+    if let Ok(out) = output {
+        if out.status.success() {
+            let stdout = String::from_utf8_lossy(&out.stdout);
+            if let Ok(new_iface) = parse_route_interface(&stdout) {
+                if new_iface != expected {
+                    tracing::warn!(old = expected, new = %new_iface, "host interface renamed — updating cache");
+                    std::fs::write("/var/lib/envpod/.host_interface", &new_iface).ok();
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
 /// Create veth pair, move pod-end into netns, assign IPs, set routes.
 pub fn setup_veth(config: &VethConfig) -> Result<()> {
+    // Save host interface before veth creation (netplan might rename it)
+    let host_iface_before = detect_host_interface_cached(Some(Path::new("/var/lib/envpod")))
+        .unwrap_or_default();
+
     // Create veth pair
     ip_cmd(&[
         "link", "add", &config.host_veth, "type", "veth",
         "peer", "name", &config.pod_veth,
     ])
     .context("create veth pair")?;
+
+    // Verify host interface wasn't renamed by netplan
+    if !host_iface_before.is_empty() {
+        verify_host_interface(&host_iface_before).ok();
+    }
 
     // Move pod-side veth into the network namespace
     ip_cmd(&[
