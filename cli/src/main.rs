@@ -87,6 +87,71 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// One-command pod lifecycle from current directory config.
+    /// Reads envpod.yaml or pod.yaml from CWD; inits on first run, then runs.
+    /// Shortcut: `envpod .` is rewritten to `envpod up`.
+    #[command(name = "up", trailing_var_arg = true)]
+    Up {
+        /// Override pod name (default: directory basename or config name field)
+        #[arg(long)]
+        name: Option<String>,
+        /// Path to config file (default: envpod.yaml or pod.yaml in CWD)
+        #[arg(short, long)]
+        config: Option<PathBuf>,
+        /// Isolation backend
+        #[arg(long, default_value = "native")]
+        backend: String,
+        /// Run in background (start with start_command or sleep infinity)
+        #[arg(short = 'b', long)]
+        background: bool,
+        /// Run as root inside the pod
+        #[arg(long)]
+        root: bool,
+        /// Run as this user inside the pod
+        #[arg(short, long)]
+        user: Option<String>,
+        /// Set environment variables (KEY=VALUE), can be repeated
+        #[arg(short, long = "env")]
+        env_vars: Vec<String>,
+        /// Enable display forwarding
+        #[arg(short = 'd', long)]
+        enable_display: bool,
+        /// Enable audio forwarding
+        #[arg(short = 'a', long)]
+        enable_audio: bool,
+        /// Publish port: host_port:container_port[/proto]
+        #[arg(short = 'p', long = "publish")]
+        ports: Vec<String>,
+        /// Publish port to all interfaces
+        #[arg(short = 'P', long = "publish-all")]
+        public_ports: Vec<String>,
+        /// Internal pod-to-pod port
+        #[arg(short = 'i', long = "internal")]
+        internal_ports: Vec<String>,
+        /// Show live output from setup commands
+        #[arg(short, long)]
+        verbose: bool,
+        /// Force re-init (destroy existing pod and start fresh)
+        #[arg(long)]
+        reinit: bool,
+        /// Skip version and screening rules update check
+        #[arg(long)]
+        no_update_check: bool,
+        /// Command and arguments to execute (e.g. `envpod . claude`)
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        command: Vec<String>,
+    },
+    /// Preflight check: host prerequisites, runtime services, reachability.
+    /// Exits non-zero only when a hard prerequisite fails. Safe to run as
+    /// a non-root user — missing-privilege checks degrade to `unknown`.
+    Doctor {
+        /// Emit the full report as JSON (stable schema; see schema_version).
+        #[arg(long)]
+        json: bool,
+        /// Skip reachability checks (useful in CI / offline installs).
+        #[arg(long)]
+        no_net: bool,
+    },
     /// Create a new pod
     Init {
         /// Pod name
@@ -836,6 +901,285 @@ enum ActionsSubcmd {
     },
 }
 
+// ---------------------------------------------------------------------------
+// up — one-command pod lifecycle (CE port; devcontainer + IDE auto-open
+//      and SSH config are deliberately omitted from CE)
+// ---------------------------------------------------------------------------
+
+fn derive_pod_name_simple(cwd: &std::path::Path, store: &PodStore) -> String {
+    let base = cwd
+        .file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or("envpod-pod")
+        .to_string();
+    // Sanitize: lowercase, alnum + hyphen only
+    let sanitized: String = base
+        .to_lowercase()
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() || c == '-' { c } else { '-' })
+        .collect();
+    let sanitized = sanitized.trim_matches('-').to_string();
+    let candidate = if sanitized.is_empty() { "envpod-pod".to_string() } else { sanitized };
+    if !store.exists(&candidate) {
+        return candidate;
+    }
+    // Append a 4-char random suffix on collision
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let suffix = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0)
+        .to_string();
+    let suffix = &suffix[suffix.len().saturating_sub(4)..];
+    format!("{candidate}-{suffix}")
+}
+
+fn maybe_gitignore_envpod_dir_simple(cwd: &std::path::Path) {
+    let gitignore = cwd.join(".gitignore");
+    if !gitignore.exists() { return; }
+    let contents = std::fs::read_to_string(&gitignore).unwrap_or_default();
+    if contents.lines().any(|l| l.trim() == ".envpod" || l.trim() == ".envpod/") {
+        return;
+    }
+    let mut new_contents = contents;
+    if !new_contents.ends_with('\n') { new_contents.push('\n'); }
+    new_contents.push_str(".envpod/\n");
+    let _ = std::fs::write(&gitignore, new_contents);
+}
+
+#[allow(clippy::too_many_arguments)]
+async fn cmd_up(
+    store: &PodStore,
+    base_dir: &std::path::Path,
+    name_override: Option<&str>,
+    config_override: Option<&std::path::Path>,
+    backend: &str,
+    background: bool,
+    root: bool,
+    user: Option<&str>,
+    env_vars: &[String],
+    enable_display: bool,
+    enable_audio: bool,
+    cli_ports: &[String],
+    cli_public_ports: &[String],
+    cli_internal_ports: &[String],
+    verbose: bool,
+    reinit: bool,
+    command: &[String],
+) -> Result<()> {
+    let cwd = std::env::current_dir().context("cannot determine working directory")?;
+
+    // Config discovery: envpod.yaml > pod.yaml. Devcontainer support is
+    // a Premium feature; CE keeps the resolver minimal.
+    let config_path = if let Some(p) = config_override {
+        p.to_path_buf()
+    } else {
+        let envpod_yaml = cwd.join("envpod.yaml");
+        let pod_yaml = cwd.join("pod.yaml");
+        if envpod_yaml.exists() {
+            envpod_yaml
+        } else if pod_yaml.exists() {
+            pod_yaml
+        } else {
+            anyhow::bail!(
+                "no envpod.yaml or pod.yaml found in {}\n  \
+                 Create one or specify --config <path>",
+                cwd.display()
+            );
+        }
+    };
+
+    let _config = envpod_core::config::PodConfig::from_file(&config_path)
+        .with_context(|| format!("load config: {}", config_path.display()))?;
+
+    // State tracking
+    let envpod_dir = cwd.join(".envpod");
+    let pod_name_file = envpod_dir.join("pod-name");
+
+    // Pod name resolution: --name > .envpod/pod-name > directory basename
+    let pod_name = if let Some(n) = name_override {
+        n.to_string()
+    } else if pod_name_file.exists() {
+        let prev = std::fs::read_to_string(&pod_name_file).unwrap_or_default().trim().to_string();
+        if !prev.is_empty() { prev } else { derive_pod_name_simple(&cwd, store) }
+    } else {
+        derive_pod_name_simple(&cwd, store)
+    };
+
+    let mut pod_exists = store.exists(&pod_name);
+
+    // --reinit: destroy existing then re-init
+    if reinit && pod_exists {
+        eprintln!("  {} Destroying existing pod '{pod_name}'...", color::yellow("↻"));
+        cmd_destroy(store, base_dir, &pod_name, false, false).await?;
+        std::fs::remove_file(&pod_name_file).ok();
+        pod_exists = false;
+    }
+
+    // Init phase (first run only)
+    if !pod_exists {
+        if pod_name_file.exists() {
+            eprintln!(
+                "  {} pod '{}' no longer exists — re-initializing...",
+                color::yellow("⚠"),
+                pod_name,
+            );
+        }
+        cmd_init(store, base_dir, &pod_name, backend, Some(&config_path), None, None, verbose).await?;
+        std::fs::create_dir_all(&envpod_dir).ok();
+        std::fs::write(&pod_name_file, &pod_name).context("write .envpod/pod-name")?;
+        maybe_gitignore_envpod_dir_simple(&cwd);
+    }
+
+    // Run phase
+    if !command.is_empty() {
+        if background {
+            cmd_run_background(
+                base_dir, &pod_name, command, root, user, env_vars,
+                enable_display, enable_audio, cli_ports, cli_public_ports, cli_internal_ports,
+            )
+        } else {
+            cmd_run(
+                store, base_dir, &pod_name, command, root, user, env_vars,
+                enable_display, enable_audio, cli_ports, cli_public_ports, cli_internal_ports,
+                true, false,
+            ).await
+        }
+    } else if background {
+        let start_cmd = resolve_start_command(store, &pod_name);
+        cmd_run_background(
+            base_dir, &pod_name, &start_cmd, root, user, env_vars,
+            enable_display, enable_audio, cli_ports, cli_public_ports, cli_internal_ports,
+        )
+    } else {
+        let start_cmd = resolve_start_command(store, &pod_name);
+        let run_cmd = if start_cmd == ["sleep", "infinity"] {
+            vec!["bash".to_string()]
+        } else {
+            start_cmd
+        };
+        cmd_run(
+            store, base_dir, &pod_name, &run_cmd, root, user, env_vars,
+            enable_display, enable_audio, cli_ports, cli_public_ports, cli_internal_ports,
+            true, false,
+        ).await
+    }
+}
+
+// ---------------------------------------------------------------------------
+// doctor (ported from envpod-source/cli/src/main.rs cmd_doctor)
+// ---------------------------------------------------------------------------
+
+fn cmd_doctor(base_dir: &std::path::Path, json: bool, no_net: bool) -> Result<()> {
+    use envpod_core::doctor::{run_report, DoctorGroup};
+
+    let report = if no_net {
+        let full = run_report(base_dir);
+        let checks: Vec<_> = full
+            .checks
+            .into_iter()
+            .filter(|c| c.group != DoctorGroup::Reachability)
+            .collect();
+        rebuild_doctor_report(checks)
+    } else {
+        run_report(base_dir)
+    };
+
+    if json {
+        println!("{}", serde_json::to_string_pretty(&report)?);
+    } else {
+        render_doctor_human(&report);
+    }
+
+    if report.summary.blocking {
+        std::process::exit(2);
+    }
+    Ok(())
+}
+
+fn rebuild_doctor_report(
+    checks: Vec<envpod_core::doctor::DoctorCheck>,
+) -> envpod_core::doctor::DoctorReport {
+    use envpod_core::doctor::{DoctorReport, DoctorStatus, DoctorSummary, SCHEMA_VERSION};
+    let mut passed = 0;
+    let mut warned = 0;
+    let mut failed = 0;
+    let mut unknown = 0;
+    for c in &checks {
+        match c.status {
+            DoctorStatus::Pass => passed += 1,
+            DoctorStatus::Warn => warned += 1,
+            DoctorStatus::Fail => failed += 1,
+            DoctorStatus::Unknown => unknown += 1,
+        }
+    }
+    let is_root = unsafe { nix::libc::geteuid() == 0 };
+    let sudo_would_help = !is_root
+        && checks.iter().any(|c| {
+            c.status == DoctorStatus::Unknown && c.message.contains("requires root")
+        });
+    DoctorReport {
+        schema_version: SCHEMA_VERSION,
+        checks,
+        summary: DoctorSummary {
+            passed, warned, failed, unknown,
+            blocking: failed > 0,
+            sudo_would_help,
+        },
+    }
+}
+
+fn render_doctor_human(report: &envpod_core::doctor::DoctorReport) {
+    use envpod_core::doctor::{DoctorGroup, DoctorStatus};
+    for group in [DoctorGroup::Host, DoctorGroup::Runtime, DoctorGroup::Reachability] {
+        let group_checks: Vec<_> = report.checks.iter()
+            .filter(|c| c.group == group)
+            .collect();
+        if group_checks.is_empty() { continue; }
+
+        let heading = match group {
+            DoctorGroup::Host => "Host prerequisites",
+            DoctorGroup::Runtime => "Runtime services",
+            DoctorGroup::Reachability => "Reachability",
+        };
+        println!("{}", color::bold(heading));
+
+        for c in group_checks {
+            let (icon, colored) = match c.status {
+                DoctorStatus::Pass => ("✓", color::green("pass")),
+                DoctorStatus::Warn => ("!", color::yellow("warn")),
+                DoctorStatus::Fail => ("✗", color::red("fail")),
+                DoctorStatus::Unknown => ("?", color::dim("unknown")),
+            };
+            println!("  {icon} [{colored}] {}: {}", c.name, c.message);
+            if let Some(hint) = &c.hint {
+                println!("      → {}", color::dim(hint));
+            }
+        }
+        println!();
+    }
+
+    let s = &report.summary;
+    let summary_line = format!(
+        "{} pass · {} warn · {} fail · {} unknown",
+        s.passed, s.warned, s.failed, s.unknown,
+    );
+    if s.blocking {
+        eprintln!("{} {}", color::red("FAIL"), summary_line);
+        eprintln!("  {} fix the failing checks above and rerun `envpod doctor`.", color::dim("→"));
+    } else if s.warned > 0 || s.unknown > 0 {
+        eprintln!("{} {}", color::yellow("OK with warnings"), summary_line);
+        if s.sudo_would_help {
+            eprintln!(
+                "  {} some checks need root — rerun with `sudo envpod doctor` for full coverage.",
+                color::dim("→"),
+            );
+        }
+    } else {
+        eprintln!("{} {}", color::green("OK"), summary_line);
+    }
+}
+
 #[tokio::main]
 async fn main() -> ExitCode {
     tracing_subscriber::fmt()
@@ -844,7 +1188,17 @@ async fn main() -> ExitCode {
         )
         .init();
 
-    let cli = Cli::parse();
+    // Rewrite `envpod .` → `envpod up` so clap can parse it as a subcommand
+    let cli = {
+        let args: Vec<String> = std::env::args().collect();
+        if args.len() > 1 && args[1] == "." {
+            let mut rewritten = vec![args[0].clone(), "up".to_string()];
+            rewritten.extend_from_slice(&args[2..]);
+            Cli::parse_from(rewritten)
+        } else {
+            Cli::parse()
+        }
+    };
 
     match run(cli).await {
         Ok(()) => ExitCode::SUCCESS,
@@ -874,6 +1228,35 @@ async fn run(cli: Cli) -> Result<()> {
     let store = PodStore::new(base_dir.join("state"))?;
 
     match command {
+        Commands::Doctor { json, no_net } => cmd_doctor(base_dir, json, no_net),
+        Commands::Up {
+            name,
+            config,
+            backend,
+            background,
+            root,
+            user,
+            env_vars,
+            enable_display,
+            enable_audio,
+            ports,
+            public_ports,
+            internal_ports,
+            verbose,
+            reinit,
+            no_update_check,
+            command,
+        } => {
+            if !no_update_check {
+                run_update_check(base_dir);
+            }
+            cmd_up(
+                &store, base_dir, name.as_deref(), config.as_deref(), &backend,
+                background, root, user.as_deref(), &env_vars, enable_display,
+                enable_audio, &ports, &public_ports, &internal_ports, verbose,
+                reinit, &command,
+            ).await
+        }
         Commands::Init {
             name,
             backend,

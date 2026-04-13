@@ -11,6 +11,7 @@ pub mod config;
 pub mod pod_auth;
 pub mod desktop;
 pub mod dns_daemon;
+pub mod doctor;
 pub mod error;
 pub mod health;
 pub mod monitor;
