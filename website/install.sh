@@ -87,8 +87,8 @@ case "$MACHINE" in
 esac
 info "Architecture: ${ARCH}"
 
-if ! command -v sudo >/dev/null 2>&1; then
-    fail "sudo is required. Install sudo or run as root."
+if [ "$(id -u)" -ne 0 ] && ! command -v sudo >/dev/null 2>&1; then
+    fail "sudo is required when not running as root. Install sudo or re-run as root."
 fi
 
 if ! command -v curl >/dev/null 2>&1 && ! command -v wget >/dev/null 2>&1; then
@@ -138,4 +138,12 @@ if [ -n "${ENVPOD_EXAMPLES_DIR:-}" ]; then
     EXTRA_ARGS="--examples-dir ${ENVPOD_EXAMPLES_DIR}"
 fi
 
-sudo bash "${RELEASE_DIR}/install.sh" ${INSTALLER_ARGS} ${EXTRA_ARGS}
+# Root-aware exec: minimal Docker images (Ubuntu 24.04, Debian 12, Fedora,
+# openSUSE) often run as root with no `sudo` binary installed. Detect and
+# branch around `sudo` rather than failing outright. Premium wrapper does
+# the same — keep the two in sync.
+if [ "$(id -u)" -eq 0 ]; then
+    bash "${RELEASE_DIR}/install.sh" ${INSTALLER_ARGS} ${EXTRA_ARGS}
+else
+    sudo bash "${RELEASE_DIR}/install.sh" ${INSTALLER_ARGS} ${EXTRA_ARGS}
+fi
