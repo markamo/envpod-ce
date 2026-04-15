@@ -13,7 +13,7 @@
 #
 #   sudo envpod run <pod> -- bash -c "$(curl -fsSL https://envpod.dev/fix-cloud-image.sh)"
 #
-# What it fixes (both idempotent — safe to re-run):
+# What it fixes (all idempotent — safe to re-run):
 #
 #   1. Missing Ubuntu archive signing keys
 #      Symptom: "InRelease is not signed" on apt-get update.
@@ -25,8 +25,17 @@
 #      Cause: cloud images ship /usr/sbin/update-xmlcatalog,
 #      update-catalog, and xfonts-utils binaries but strip their
 #      /var/lib/{xml-core,sgml-base,xfonts}/ data dirs to save space.
-#      Fix: recreate the dirs, seed the xfonts exclusion file, then
-#      reconfigure any packages that failed during the last apt run.
+#      Fix: recreate the dirs, then apt-get -f install -y to finish.
+#
+#   3. Broken VS Code install (Microsoft CDN throttles cloud IPs)
+#      Symptom: `gpg: no valid OpenPGP data found` + apt-get update
+#      stalls on packages.microsoft.com for minutes, then
+#      `E: Unable to locate package code`.
+#      Cause: `wget -qO- | gpg --dearmor` silently produces empty
+#      keyrings on truncated fetches. Only runs if a half-installed
+#      VS Code repo is detected OR `code` is in the apt history.
+#      Fix: re-fetch key with curl -fsSL, retry apt-get update, fall
+#      back to the direct .deb from update.code.visualstudio.com.
 #
 # The same fixes ship automatically in envpod 0.1.13+ (CE) and 0.1.17+
 # (Premium). Use this script on older releases or when you need to
@@ -87,39 +96,114 @@ fi
 # ---------------------------------------------------------------------------
 # Part 2: Pruned /var/lib data directory recovery
 # ---------------------------------------------------------------------------
+#
+# Minimum viable recipe — confirmed by independent review against the
+# Shadeform setup.log:
+#
+#   mkdir -p /var/lib/xml-core /var/lib/sgml-base /var/lib/xfonts
+#   dpkg --configure -a
+#   apt-get -f install -y
+#
+# That's the tight fix. The extras below are defensive (/etc/{xml,sgml},
+# touching excluded-aliases, explicit dpkg-reconfigure) and quiet the
+# noisier warnings that surface but don't actually block installs.
+# Idempotent either way.
 
-step "[2/2] recreating pruned /var/lib data dirs"
+step "[2/3] recreating pruned /var/lib data dirs"
 
-mkdir -p \
-    /var/lib/xml-core \
-    /var/lib/sgml-base \
-    /var/lib/xfonts \
-    /etc/xml \
-    /etc/sgml \
-    2>/dev/null
+# Core: the three dirs cited in the reported dpkg failure.
+mkdir -p /var/lib/xml-core /var/lib/sgml-base /var/lib/xfonts 2>/dev/null
 
+# Defensive: /etc/{xml,sgml} are written by the same packages' postinst
+# scripts. The excluded-aliases file silences a sed warning fonts
+# postinsts emit; not strictly required for a clean install.
+mkdir -p /etc/xml /etc/sgml 2>/dev/null
 [ -e /var/lib/xfonts/excluded-aliases ] || \
     touch /var/lib/xfonts/excluded-aliases 2>/dev/null
 
-step "  dirs ready: /var/lib/{xml-core,sgml-base,xfonts}, /etc/{xml,sgml}"
+step "  dirs ready: /var/lib/{xml-core,sgml-base,xfonts} + defensive /etc/{xml,sgml}"
 
-# If the last apt run left packages half-configured, recover them now.
-# dpkg --configure -a picks up where the previous run failed and re-runs
-# postinst scripts — now that the data dirs exist, they'll succeed.
-if dpkg -l 2>/dev/null | awk '/^iU|^iF|^iW/ { found=1 } END { exit !found }'; then
-    step "  reconfiguring half-configured packages..."
-    DEBIAN_FRONTEND=noninteractive dpkg --configure -a 2>&1 | tail -20 || \
-        step "  WARN: dpkg --configure -a reported errors; check output above"
-fi
+# dpkg --configure -a: picks up any half-configured packages from the
+# previous run. Now that the data dirs exist, their postinst scripts
+# succeed on the retry.
+step "  running dpkg --configure -a..."
+DEBIAN_FRONTEND=noninteractive dpkg --configure -a 2>&1 | tail -10 || \
+    step "  WARN: dpkg --configure -a reported errors; check output above"
 
-# Check whether the canonical packages (xml-core, sgml-base, xfonts-utils)
-# are installed. If yes, reconfigure them to prime their data dirs.
-for pkg in xml-core sgml-base xfonts-utils; do
-    if dpkg -s "$pkg" >/dev/null 2>&1; then
-        step "  reconfiguring $pkg to prime data dir..."
-        DEBIAN_FRONTEND=noninteractive dpkg-reconfigure "$pkg" 2>/dev/null || true
+# apt-get -f install: fixes any dependency relationships the failed
+# postinst left dangling (e.g. python3-docutils marked installed but
+# unconfigured pulls python3-oslo.config into limbo).
+step "  running apt-get -f install -y..."
+DEBIAN_FRONTEND=noninteractive apt-get -f install -y 2>&1 | tail -5 || \
+    step "  WARN: apt-get -f install reported errors; check output above"
+
+# ---------------------------------------------------------------------------
+# Part 3: VS Code install recovery (only runs if the pod was trying to
+# install VS Code). Microsoft CDN / Azure Front Door throttles some cloud
+# IP ranges down to ~20 B/s, which makes `wget -qO-` truncate silently and
+# apt-get update stall on packages.microsoft.com InRelease.
+# ---------------------------------------------------------------------------
+
+step "[3/3] VS Code install recovery (if applicable)"
+
+vscode_wanted=0
+# Trigger: existing vscode.list (previous attempt left it), OR the known
+# keyring file (even if empty from a bad fetch), OR `code` half-installed.
+[ -f /etc/apt/sources.list.d/vscode.list ] && vscode_wanted=1
+[ -f /usr/share/keyrings/packages.microsoft.gpg ] && vscode_wanted=1
+dpkg -l code 2>/dev/null | grep -q '^i' && vscode_wanted=1
+
+if [ "$vscode_wanted" -eq 0 ]; then
+    step "  skipped — pod doesn't appear to install VS Code"
+else
+    if command -v code >/dev/null 2>&1 && code --version >/dev/null 2>&1; then
+        step "  skipped — VS Code already working"
+    else
+        step "  wiping stale vscode.list + keyring"
+        rm -f /etc/apt/sources.list.d/vscode.list \
+              /usr/share/keyrings/packages.microsoft.gpg
+
+        step "  fetching Microsoft key via curl (no silent truncation)"
+        apt-get install -y curl ca-certificates gpg apt-transport-https 2>/dev/null
+        install -d -m 0755 /usr/share/keyrings
+        if curl -fsSL --retry 3 --retry-delay 5 \
+             https://packages.microsoft.com/keys/microsoft.asc \
+           | gpg --dearmor --batch --yes \
+                 -o /usr/share/keyrings/packages.microsoft.gpg; then
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" \
+                > /etc/apt/sources.list.d/vscode.list
+            step "  retrying apt-get update (up to 3x)..."
+            rm -rf /var/lib/apt/lists/*
+            for i in 1 2 3; do
+                apt-get update && apt-cache show code >/dev/null 2>&1 && break
+                sleep 5
+            done
+            apt-get install -y code 2>/dev/null || true
+        else
+            step "  WARN: Microsoft key fetch failed — will try direct .deb"
+        fi
+
+        # Fallback: direct .deb from update.code.visualstudio.com (different
+        # CDN path; not throttled the same way as packages.microsoft.com).
+        if ! command -v code >/dev/null 2>&1; then
+            step "  apt repo unusable — falling back to direct .deb"
+            if curl -fsSL --retry 3 --retry-delay 5 \
+                 https://update.code.visualstudio.com/latest/linux-deb-x64/stable \
+                 -o /tmp/code.deb; then
+                apt-get install -y /tmp/code.deb 2>&1 | tail -5 || true
+                rm -f /tmp/code.deb
+            else
+                step "  WARN: direct .deb fetch also failed; network is very flaky"
+            fi
+        fi
+
+        if command -v code >/dev/null 2>&1; then
+            step "  VS Code installed: $(code --version 2>/dev/null | head -1)"
+        else
+            step "  WARN: VS Code install still failing — see TROUBLESHOOTING.md"
+        fi
     fi
-done
+fi
 
 step "done. If the original setup run failed part-way, re-run:"
 step "  sudo envpod setup <pod-name>"
