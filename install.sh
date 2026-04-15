@@ -26,7 +26,7 @@
 #
 set -euo pipefail
 
-ENVPOD_CURRENT_VERSION="0.1.14"
+ENVPOD_CURRENT_VERSION="0.1.15"
 ENVPOD_REPO="https://github.com/markamo/envpod-ce"
 
 INSTALL_DIR="/usr/local/bin"
