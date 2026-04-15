@@ -2,6 +2,8 @@
 
 > Access a pod's graphical desktop from any browser. No X11 or Wayland needed.
 
+For remote server deployments that should stay private, see [REMOTE-DESKTOP-OVER-SSH.md](REMOTE-DESKTOP-OVER-SSH.md) for the SSH local-forwarding pattern from your laptop to the host display ports.
+
 ---
 
 ## Overview
