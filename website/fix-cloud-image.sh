@@ -51,17 +51,49 @@ die()  { echo "[fix-cloud-image] ERROR: $*" >&2; exit 1; }
 [ "$(id -u)" -eq 0 ] || die "must run as root (try: sudo envpod run <pod> -- bash)"
 
 # ---------------------------------------------------------------------------
+# Part 0: Neutralize known-slow 3rd-party apt sources before any apt-get
+# update below. If a previous setup run left /etc/apt/sources.list.d/vscode.list
+# pointing at packages.microsoft.com with a broken keyring, every apt-get
+# update in the rest of the script would hang for minutes on that mirror.
+# We disable (not delete — that's Part 3's job) the known-slow sources so
+# Parts 1 and 2 can run fast. Part 3 will properly re-create vscode.list
+# from scratch if the pod wanted VS Code.
+# ---------------------------------------------------------------------------
+
+step "[0/3] disabling known-slow 3rd-party apt sources"
+
+# Only disable sources whose CDN is known to hang ('packages.microsoft.com'
+# on OpenStack/Shadeform peering). Chrome's dl.google.com is fast; leave
+# it alone. Part 3 re-creates vscode.list cleanly if VS Code was wanted.
+if [ -f /etc/apt/sources.list.d/vscode.list ] \
+   && ! grep -q '^# envpod-fix-disabled' /etc/apt/sources.list.d/vscode.list; then
+    step "  disabling /etc/apt/sources.list.d/vscode.list (packages.microsoft.com throttles cloud IPs)"
+    {
+        echo "# envpod-fix-disabled: temporarily disabled by fix-cloud-image.sh"
+        sed 's/^deb /# deb /' /etc/apt/sources.list.d/vscode.list
+    } > /etc/apt/sources.list.d/vscode.list.tmp \
+      && mv /etc/apt/sources.list.d/vscode.list.tmp /etc/apt/sources.list.d/vscode.list
+else
+    step "  nothing to disable"
+fi
+
+# Use aggressive timeouts so even if something still hangs, we fail fast
+# instead of waiting 10+ minutes. 30s connect + 30s per transfer is plenty
+# for keyserver / Ubuntu mirrors.
+APT_TIMEOUT_OPTS='-o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o Acquire::Retries=1'
+
+# ---------------------------------------------------------------------------
 # Part 1: Keyring / apt signature recovery
 # ---------------------------------------------------------------------------
 
-step "[1/2] apt keyring + signature recovery"
+step "[1/3] apt keyring + signature recovery"
 
 missing=""
 command -v gpg >/dev/null 2>&1 || missing="$missing gnupg"
 command -v curl >/dev/null 2>&1 || missing="$missing curl"
 if [ -n "$missing" ]; then
     step "  installing prerequisites:$missing"
-    DEBIAN_FRONTEND=noninteractive apt-get \
+    DEBIAN_FRONTEND=noninteractive apt-get $APT_TIMEOUT_OPTS \
         -o Acquire::AllowInsecureRepositories=true \
         -o Acquire::Check-Valid-Until=false \
         install -y --allow-unauthenticated $missing 2>/dev/null || \
@@ -69,7 +101,7 @@ if [ -n "$missing" ]; then
 fi
 
 if DEBIAN_FRONTEND=noninteractive \
-       apt-get -o Acquire::Check-Valid-Until=false update -qq 2>/dev/null; then
+       apt-get $APT_TIMEOUT_OPTS -o Acquire::Check-Valid-Until=false update -qq 2>/dev/null; then
     step "  apt-get update OK with relaxed date check — no keyring refresh needed."
 else
     step "  apt-get update failed — refreshing Ubuntu archive keyring..."
@@ -88,7 +120,7 @@ If DNS is Allowlist mode, add 'keyserver.ubuntu.com' to network.dns.setup_allow.
     fi
     mv "$tmp" /usr/share/keyrings/ubuntu-archive-keyring.gpg
     DEBIAN_FRONTEND=noninteractive \
-        apt-get -o Acquire::Check-Valid-Until=false update -qq || \
+        apt-get $APT_TIMEOUT_OPTS -o Acquire::Check-Valid-Until=false update -qq || \
         die "apt-get update still failing after keyring refresh. See docs/TROUBLESHOOTING.md."
     step "  keyring refreshed, apt-get update succeeded."
 fi
@@ -172,10 +204,10 @@ else
                  -o /usr/share/keyrings/packages.microsoft.gpg; then
             echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" \
                 > /etc/apt/sources.list.d/vscode.list
-            step "  retrying apt-get update (up to 3x)..."
+            step "  retrying apt-get update (up to 3x, 30s timeout each)..."
             rm -rf /var/lib/apt/lists/*
             for i in 1 2 3; do
-                apt-get update && apt-cache show code >/dev/null 2>&1 && break
+                apt-get $APT_TIMEOUT_OPTS update && apt-cache show code >/dev/null 2>&1 && break
                 sleep 5
             done
             apt-get install -y code 2>/dev/null || true
