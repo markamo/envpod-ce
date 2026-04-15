@@ -260,10 +260,44 @@ else
 
         if command -v code >/dev/null 2>&1; then
             step "  VS Code installed: $(code --version 2>/dev/null | head -1)"
+            # Write wrapper + desktop entry so xfce menu picks it up.
+            cat > /usr/local/bin/vscode <<'EOF'
+#!/bin/bash
+exec code --no-sandbox "$@"
+EOF
+            chmod +x /usr/local/bin/vscode
+            sed -i 's|Exec=/usr/share/code/code|Exec=/usr/share/code/code --no-sandbox|g' \
+                /usr/share/applications/code.desktop 2>/dev/null || true
+            sed -i 's|Exec=/usr/share/code/code|Exec=/usr/share/code/code --no-sandbox|g' \
+                /usr/share/applications/code-url-handler.desktop 2>/dev/null || true
         elif command -v code-server >/dev/null 2>&1; then
             step "  code-server installed: $(code-server --version 2>/dev/null | head -1)"
-            step "  launch: code-server --bind-addr 127.0.0.1:8080 --auth none"
-            step "  then open http://localhost:8080 in your browser"
+            # Write wrapper that starts code-server in the background and
+            # opens a browser to it. Same launcher path (/usr/local/bin/vscode)
+            # as desktop VS Code so the xfce menu entry works uniformly.
+            mkdir -p /usr/share/applications
+            cat > /usr/local/bin/vscode <<'EOF'
+#!/bin/bash
+# code-server wrapper: desktop VS Code wasn't available, using browser-based.
+if ! pgrep -f 'code-server' >/dev/null 2>&1; then
+    code-server --bind-addr 127.0.0.1:8080 --auth none >/tmp/code-server.log 2>&1 &
+    sleep 2
+fi
+exec xdg-open http://127.0.0.1:8080/
+EOF
+            chmod +x /usr/local/bin/vscode
+            cat > /usr/share/applications/code-server.desktop <<'EOF'
+[Desktop Entry]
+Name=VS Code (code-server)
+Comment=Browser-based VS Code — started via /usr/local/bin/vscode
+Exec=/usr/local/bin/vscode
+Icon=code
+Type=Application
+Categories=Development;IDE;
+EOF
+            step "  shortcut created: /usr/local/bin/vscode + xfce menu entry"
+            step "  or launch manually: code-server --bind-addr 127.0.0.1:8080 --auth none"
+            step "  then open http://localhost:8080 in your pod's browser"
         else
             step "  WARN: VS Code install still failing — see CLOUD-IMAGE-RECOVERY.md"
         fi
