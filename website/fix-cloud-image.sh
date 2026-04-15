@@ -215,24 +215,57 @@ else
             step "  WARN: Microsoft key fetch failed — will try direct .deb"
         fi
 
-        # Fallback: direct .deb from update.code.visualstudio.com (different
-        # CDN path; not throttled the same way as packages.microsoft.com).
+        # Fallback 1: direct .deb from update.code.visualstudio.com.
+        # Different CDN path; sometimes usable when the apt repo is throttled.
         if ! command -v code >/dev/null 2>&1; then
-            step "  apt repo unusable — falling back to direct .deb"
-            if curl -fsSL --retry 3 --retry-delay 5 \
+            step "  apt repo unusable — trying direct .deb"
+            # Wipe the failed vscode.list + keyring BEFORE abandoning
+            # the apt-repo path. Otherwise any later apt-get update in
+            # this pod would hang on packages.microsoft.com again.
+            rm -f /etc/apt/sources.list.d/vscode.list \
+                  /usr/share/keyrings/packages.microsoft.gpg
+            if curl -fsSL --retry 3 --retry-delay 5 --connect-timeout 30 \
                  https://update.code.visualstudio.com/latest/linux-deb-x64/stable \
                  -o /tmp/code.deb; then
                 apt-get install -y /tmp/code.deb 2>&1 | tail -5 || true
                 rm -f /tmp/code.deb
             else
-                step "  WARN: direct .deb fetch also failed; network is very flaky"
+                step "  WARN: update.code.visualstudio.com also blocked (same Microsoft CDN graph)"
+            fi
+        fi
+
+        # Fallback 2: code-server from GitHub Releases (Fastly CDN, not
+        # Microsoft-owned). When the entire Microsoft CDN graph is blocked
+        # from your cloud IP range — confirmed on Shadeform/OpenStack —
+        # GitHub's edge still works. code-server is a VS Code build with
+        # a browser front-end; same keybindings + extension API.
+        if ! command -v code >/dev/null 2>&1 && ! command -v code-server >/dev/null 2>&1; then
+            step "  Microsoft CDN fully blocked — installing code-server from GitHub"
+            CODE_SERVER_VERSION="4.90.2"
+            arch="$(dpkg --print-architecture)"
+            case "$arch" in
+                amd64) cs_arch=amd64 ;;
+                arm64) cs_arch=arm64 ;;
+                *) cs_arch="" ;;
+            esac
+            if [ -n "$cs_arch" ] && curl -fsSL --retry 3 --retry-delay 5 --connect-timeout 30 \
+                 "https://github.com/coder/code-server/releases/download/v${CODE_SERVER_VERSION}/code-server_${CODE_SERVER_VERSION}_${cs_arch}.deb" \
+                 -o /tmp/code-server.deb; then
+                apt-get install -y /tmp/code-server.deb 2>&1 | tail -5 || true
+                rm -f /tmp/code-server.deb
+            else
+                step "  WARN: code-server GitHub download also failed"
             fi
         fi
 
         if command -v code >/dev/null 2>&1; then
             step "  VS Code installed: $(code --version 2>/dev/null | head -1)"
+        elif command -v code-server >/dev/null 2>&1; then
+            step "  code-server installed: $(code-server --version 2>/dev/null | head -1)"
+            step "  launch: code-server --bind-addr 127.0.0.1:8080 --auth none"
+            step "  then open http://localhost:8080 in your browser"
         else
-            step "  WARN: VS Code install still failing — see TROUBLESHOOTING.md"
+            step "  WARN: VS Code install still failing — see CLOUD-IMAGE-RECOVERY.md"
         fi
     fi
 fi
